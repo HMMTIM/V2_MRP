@@ -1,0 +1,112 @@
+% Defining document class and basic setup
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{amsmath}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{noto}
+
+% Setting page geometry
+\geometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
+
+% Configuring header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textbf{PLAZHA - SISTEMAS - Orçamento}}
+\fancyhead[R]{\today}
+\fancyfoot[C]{Página \thepage\ de \pageref{LastPage}}
+
+% Defining custom colors
+\definecolor{primarycolor}{RGB}{8,84,160}
+\definecolor{secondarycolor}{RGB}{53,74,95}
+
+% Defining custom commands
+\newcommand{\sectiontitle}[1]{\vspace{10pt}\noindent\textbf{\large #1}\vspace{5pt}\hrule\vspace{5pt}}
+\newcommand{\field}[2]{\noindent\textbf{#1:} #2 \\}
+
+% Starting document
+\begin{document}
+
+% Adding company logo (placeholder)
+\begin{center}
+    \textbf{\LARGE PLAZHA - SISTEMAS} \\
+    \vspace{5pt}
+    \small CNPJ: 12.345.678/0001-99 | Endereço: Rua Exemplo, 123, São Paulo, SP \\
+    \vspace{10pt}
+\end{center}
+
+% Adding title
+\sectiontitle{Orçamento 001}
+
+% Client information
+\sectiontitle{Dados do Cliente}
+\field{Nome/Razão Social}{Cliente Exemplo Ltda}
+\field{CNPJ}{98.765.432/0001-00}
+\field{Endereço}{Av. Teste, 456, São Paulo, SP}
+\field{UF}{SP}
+
+% Quotation details
+\sectiontitle{Detalhes do Orçamento}
+\field{Número}{001}
+\field{CFOP}{5102 - Venda de mercadoria dentro do estado}
+\field{Condição de Pagamento}{30 dias}
+\field{Detalhes do Pagamento}{Boleto bancário}
+\field{Prazo de Entrega}{15 dias}
+\field{Tipo de Frete}{CIF}
+\field{Número Pedido Cliente}{PC-2025-001}
+\field{Data de Validade}{15/05/2025}
+\field{Data de Emissão}{08/05/2025}
+
+% Items table
+\sectiontitle{Itens do Orçamento}
+\begin{longtable}{p{2cm} p{4cm} p{2cm} p{2cm} p{2cm} p{2cm} p{2cm}}
+    \toprule
+    \textbf{Código} & \textbf{Descrição} & \textbf{NCM} & \textbf{Unidade} & \textbf{Quantidade} & \textbf{Valor Unitário (R\$)} & \textbf{Valor Total (R\$)} \\
+    \midrule
+    \endhead
+    PROD001 & Notebook Exemplo & 8471.30.12 & UN & 2 & 3500.00 & 7000.00 \\
+    PROD002 & Mouse Óptico & 8471.60.52 & UN & 5 & 50.00 & 250.00 \\
+    \bottomrule
+\end{longtable}
+
+% Taxes table
+\sectiontitle{Impostos}
+\begin{tabular}{l r}
+    \toprule
+    \textbf{Imposto} & \textbf{Valor (R\$)} \\
+    \midrule
+    ICMS & 1260.00 (18\%) \\
+    IPI & 0.00 (0\%) \\
+    PIS & 119.63 (1.65\%) \\
+    COFINS & 551.25 (7.6\%) \\
+    \midrule
+    \textbf{Total de Impostos} & 1930.88 \\
+    \bottomrule
+\end{tabular}
+
+% Totals
+\sectiontitle{Resumo Financeiro}
+\field{Valor Total dos Itens (R\$)}{7250.00}
+\field{Total de Impostos (R\$)}{1930.88}
+\field{Valor Final (R\$)}{9180.88}
+
+% Observations
+\sectiontitle{Observações}
+Valores sujeitos à alteração conforme política fiscal.
+
+% Footer
+\vspace{20pt}
+\begin{center}
+    \small Este orçamento é válido até 15/05/2025. \\
+    \small PLAZHA - SISTEMAS - Soluções em Gestão Empresarial
+\end{center}
+
+\end{document}

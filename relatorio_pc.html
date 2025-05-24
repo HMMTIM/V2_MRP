@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pedido de Compra</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      font-size: 10px;
+      color: #000;
+    }
+    .container {
+      width: 210mm;
+      height: 297mm;
+      margin: 0 auto;
+      border: 2px solid #000;
+      padding: 10mm;
+      border-radius: 8px;
+      box-sizing: border-box;
+      position: relative;
+      page-break-after: always;
+    }
+    .box {
+      border: 1px solid #000;
+      border-radius: 8px;
+      padding: 3mm;
+      margin-bottom: 3mm;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #fff;
+    }
+    .header-left img {
+      height: 15mm;
+    }
+    .header-right {
+      text-align: right;
+    }
+    .header-right h1 {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+    .header-right .pedido-numero {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 5px 0;
+      color: #000;
+    }
+    .section p {
+      margin: 0;
+      line-height: 1;
+    }
+    .section strong {
+      font-weight: bold;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .table th, .table td {
+      border: 1px solid #000;
+      padding: 2mm;
+      text-align: left;
+      font-size: 10px;
+      line-height: 1;
+    }
+    .table th {
+      font-weight: bold;
+    }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      padding: 3mm;
+    }
+    .footer p {
+      margin: 0;
+      line-height: 1;
+    }
+    .error-message {
+      color: red;
+      font-size: 14px;
+      text-align: center;
+      margin: 20px;
+    }
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        border: none;
+        width: 100%;
+        height: auto;
+        padding: 10mm;
+      }
+      button {
+        display: none;
+      }
+      .error-message {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="error-message" class="error-message"></div>
+  <div id="pages-container">
+    <!-- Pages will be generated dynamically -->
+  </div>
+
+  <button onclick="window.print()">Imprimir</button>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    function showError(message) {
+      const errorDiv = document.getElementById('error-message');
+      errorDiv.textContent = message;
+      console.error(message);
+    }
+
+    function formatNumber(value) {
+      return value.toFixed(2).replace('.', ',');
+    }
+
+    function getPedidoIdFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('id');
+    }
+
+    async function loadCompanyData() {
+      try {
+        const companyRef = doc(db, "empresa", "config");
+        const companySnap = await getDoc(companyRef);
+        return companySnap.exists() ? companySnap.data() : null;
+      } catch (error) {
+        showError(`Erro ao carregar dados da empresa: ${error.message}`);
+        return null;
+      }
+    }
+
+    async function loadPedidoData(pedidoId) {
+      try {
+        if (!pedidoId) {
+          throw new Error("ID do pedido não fornecido");
+        }
+
+        const pedidoRef = doc(db, "pedidosCompra", pedidoId);
+        const pedidoSnap = await getDoc(pedidoRef);
+
+        if (!pedidoSnap.exists()) {
+          throw new Error(`Pedido não encontrado (${pedidoId})`);
+        }
+
+        const pedido = pedidoSnap.data();
+        const fornecedorRef = doc(db, "fornecedores", pedido.fornecedorId);
+        const fornecedorSnap = await getDoc(fornecedorRef);
+
+        if (!fornecedorSnap.exists()) {
+          throw new Error(`Fornecedor não encontrado (${pedido.fornecedorId})`);
+        }
+
+        const fornecedor = fornecedorSnap.data();
+        return { pedido, fornecedor };
+      } catch (error) {
+        showError(`Erro ao carregar dados do pedido: ${error.message}`);
+        return null;
+      }
+    }
+
+    async function renderPages() {
+      const pedidoId = getPedidoIdFromURL();
+      if (!pedidoId) {
+        showError("ID do pedido não fornecido na URL");
+        return;
+      }
+
+      const company = await loadCompanyData();
+      const pedidoData = await loadPedidoData(pedidoId);
+      if (!pedidoData) return;
+
+      const { pedido, fornecedor } = pedidoData;
+      const pagesContainer = document.getElementById('pages-container');
+      document.getElementById('error-message').textContent = '';
+
+      const companyData = company || {
+        razaoSocial: 'NALITECK BRASIL AUTOMAÇÃO IND EIRELI',
+        logoUrl: 'logo-naliteck.png',
+        endereco: 'RUA PASCHOA DE NADAI NALINI, 72 CEP:15406-232 Olimpia - SP',
+        telefone: '(17) 3042-1507',
+        cnpj: '12.811.393/0001-00',
+        inscricaoEstadual: '487.029.880.116'
+      };
+
+      const pageDiv = document.createElement('div');
+      pageDiv.className = 'container';
+      pageDiv.innerHTML = `
+        <div class="box header">
+          <div class="header-left">
+            <img src="${companyData.logoUrl}" alt="Logo da Empresa">
+          </div>
+          <div class="header-right">
+            <h1>PEDIDO DE COMPRA</h1>
+            <p class="pedido-numero">Nº ${pedido.numero}</p>
+            <p>Data: ${new Date(pedido.dataCriacao.seconds * 1000).toLocaleDateString()}</p>
+            <p>Impresso em: ${new Date().toLocaleString()}</p>
+          </div>
+        </div>
+
+        <div class="box section">
+          <p><strong>Endereço:</strong> ${companyData.endereco}</p>
+          <p><strong>Telefone:</strong> ${companyData.telefone}</p>
+          <p><strong>CNPJ:</strong> ${companyData.cnpj} <strong>IE:</strong> ${companyData.inscricaoEstadual}</p>
+        </div>
+
+        <div class="box section">
+          <p><strong>Fornecedor:</strong> ${fornecedor.razaoSocial}</p>
+          <p><strong>Endereço:</strong> ${fornecedor.endereco || 'N/A'}</p>
+          <p><strong>Telefone:</strong> ${fornecedor.telefone || 'N/A'}</p>
+          <p><strong>CNPJ:</strong> ${fornecedor.cnpj || 'N/A'} <strong>IE:</strong> ${fornecedor.ie || 'N/A'}</p>
+          <p><strong>Contato:</strong> ${fornecedor.contato || 'N/A'}</p>
+        </div>
+
+        <div class="box">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Qtde</th>
+                <th>Unid.</th>
+                <th>Valor Unit.</th>
+                <th>IPI</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${pedido.itens.map((item, index) => `
+                <tr>
+                  <td>${(index + 1).toString().padStart(3, '0')}</td>
+                  <td>${item.codigo}</td>
+                  <td>${item.descricao}</td>
+                  <td>${formatNumber(item.quantidade)}</td>
+                  <td>${item.unidade}</td>
+                  <td>R$ ${formatNumber(item.valorUnitario)}</td>
+                  <td>${item.ipi || 0}%</td>
+                  <td>R$ ${formatNumber(item.valorTotal)}</td>
+                </tr>
+              `).join('')}
+              <tr>
+                <td colspan="7" style="text-align: right;"><strong>Total:</strong></td>
+                <td><strong>R$ ${formatNumber(pedido.valorTotal)}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="box section">
+          <p><strong>Condição de Pagamento:</strong> ${pedido.condicaoPagamento}</p>
+          <p><strong>Prazo de Entrega:</strong> ${pedido.prazoEntrega || 'N/A'}</p>
+          <p><strong>Observações:</strong> ${pedido.observacoes || 'N/A'}</p>
+        </div>
+
+        <div class="box footer">
+          <div>
+            <p><strong>Status:</strong> ${pedido.status}</p>
+            <p><strong>Criado por:</strong> ${pedido.criadoPor}</p>
+            <p><strong>Data Criação:</strong> ${new Date(pedido.dataCriacao.seconds * 1000).toLocaleString()}</p>
+          </div>
+          <div>
+            <p><strong>Aprovado por:</strong> ${pedido.aprovadoPor || 'N/A'}</p>
+            ${pedido.dataAprovacao ? `<p><strong>Data Aprovação:</strong> ${new Date(pedido.dataAprovacao.seconds * 1000).toLocaleString()}</p>` : ''}
+          </div>
+        </div>
+
+        ${pedido.workflowAprovacao ? `
+        <div class="box section">
+          <h3>Workflow de Aprovação</h3>
+          ${pedido.workflowAprovacao.map(step => `
+            <div style="margin: 5px 0;">
+              <strong>${step.cargo}:</strong> 
+              <span class="status-badge status-${step.status.toLowerCase()}">${step.status}</span>
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
+      `;
+
+      pagesContainer.appendChild(pageDiv);
+    }
+
+    document.addEventListener('DOMContentLoaded', renderPages);
+  </script>
+</body>
+</html>

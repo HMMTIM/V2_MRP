@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central de Documentos</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .search-container {
+      margin-bottom: 20px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    .document-form {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    .product-info {
+      padding: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      margin-bottom: 15px;
+      background-color: var(--secondary-color);
+    }
+
+    .link-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .link-group input {
+      flex: 1;
+    }
+
+    .link-group button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .link-group button.test-btn {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .link-group button.test-btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .documents-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .documents-table th,
+    .documents-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .documents-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .documents-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .action-button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .open-btn {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .open-btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .edit-btn {
+      background-color: #ffc107;
+      color: #000;
+    }
+
+    .edit-btn:hover {
+      background-color: var(--warning-color);
+    }
+
+    .delete-btn {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .delete-btn:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .back-button,
+    button[onclick="clearForm()"] {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      background-color: #6c757d;
+      color: white;
+      transition: background-color 0.2s;
+    }
+
+    .back-button:hover,
+    button[onclick="clearForm()"]:hover {
+      background-color: #5a6268;
+    }
+
+    button[onclick="saveDocuments()"] {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      background-color: var(--success-color);
+      color: white;
+      transition: background-color 0.2s;
+    }
+
+    button[onclick="saveDocuments()"]:hover {
+      background-color: var(--success-hover);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Central de Documentos</h1>
+      <div class="header-actions">
+        <button onclick="clearForm()">Limpar</button>
+        <button onclick="window.location.href='index.html'" class="back-button">Voltar</button>
+      </div>
+    </div>
+
+    <div class="search-container">
+      <input 
+        type="text" 
+        id="searchInput" 
+        class="search-input" 
+        placeholder="Digite o código ou descrição do produto..."
+        oninput="searchProduct(this.value)"
+      >
+    </div>
+
+    <div id="documentForm" class="document-form" style="display: none;">
+      <div id="productInfo" class="product-info"></div>
+      
+      <div class="form-group">
+        <label>Desenho PDF:</label>
+        <div class="link-group">
+          <input type="text" id="linkPdf" placeholder="https://mega.nz/...">
+          <button type="button" class="test-btn" onclick="testLink('linkPdf')">Testar</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Desenho Corte-A (DWG):</label>
+        <div class="link-group">
+          <input type="text" id="linkDwgA" placeholder="https://mega.nz/...">
+          <button type="button" class="test-btn" onclick="testLink('linkDwgA')">Testar</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Desenho Corte-B (DWG):</label>
+        <div class="link-group">
+          <input type="text" id="linkDwgB" placeholder="https://mega.nz/...">
+          <button type="button" class="test-btn" onclick="testLink('linkDwgB')">Testar</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Desenho Corte-C (DWG):</label>
+        <div class="link-group">
+          <input type="text" id="linkDwgC" placeholder="https://mega.nz/...">
+          <button type="button" class="test-btn" onclick="testLink('linkDwgC')">Testar</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Documento (DOC):</label>
+        <div class="link-group">
+          <input type="text" id="linkDoc" placeholder="https://mega.nz/...">
+          <button type="button" class="test-btn" onclick="testLink('linkDoc')">Testar</button>
+        </div>
+      </div>
+
+      <button onclick="saveDocuments()">Salvar Documentos</button>
+    </div>
+
+    <table class="documents-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Tipo</th>
+          <th>PDF</th>
+          <th>DWG-A</th>
+          <th>DWG-B</th>
+          <th>DWG-C</th>
+          <th>DOC</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="documentsTableBody">
+      </tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      getDocs,
+      addDoc,
+      doc,
+      updateDoc,
+      deleteDoc,
+      query,
+      where 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let produtos = [];
+    let documentos = [];
+    let selectedProductId = null;
+    let selectedDocumentId = null;
+
+    window.onload = async function() {
+      await loadProducts();
+      await loadDocuments();
+      setupSearchAutocomplete();
+      displayDocuments();
+    };
+
+    function setupSearchAutocomplete() {
+      const searchInput = document.getElementById('searchInput');
+      const datalist = document.createElement('datalist');
+      datalist.id = 'produtos-list';
+      
+      produtos.forEach(product => {
+        const option = document.createElement('option');
+        option.value = `${product.codigo} - ${product.descricao}`;
+        datalist.appendChild(option);
+      });
+      
+      document.body.appendChild(datalist);
+      searchInput.setAttribute('list', 'produtos-list');
+    }
+
+    window.clearForm = function() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('documentForm').style.display = 'none';
+      selectedProductId = null;
+      selectedDocumentId = null;
+    };
+
+    async function loadProducts() {
+      try {
+        const snapshot = await getDocs(collection(db, "produtos"));
+        produtos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar produtos:", error);
+        alert("Erro ao carregar produtos. Por favor, recarregue a página.");
+      }
+    }
+
+    async function loadDocuments() {
+      try {
+        const snapshot = await getDocs(collection(db, "central"));
+        documentos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar documentos:", error);
+        alert("Erro ao carregar documentos. Por favor, recarregue a página.");
+      }
+    }
+
+    window.searchProduct = function(searchText) {
+      const search = searchText.toLowerCase();
+      const product = produtos.find(p => 
+        p.codigo.toLowerCase().includes(search) || 
+        p.descricao.toLowerCase().includes(search)
+      );
+
+      if (product) {
+        selectedProductId = product.id;
+        document.getElementById('productInfo').innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3>${product.codigo} - ${product.descricao}</h3>
+          <p>Tipo: ${product.tipo}</p>
+        `;
+        document.getElementById('documentForm').style.display = 'block';
+        
+        // Find existing document
+        const documento = documentos.find(d => d.produtoId === product.id);
+        if (documento) {
+          selectedDocumentId = documento.id;
+          document.getElementById('linkPdf').value = documento.linkPdf || '';
+          document.getElementById('linkDwgA').value = documento.linkDwgA || '';
+          document.getElementById('linkDwgB').value = documento.linkDwgB || '';
+          document.getElementById('linkDwgC').value = documento.linkDwgC || '';
+          document.getElementById('linkDoc').value = documento.linkDoc || '';
+        } else {
+          selectedDocumentId = null;
+          document.getElementById('linkPdf').value = '';
+          document.getElementById('linkDwgA').value = '';
+          document.getElementById('linkDwgB').value = '';
+          document.getElementById('linkDwgC').value = '';
+          document.getElementById('linkDoc').value = '';
+        }
+      } else {
+        selectedProductId = null;
+        selectedDocumentId = null;
+        document.getElementById('documentForm').style.display = 'none';
+      }
+    };
+
+    window.testLink = function(inputId) {
+      const link = document.getElementById(inputId).value.trim();
+      
+      if (!link) {
+        alert('Por favor, insira um link.');
+        return;
+      }
+      
+      if (!link.startsWith('https://mega.nz/')) {
+        alert('O link deve ser do Mega.nz e começar com "https://mega.nz/"');
+        return;
+      }
+      
+      window.open(link, '_blank');
+    };
+
+    window.saveDocuments = async function() {
+      if (!selectedProductId) {
+        alert('Por favor, selecione um produto primeiro.');
+        return;
+      }
+
+      const documentData = {
+        produtoId: selectedProductId,
+        linkPdf: document.getElementById('linkPdf').value.trim(),
+        linkDwgA: document.getElementById('linkDwgA').value.trim(),
+        linkDwgB: document.getElementById('linkDwgB').value.trim(),
+        linkDwgC: document.getElementById('linkDwgC').value.trim(),
+        linkDoc: document.getElementById('linkDoc').value.trim(),
+        ultimaAtualizacao: new Date(),
+        dataCadastro: new Date()
+      };
+
+      // Validate all links
+      for (const [key, link] of Object.entries(documentData)) {
+        if (key === 'produtoId' || key === 'ultimaAtualizacao' || key === 'dataCadastro') continue;
+        
+        // Convert to string and trim if not already
+        const linkStr = String(link || '').trim();
+        
+        if (linkStr && !linkStr.startsWith('https://mega.nz/')) {
+          alert(`O link ${key} deve ser do Mega.nz e começar com "https://mega.nz/"`);
+          return;
+        }
+      }
+
+      try {
+        if (selectedDocumentId) {
+          await updateDoc(doc(db, "central", selectedDocumentId), documentData);
+        } else {
+          await addDoc(collection(db, "central"), documentData);
+        }
+        alert('Documentos salvos com sucesso!');
+        await loadDocuments();
+        displayDocuments();
+      } catch (error) {
+        console.error("Erro ao salvar documentos:", error);
+        alert("Erro ao salvar documentos.");
+      }
+    };
+
+    window.deleteDocuments = async function(productId) {
+      const documento = documentos.find(d => d.produtoId === productId);
+      if (documento && confirm('Tem certeza que deseja excluir estes documentos?')) {
+        try {
+          await deleteDoc(doc(db, "central", documento.id));
+          alert('Documentos excluídos com sucesso!');
+          await loadDocuments();
+          displayDocuments();
+        } catch (error) {
+          console.error("Erro ao excluir documentos:", error);
+          alert("Erro ao excluir documentos.");
+        }
+      }
+    };
+
+    function displayDocuments() {
+      const tableBody = document.getElementById('documentsTableBody');
+      tableBody.innerHTML = '';
+
+      produtos.forEach(product => {
+        const documento = documentos.find(d => d.produtoId === product.id);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${product.codigo}</td>
+          <td>${product.descricao}</td>
+          <td>${product.tipo}</td>
+          <td>${createLinkButton(documento?.linkPdf, 'PDF')}</td>
+          <td>${createLinkButton(documento?.linkDwgA, 'DWG-A')}</td>
+          <td>${createLinkButton(documento?.linkDwgB, 'DWG-B')}</td>
+          <td>${createLinkButton(documento?.linkDwgC, 'DWG-C')}</td>
+          <td>${createLinkButton(documento?.linkDoc, 'DOC')}</td>
+          <td>
+            <button class="action-button edit-btn" onclick="searchProduct('${product.codigo}')">Editar</button>
+            ${documento ? `<button class="action-button delete-btn" onclick="deleteDocuments('${product.id}')">Excluir</button>` : ''}
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function createLinkButton(link, text) {
+      return link ? 
+        `<button class="action-button open-btn" onclick="window.open('${link}', '_blank')">${text}</button>` : 
+        '-';
+    }
+  </script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92e2d5123d9b456c',t:'MTc0NDI5NDI3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>

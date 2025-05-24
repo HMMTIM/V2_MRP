@@ -1,0 +1,2425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Ordens de Produção</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .form-container {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .form-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-col {
+      flex: 1;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background-color: var(--success-color);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: var(--success-hover);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .secondary-button {
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+    }
+
+    .secondary-button:hover {
+      background-color: #e0e3e6;
+    }
+
+    .danger-button {
+      background-color: var(--danger-color);
+    }
+
+    .danger-button:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .back-button {
+      background-color: #6c757d;
+    }
+
+    .back-button:hover {
+      background-color: #5a6268;
+    }
+
+    .warning-button {
+      background-color: var(--warning-color);
+    }
+
+    .warning-button:hover {
+      background-color: #d2620a;
+    }
+
+    .op-table-container {
+      margin-top: 20px;
+    }
+
+    .op-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .op-table th, .op-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .op-table th {
+      background-color: var(--header-bg);
+      color: white;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .op-table th:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .op-table th .sort-icon {
+      display: inline-block;
+      margin-left: 5px;
+      font-size: 12px;
+    }
+
+    .op-table tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    .op-table .actions {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .op-table .actions button {
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+
+    .legend {
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      margin-right: 5px;
+      border-radius: 3px;
+    }
+
+    .status-pendente { background-color: #FFC107; color: #000; }
+    .status-em-producao { background-color: #2196F3; color: #fff; }
+    .status-concluida { background-color: var(--success-color); color: #fff; }
+    .status-cancelada { background-color: var(--danger-color); color: #fff; }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .batch-actions {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 2% auto;
+      padding: 0;
+      width: 90%;
+      max-width: 1000px;
+      border-radius: 8px;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      position: sticky;
+      top: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 15px 20px;
+      border-top: 1px solid var(--border-color);
+      background: white;
+      position: sticky;
+      bottom: 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .close-button {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .tab-container {
+      margin-bottom: 20px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .tab-button {
+      padding: 10px 20px;
+      background-color: #f0f0f0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #333;
+    }
+
+    .tab-button.active {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .filter-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .filter-options {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background-color: #f0f0f0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: var(--success-color);
+      transition: width 0.3s ease;
+    }
+
+    .opcionais-list {
+      margin: 20px 0;
+    }
+
+    .opcional-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      margin-bottom: 10px;
+      background-color: #fff;
+    }
+
+    .opcional-info {
+      flex: 1;
+    }
+
+    .opcional-produto {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .opcional-saldo {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .opcional-saldo.baixo {
+      color: var(--danger-color);
+    }
+
+    .opcional-saldo.ok {
+      color: var(--success-color);
+    }
+
+    .opcional-radio {
+      margin-right: 15px;
+    }
+
+    .alert {
+      padding: 12px 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+
+    .alert-info {
+      background-color: #e8f4fd;
+      border: 1px solid #b8daff;
+      color: #004085;
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        flex-direction: column;
+      }
+      .op-table th, .op-table td {
+        padding: 8px;
+        font-size: 14px;
+      }
+      .op-table .actions {
+        flex-direction: column;
+        gap: 5px;
+      }
+      .modal-content {
+        width: 95%;
+        margin: 5% auto;
+      }
+      .filter-options {
+        flex-direction: column;
+      }
+      .filter-group {
+        min-width: 100%;
+      }
+      .legend {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 15mm;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .no-print {
+        display: none;
+      }
+      .op-print-view {
+        page-break-after: always;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+      }
+      .op-print-view:last-child {
+        page-break-after: avoid;
+      }
+    }
+
+    .op-print-view {
+      display: none;
+      background-color: white;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .op-print-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #000;
+      padding-bottom: 5px;
+    }
+
+    .op-print-title {
+      text-align: center;
+      flex-grow: 1;
+      margin: 0 10px;
+    }
+
+    .op-print-title h1 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .op-print-title h2 {
+      margin: 3px 0;
+      font-size: 16px;
+    }
+
+    .op-print-info {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      padding: 5px;
+    }
+
+    .op-print-info-item {
+      border: 1px solid #ddd;
+      padding: 3px;
+    }
+
+    .op-print-info-item strong {
+      display: block;
+      font-size: 8px;
+      color: #666;
+    }
+
+    .op-print-info-item span {
+      display: block;
+      font-size: 12px;
+      margin-top: 1px;
+    }
+
+    .op-print-section {
+      margin-bottom: 15px;
+    }
+
+    .op-print-section-title {
+      background-color: #f0f0f0;
+      padding: 3px 8px;
+      font-weight: bold;
+      border: 1px solid #ccc;
+      font-size: 11px;
+    }
+
+    .op-print-signatures {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .op-print-signature {
+      flex: 1;
+      margin: 0 10px;
+      text-align: center;
+    }
+
+    .op-print-signature-line {
+      border-top: 1px solid #000;
+      margin-top: 40px;
+      padding-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Gestão de Ordens de Produção</h1>
+      <div>
+        <button id="newOrderButton" class="btn-secondary"><i class="fas fa-plus"></i> Nova Ordem Manual</button>
+        <button id="orderFromSalesButton" class="btn-secondary"><i class="fas fa-file-alt"></i> Ordem de Pedido</button>
+        <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+      </div>
+    </div>
+    <div class="tab-container">
+      <div class="tab-buttons">
+        <button class="tab-button active" onclick="switchTab('active')">Ordens Ativas</button>
+        <button class="tab-button" onclick="switchTab('completed')">Ordens Concluídas</button>
+      </div>
+
+      <div class="filter-section">
+        <input type="text" class="search-input" id="generalSearch" placeholder="Buscar por número da ordem, código ou descrição do produto..." oninput="filterOrders()">
+        <div class="filter-options">
+          <div class="filter-group">
+            <label>Código do Produto:</label>
+            <input type="text" id="productCodeFilter" placeholder="Digite o código..." oninput="filterOrders()">
+          </div>
+          <div class="filter-group">
+            <label>Descrição do Produto:</label>
+            <input type="text" id="productDescriptionFilter" placeholder="Digite a descrição..." oninput="filterOrders()">
+          </div>
+          <div class="filter-group">
+            <label>Tipo do Produto:</label>
+            <select id="productTypeFilter" onchange="filterOrders()">
+              <option value="">Todos</option>
+              <option value="PA">Produto Acabado (PA)</option>
+              <option value="SP">Subproduto (SP)</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Centro de Custo:</label>
+            <select id="costCenterFilter" onchange="filterOrders()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Armazém de Produção:</label>
+            <select id="warehouseFilter" onchange="filterOrders()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Status:</label>
+            <select id="statusFilter" onchange="filterOrders()">
+              <option value="">Todos</option>
+              <option value="pendente">Pendente</option>
+              <option value="em-producao">Em Produção</option>
+              <option value="concluida">Concluída</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Período:</label>
+            <input type="date" id="dateFilter" onchange="filterOrders()">
+          </div>
+        </div>
+      </div>
+
+      <div id="activeOrders" class="tab-content active">
+        <div class="legend">
+          <div class="legend-item"><span class="legend-color status-pendente"></span> Pendente</div>
+          <div class="legend-item"><span class="legend-color status-em-producao"></span> Em Produção</div>
+          <div class="legend-item"><span class="legend-color status-concluida"></span> Concluída</div>
+          <div class="legend-item"><span class="legend-color status-cancelada"></span> Cancelada</div>
+        </div>
+        <div class="batch-actions">
+          <button onclick="deleteSelectedOrders()" class="danger-button"><i class="fas fa-trash"></i> Excluir Selecionadas</button>
+        </div>
+        <div class="op-table-container">
+          <table class="op-table" id="activeOrdersTable">
+            <thead>
+              <tr>
+                <th style="width: 5%;"><input type="checkbox" id="selectAllActive" onclick="toggleSelectAll('active')"></th>
+                <th onclick="sortTable('numero', 'active')" data-sort="numero">Nº Ordem <span class="sort-icon"></span></th>
+                <th onclick="sortTable('produto', 'active')" data-sort="produto">Produto <span class="sort-icon"></span></th>
+                <th onclick="sortTable('quantidade', 'active')" data-sort="quantidade">Quantidade <span class="sort-icon"></span></th>
+                <th onclick="sortTable('dataEntrega', 'active')" data-sort="dataEntrega">Data Entrega <span class="sort-icon"></span></th>
+                <th onclick="sortTable('prioridade', 'active')" data-sort="prioridade">Prioridade <span class="sort-icon"></span></th>
+                <th onclick="sortTable('status', 'active')" data-sort="status">Status <span class="sort-icon"></span></th>
+                <th onclick="sortTable('centroCusto', 'active')" data-sort="centroCusto">Centro de Custo <span class="sort-icon"></span></th>
+                <th onclick="sortTable('armazem', 'active')" data-sort="armazem">Armazém <span class="sort-icon"></span></th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="activeOrdersList"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="completedOrders" class="tab-content">
+        <div class="legend">
+          <div class="legend-item"><span class="legend-color status-pendente"></span> Pendente</div>
+          <div class="legend-item"><span class="legend-color status-em-producao"></span> Em Produção</div>
+          <div class="legend-item"><span class="legend-color status-concluida"></span> Concluída</div>
+          <div class="legend-item"><span class="legend-color status-cancelada"></span> Cancelada</div>
+        </div>
+        <div class="batch-actions">
+          <button onclick="deleteSelectedOrders()" class="danger-button"><i class="fas fa-trash"></i> Excluir Selecionadas</button>
+        </div>
+        <div class="op-table-container">
+          <table class="op-table" id="completedOrdersTable">
+            <thead>
+              <tr>
+                <th style="width: 5%;"><input type="checkbox" id="selectAllCompleted" onclick="toggleSelectAll('completed')"></th>
+                <th onclick="sortTable('numero', 'completed')" data-sort="numero">Nº Ordem <span class="sort-icon"></span></th>
+                <th onclick="sortTable('produto', 'completed')" data-sort="produto">Produto <span class="sort-icon"></span></th>
+                <th onclick="sortTable('quantidade', 'completed')" data-sort="quantidade">Quantidade <span class="sort-icon"></span></th>
+                <th onclick="sortTable('dataEntrega', 'completed')" data-sort="dataEntrega">Data Entrega <span class="sort-icon"></span></th>
+                <th onclick="sortTable('prioridade', 'completed')" data-sort="prioridade">Prioridade <span class="sort-icon"></span></th>
+                <th onclick="sortTable('status', 'completed')" data-sort="status">Status <span class="sort-icon"></span></th>
+                <th onclick="sortTable('centroCusto', 'completed')" data-sort="centroCusto">Centro de Custo <span class="sort-icon"></span></th>
+                <th onclick="sortTable('armazem', 'completed')" data-sort="armazem">Armazém <span class="sort-icon"></span></th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="completedOrdersList"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Nova Ordem Manual -->
+  <div id="newOrderModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal('newOrderModal')">&times;</span>
+      <div class="modal-header">
+        <h2>Nova Ordem de Produção</h2>
+      </div>
+      <div class="modal-body">
+        <form id="newOrderForm" onsubmit="createManualOrder(event)">
+          <div class="form-group">
+            <label for="productSearch">Produto:</label>
+            <input type="text" id="productSearch" placeholder="Digite para buscar o produto...">
+            <select id="productSelect" required>
+              <option value="">Selecione o produto...</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-col">
+              <label for="quantity">Quantidade:</label>
+              <input type="number" id="quantity" min="0.001" step="0.001" required>
+            </div>
+            <div class="form-col">
+              <label for="dueDate">Data de Entrega:</label>
+              <input type="date" id="dueDate" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="centroCusto">Centro de Custo:</label>
+            <select id="centroCusto" required>
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="warehouseProducao">Armazém de Produção:</label>
+            <select id="warehouseProducao" required>
+              <option value="">Selecione o armazém de produção...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="priority">Prioridade:</label>
+            <select id="priority" required>
+              <option value="normal">Normal</option>
+              <option value="alta">Alta</option>
+              <option value="urgente">Urgente</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="observations">Observações:</label>
+            <textarea id="observations" rows="3"></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit"><i class="fas fa-save"></i> Criar Ordem</button>
+            <button type="button" onclick="closeModal('newOrderModal')" class="back-button"><i class="fas fa-times"></i> Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Ordem de Pedido -->
+  <div id="salesOrderModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal('salesOrderModal')">&times;</span>
+      <div class="modal-header">
+        <h2>Criar Ordem de Pedido</h2>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Pedido:</label>
+          <select id="salesOrderSelect" onchange="loadSalesOrderDetails()">
+            <option value="">Selecione o pedido...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="centroCustoSales">Centro de Custo:</label>
+          <select id="centroCustoSales" required>
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="warehouseProducaoSales">Armazém de Produção:</label>
+          <select id="warehouseProducaoSales" required>
+            <option value="">Selecione o armazém de produção...</option>
+          </select>
+        </div>
+        <div id="salesOrderDetails"></div>
+        <div class="modal-footer">
+          <button onclick="createOrderFromSales()"><i class="fas fa-save"></i> Criar Ordem</button>
+          <button onclick="closeModal('salesOrderModal')" class="back-button"><i class="fas fa-times"></i> Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Apontamento -->
+  <div id="appointmentModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal('appointmentModal')">&times;</span>
+      <div class="modal-header">
+        <h2>Apontamento de Produção</h2>
+      </div>
+      <div class="modal-body">
+        <div id="appointmentDetails"></div>
+        <form id="appointmentForm" onsubmit="submitAppointment(event)">
+          <div class="form-row">
+            <div class="form-col">
+              <label for="producedQuantity">Quantidade Produzida:</label>
+              <input type="number" id="producedQuantity" min="0.001" step="0.001" required>
+            </div>
+            <div class="form-col">
+              <label for="scrapQuantity">Quantidade de Refugo:</label>
+              <input type="number" id="scrapQuantity" min="0" step="0.001" value="0">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="appointmentObservations">Observações:</label>
+            <textarea id="appointmentObservations" rows="3"></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit"><i class="fas fa-check"></i> Confirmar Apontamento</button>
+            <button type="button" onclick="closeModal('appointmentModal')" class="back-button"><i class="fas fa-times"></i> Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Visualização -->
+  <div id="viewOrderModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal('viewOrderModal')">&times;</span>
+      <div class="modal-header">
+        <h2>Detalhes da Ordem de Produção</h2>
+      </div>
+      <div class="modal-body" id="viewOrderDetails"></div>
+      <div class="modal-footer">
+        <button onclick="printOrder()" class="secondary-button"><i class="fas fa-print"></i> Imprimir</button>
+        <button onclick="closeModal('viewOrderModal')" class="back-button"><i class="fas fa-times"></i> Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Seleção de Opcionais -->
+  <div id="modalOpcionais" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="fecharModalOpcionais()">&times;</span>
+      <h2>Selecionar Componentes Opcionais</h2>
+      <div class="alert alert-info">
+        Este produto possui componentes opcionais. Selecione quais deseja utilizar.
+      </div>
+
+      <div id="listaOpcionais" class="opcionais-list">
+        <!-- Lista de opcionais será preenchida dinamicamente -->
+      </div>
+
+      <div class="button-group">
+        <button type="button" onclick="confirmarOpcionais()" class="btn-primary">Confirmar</button>
+        <button type="button" onclick="fecharModalOpcionais()" class="btn-secondary">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botão para gerar OPs agrupadas -->
+  <div style="margin-bottom: 20px;">
+    <button id="btnGerarOpsAgrupadas" class="btn-warning"><i class="fas fa-layer-group"></i> Gerar OPs Agrupadas</button>
+  </div>
+  <!-- Modal de OPs agrupadas -->
+  <div id="modalOpsAgrupadas" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close-button" onclick="document.getElementById('modalOpsAgrupadas').style.display='none'">&times;</span>
+      <div class="modal-header"><h2>Gerar OPs Agrupadas</h2></div>
+      <div class="modal-body">
+        <div id="agrupadasTableContainer"></div>
+        <div class="modal-footer">
+          <button id="btnCriarOpsAgrupadas" class="btn-success"><i class="fas fa-save"></i> Criar OPs</button>
+          <button onclick="document.getElementById('modalOpsAgrupadas').style.display='none'" class="back-button"><i class="fas fa-times"></i> Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc,
+      setDoc,
+      runTransaction,
+      getDoc,
+      getDocs,
+      query,
+      where,
+      doc, 
+      updateDoc,
+      Timestamp,
+      orderBy,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let produtos = [];
+    let estruturas = [];
+    let pedidosVenda = [];
+    let ordensProducao = [];
+    let estoques = [];
+    let centrosCusto = [];
+    let armazens = [];
+    let currentAppointmentOp = null;
+    let counterRef;
+    let sortState = { active: { field: 'numero', direction: 'asc' }, completed: { field: 'numero', direction: 'asc' } };
+    let solicitacoes = [];
+
+    window.onload = async function() {
+      if (!localStorage.getItem('currentUser')) {
+        window.location.href = 'login.html';
+        return;
+      }
+      await loadInitialData();
+      setupProductSearch();
+      await loadActiveOrders();
+      setupSalesOrderSelect();
+      setupCentroCustoSelect();
+      setupWarehouseSelect();
+      setupFilterSelects();
+
+      counterRef = doc(db, "contadores", "ordens");
+      const counterDoc = await getDoc(counterRef);
+      if (!counterDoc.exists()) {
+        await setDoc(counterRef, { valor: 0 });
+      }
+
+      // Verificar se há parâmetros de simulação
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('produtoId')) {
+        await createOrderFromSimulation(urlParams);
+      }
+
+      document.getElementById('newOrderButton').addEventListener('click', openNewOrderModal);
+      document.getElementById('orderFromSalesButton').addEventListener('click', openOrderFromSalesModal);
+    };
+
+    async function loadInitialData() {
+      try {
+        const [produtosSnap, estruturasSnap, pedidosSnap, ordensSnap, estoquesSnap, centrosCustoSnap, armazensSnap] = await Promise.all([
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "estruturas")),
+          getDocs(collection(db, "pedidosVenda")),
+          getDocs(collection(db, "ordensProducao")),
+          getDocs(collection(db, "estoques")),
+          getDocs(collection(db, "centrosCusto")),
+          getDocs(collection(db, "armazens"))
+        ]);
+
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estruturas = estruturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        pedidosVenda = pedidosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        ordensProducao = ordensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        centrosCusto = centrosCustoSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        armazens = armazensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados iniciais.");
+      }
+    }
+
+    function setupCentroCustoSelect() {
+      const select = document.getElementById('centroCusto');
+      const selectSales = document.getElementById('centroCustoSales');
+      const selectFilter = document.getElementById('costCenterFilter');
+      select.innerHTML = '<option value="">Selecione...</option>';
+      selectSales.innerHTML = '<option value="">Selecione...</option>';
+      selectFilter.innerHTML = '<option value="">Todos</option>';
+
+      centrosCusto.forEach(cc => {
+        select.innerHTML += `<option value="${cc.id}">${cc.codigo} - ${cc.descricao}</option>`;
+        selectSales.innerHTML += `<option value="${cc.id}">${cc.codigo} - ${cc.descricao}</option>`;
+        selectFilter.innerHTML += `<option value="${cc.id}">${cc.codigo} - ${cc.descricao}</option>`;
+      });
+    }
+
+    function setupWarehouseSelect() {
+      const select = document.getElementById('warehouseProducao');
+      const selectSales = document.getElementById('warehouseProducaoSales');
+      const selectFilter = document.getElementById('warehouseFilter');
+      select.innerHTML = '<option value="">Selecione o armazém de produção...</option>';
+      selectSales.innerHTML = '<option value="">Selecione o armazém de produção...</option>';
+      selectFilter.innerHTML = '<option value="">Todos</option>';
+
+      armazens
+        .filter(a => a.tipo === 'PRODUCAO')
+        .forEach(armazem => {
+          select.innerHTML += `<option value="${armazem.id}">${armazem.codigo} - ${armazem.nome}</option>`;
+          selectSales.innerHTML += `<option value="${armazem.id}">${armazem.codigo} - ${armazem.nome}</option>`;
+          selectFilter.innerHTML += `<option value="${armazem.id}">${armazem.codigo} - ${armazem.nome}</option>`;
+        });
+    }
+
+    function setupFilterSelects() {
+      setupCentroCustoSelect();
+      setupWarehouseSelect();
+    }
+
+    async function generateOrderNumber() {
+      const date = new Date();
+      const year = date.getFullYear().toString().substr(-2);
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+
+      try {
+        const newCounter = await runTransaction(db, async (transaction) => {
+          const counterDoc = await transaction.get(counterRef);
+          if (!counterDoc.exists()) {
+            throw new Error("Counter document does not exist!");
+          }
+          const newValue = counterDoc.data().valor + 1;
+
+          transaction.update(counterRef, { valor: newValue });
+          return newValue;
+        });
+
+        const sequence = newCounter.toString().padStart(4, '0');
+        return `OP${year}${month}${sequence}`;
+      } catch (error) {
+        console.error("Erro ao gerar número da ordem:", error);
+        throw error;
+      }
+    }
+
+    function setupProductSearch() {
+      const productSearch = document.getElementById('productSearch');
+      productSearch.addEventListener('input', () => {
+        const searchText = productSearch.value.toLowerCase();
+        updateProductSelect(searchText);
+      });
+    }
+
+    function updateProductSelect(searchText = '') {
+      const productSelect = document.getElementById('productSelect');
+      productSelect.innerHTML = '<option value="">Selecione o produto...</option>';
+
+      produtos
+        .filter(p => (p.tipo === 'PA' || p.tipo === 'SP') &&
+                    (!searchText || 
+                     p.codigo.toLowerCase().includes(searchText) ||
+                     p.descricao.toLowerCase().includes(searchText)))
+        .forEach(produto => {
+          productSelect.innerHTML += `
+            <option value="${produto.id}">
+              ${produto.codigo} - ${produto.descricao} (${produto.tipo})
+            </option>`;
+        });
+    }
+
+    function setupSalesOrderSelect() {
+      const select = document.getElementById('salesOrderSelect');
+      select.innerHTML = '<option value="">Selecione o pedido...</option>';
+
+      const pendingOrders = pedidosVenda.filter(p => p.status === 'Pendente');
+      pendingOrders.forEach(pedido => {
+        const produto = produtos.find(p => p.id === pedido.produtoId);
+        select.innerHTML += `
+          <option value="${pedido.id}">
+            ${pedido.numero} - ${produto.codigo} - ${produto.descricao}
+          </option>`;
+      });
+    }
+
+    window.loadSalesOrderDetails = function() {
+      const pedidoId = document.getElementById('salesOrderSelect').value;
+      const detailsDiv = document.getElementById('salesOrderDetails');
+
+      if (!pedidoId) {
+        detailsDiv.innerHTML = '';
+        return;
+      }
+
+      const pedido = pedidosVenda.find(p => p.id === pedidoId);
+      const produto = produtos.find(p => p.id === pedido.produtoId);
+
+      detailsDiv.innerHTML = `
+        <div class="order-details">
+          <p><strong>Produto:</strong> ${produto.codigo} - ${produto.descricao}</p>
+          <p><strong>Quantidade:</strong> ${pedido.quantidade} ${produto.unidade}</p>
+          <p><strong>Data de Entrega:</strong> ${new Date(pedido.dataEntrega.seconds * 1000).toLocaleDateString()}</p>
+        </div>`;
+    };
+
+    window.createOrderFromSales = async function() {
+      const pedidoId = document.getElementById('salesOrderSelect').value;
+      const centroCustoId = document.getElementById('centroCustoSales').value;
+      const warehouseProducaoId = document.getElementById('warehouseProducaoSales').value;
+
+      if (!pedidoId || !centroCustoId || !warehouseProducaoId) {
+        alert('Selecione um pedido, um centro de custo e um armazém de produção.');
+        return;
+      }
+
+      const pedido = pedidosVenda.find(p => p.id === pedidoId);
+      const produto = produtos.find(p => p.id === pedido.produtoId);
+      const estrutura = estruturas.find(e => e.produtoPaiId === pedido.produtoId);
+      const armazem = armazens.find(a => a.id === warehouseProducaoId);
+
+      if (!estrutura) {
+        alert(`O produto ${produto.codigo} não possui estrutura cadastrada.`);
+        return;
+      }
+      if (!armazem || armazem.tipo !== 'PRODUCAO') {
+        alert('O armazém selecionado deve ser do tipo Produção.');
+        return;
+      }
+
+      try {
+        const parentOp = {
+          numero: await generateOrderNumber(),
+          pedidoId: pedido.id,
+          produtoId: pedido.produtoId,
+          quantidade: pedido.quantidade,
+          dataEntrega: pedido.dataEntrega,
+          status: 'Pendente',
+          nivel: 0,
+          prioridade: 'normal',
+          centroCustoId,
+          dataCriacao: Timestamp.now(),
+          armazemProducaoId: warehouseProducaoId
+        };
+
+        const parentDocRef = await addDoc(collection(db, "ordensProducao"), parentOp);
+        parentOp.id = parentDocRef.id;
+
+        await updateDoc(doc(db, "pedidosVenda", pedidoId), {
+          status: 'Em Produção'
+        });
+
+        await explodeComponents(parentOp, estrutura);
+
+        alert('Ordem de produção criada com sucesso!');
+        closeModal('salesOrderModal');
+        await loadActiveOrders();
+      } catch (error) {
+        console.error("Erro ao criar ordem de produção:", error);
+        alert("Erro ao criar ordem de produção.");
+      }
+    };
+
+    window.createManualOrder = async function(event) {
+      event.preventDefault();
+
+      const productId = document.getElementById('productSelect').value;
+      const quantity = parseFloat(document.getElementById('quantity').value);
+      const dueDate = document.getElementById('dueDate').value;
+      const centroCustoId = document.getElementById('centroCusto').value;
+      const warehouseProducaoId = document.getElementById('warehouseProducao').value;
+      const priority = document.getElementById('priority').value;
+      const observations = document.getElementById('observations').value;
+
+      if (!productId || !quantity || !dueDate || !centroCustoId || !warehouseProducaoId) {
+        alert('Preencha todos os campos obrigatórios.');
+        return;
+      }
+
+      const estrutura = estruturas.find(e => e.produtoPaiId === productId);
+      const armazem = armazens.find(a => a.id === warehouseProducaoId);
+
+      if (!estrutura) {
+        const produto = produtos.find(p => p.id === productId);
+        alert(`O produto ${produto.codigo} não possui estrutura cadastrada.`);
+        return;
+      }
+      if (!armazem || armazem.tipo !== 'PRODUCAO') {
+        alert('O armazém selecionado deve ser do tipo Produção.');
+        return;
+      }
+
+      try {
+        const parentOp = {
+          numero: await generateOrderNumber(),
+          produtoId: productId,
+          produtoPaiId: productId,
+          quantidade: quantity,
+          dataEntrega: new Date(dueDate),
+          status: 'Pendente',
+          nivel: 0,
+          prioridade: priority,
+          centroCustoId,
+          observacoes: observations,
+          dataCriacao: Timestamp.now(),
+          armazemProducaoId: warehouseProducaoId
+        };
+
+        const parentDocRef = await addDoc(collection(db, "ordensProducao"), parentOp);
+        parentOp.id = parentDocRef.id;
+
+        await explodeComponents(parentOp, estrutura);
+
+        alert('Ordem de produção criada com sucesso!');
+        closeModal('newOrderModal');
+        document.getElementById('newOrderForm').reset();
+        await loadActiveOrders();
+      } catch (error) {
+        console.error("Erro ao criar ordem de produção:", error);
+        alert("Erro ao criar ordem de produção.");
+      }
+    };
+
+    async function explodeComponents(parentOp, estrutura, level = 0) {
+      const childOrders = [];
+      const materialNeeds = [];
+
+      for (const componente of estrutura.componentes) {
+        const produto = produtos.find(p => p.id === componente.componentId);
+        const quantidadeNecessaria = parentOp.quantidade * componente.quantidade;
+
+        if (produto.tipo === 'SP') {
+          const subEstrutura = estruturas.find(e => e.produtoPaiId === componente.componentId);
+          if (subEstrutura) {
+            const childOp = {
+              numero: await generateOrderNumber(),
+              produtoId: componente.componentId,
+              produtoPaiId: parentOp.produtoId,
+              quantidade: quantidadeNecessaria,
+              dataEntrega: parentOp.dataEntrega,
+              status: 'Pendente',
+              nivel: level + 1,
+              prioridade: parentOp.prioridade,
+              centroCustoId: parentOp.centroCustoId,
+              dataCriacao: Timestamp.now(),
+              armazemProducaoId: parentOp.armazemProducaoId
+            };
+            const childDocRef = await addDoc(collection(db, "ordensProducao"), childOp);
+            childOp.id = childDocRef.id;
+            childOrders.push(childOp);
+            await explodeComponents(childOp, subEstrutura, level + 1);
+          }
+        } else {
+          const saldoDisponivel = await checkInventory(componente.componentId, parentOp.armazemProducaoId);
+          const quantidadeReservada = Math.min(saldoDisponivel, quantidadeNecessaria);
+          const necessidade = Math.max(0, quantidadeNecessaria - quantidadeReservada);
+          materialNeeds.push({
+            produtoId: componente.componentId,
+            quantidade: quantidadeNecessaria,
+            saldoEstoque: saldoDisponivel + quantidadeReservada,
+            quantidadeReservada,
+            necessidade
+          });
+          if (quantidadeReservada > 0) {
+            await updateInventoryReservation(componente.componentId, quantidadeReservada, parentOp.armazemProducaoId);
+          }
+        }
+      }
+
+      if (materialNeeds.length > 0) {
+        await updateDoc(doc(db, "ordensProducao", parentOp.id), {
+          materiaisNecessarios: materialNeeds
+        });
+      }
+
+      return childOrders;
+    }
+
+    async function checkInventory(produtoId, armazemId) {
+      const estoque = estoques.find(e => e.produtoId === produtoId && e.armazemId === armazemId);
+      const saldoTotal = estoque ? estoque.saldo : 0;
+      const saldoReservado = estoque ? (estoque.saldoReservado || 0) : 0;
+      return saldoTotal - saldoReservado;
+    }
+
+    async function updateInventoryReservation(produtoId, quantidade, armazemId) {
+      const estoque = estoques.find(e => e.produtoId === produtoId && e.armazemId === armazemId);
+      if (estoque) {
+        const novoSaldoReservado = (estoque.saldoReservado || 0) + quantidade;
+        await updateDoc(doc(db, "estoques", estoque.id), {
+          saldoReservado: Math.max(0, novoSaldoReservado),
+          ultimaMovimentacao: Timestamp.now()
+        });
+        estoque.saldoReservado = Math.max(0, novoSaldoReservado);
+      }
+    }
+
+    async function updateInventory(produtoId, quantidade, tipo, centroCustoId, armazemDestino) {
+      const produto = produtos.find(p => p.id === produtoId);
+      const estoqueRef = estoques.find(e => e.produtoId === produtoId && e.armazemId === (tipo === 'entrada' ? armazemDestino : currentAppointmentOp.armazemProducaoId));
+
+      const armazemFinal = tipo === 'entrada' ? 
+        (produto.tipo === 'PA' ? 'QUA01' : currentAppointmentOp.armazemProducaoId) : 
+        armazemDestino;
+
+      if (estoqueRef) {
+        const novoSaldo = tipo === 'entrada' ? 
+          estoqueRef.saldo + quantidade : 
+          estoqueRef.saldo - quantidade;
+
+        await updateDoc(doc(db, "estoques", estoqueRef.id), {
+          saldo: novoSaldo,
+          ultimaMovimentacao: Timestamp.now()
+        });
+
+        estoqueRef.saldo = novoSaldo;
+      } else {
+        const novoEstoque = {
+          produtoId,
+          armazemId: armazemFinal,
+          saldo: tipo === 'entrada' ? quantidade : -quantidade,
+          ultimaMovimentacao: Timestamp.now()
+        };
+
+        const docRef = await addDoc(collection(db, "estoques"), novoEstoque);
+        novoEstoque.id = docRef.id;
+        estoques.push(novoEstoque);
+      }
+
+      await addDoc(collection(db, "movimentacoesEstoque"), {
+        produtoId,
+        tipo: tipo.toUpperCase(),
+        quantidade,
+        tipoDocumento: 'PRODUCAO',
+        numeroDocumento: currentAppointmentOp.numero,
+        centroCustoId,
+        observacoes: `${tipo === 'entrada' ? 'Produção' : 'Consumo'} OP ${currentAppointmentOp.numero}`,
+        armazem: armazemFinal,
+        dataHora: Timestamp.now()
+      });
+    }
+
+    async function loadActiveOrders() {
+      const activeList = document.getElementById('activeOrdersList');
+      const completedList = document.getElementById('completedOrdersList');
+
+      activeList.innerHTML = '';
+      completedList.innerHTML = '';
+
+      const filteredOrders = filterOrdersLogic();
+
+      for (const op of filteredOrders) {
+        const produto = produtos.find(p => p.id === op.produtoId);
+        const estoque = estoques.find(e => e.produtoId === op.produtoId && e.armazemId === op.armazemProducaoId);
+        const saldoEstoque = estoque ? estoque.saldo : 0;
+        const centroCusto = centrosCusto.find(cc => cc.id === op.centroCustoId);
+        const armazem = armazens.find(a => a.id === op.armazemProducaoId);
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><input type="checkbox" class="select-order" data-id="${op.id}"></td>
+          <td>${op.numero}</td>
+          <td>${produto.codigo} - ${produto.descricao}</td>
+          <td>${op.quantidade} ${produto.unidade}</td>
+          <td>${op.dataEntrega && typeof op.dataEntrega.seconds === 'number'
+            ? new Date(op.dataEntrega.seconds * 1000).toLocaleDateString()
+            : ''}</td>
+          <td>${op.prioridade || 'Normal'}</td>
+          <td><span class="status-badge status-${op.status.toLowerCase()}">${op.status}</span></td>
+          <td>${centroCusto ? centroCusto.codigo : '-'}</td>
+          <td>${armazem ? armazem.codigo : '-'}</td>
+          <td class="actions">
+            <button onclick="viewOrder('${op.id}')" class="secondary-button"><i class="fas fa-eye"></i> Visualizar</button>
+            <button onclick="printOrder('${op.id}')" class="secondary-button"><i class="fas fa-print"></i> Imprimir</button>
+            ${op.status !== 'Concluída' && op.status !== 'Cancelada' ? `
+              <button onclick="openAppointmentModal('${op.id}')" class="secondary-button"><i class="fas fa-clipboard"></i> Apontar</button>
+              <button onclick="cancelOrder('${op.id}')" class="danger-button"><i class="fas fa-trash"></i> Excluir</button>
+            ` : ''}
+          </td>
+        `;
+
+        if (op.status === 'Concluída' || op.status === 'Cancelada') {
+          completedList.appendChild(row);
+        } else {
+          activeList.appendChild(row);
+        }
+      }
+
+      updateSortIcons('active');
+      updateSortIcons('completed');
+    }
+
+    function filterOrdersLogic() {
+      const generalSearch = document.getElementById('generalSearch').value.toLowerCase();
+      const productCode = document.getElementById('productCodeFilter').value.toLowerCase();
+      const productDescription = document.getElementById('productDescriptionFilter').value.toLowerCase();
+      const productType = document.getElementById('productTypeFilter').value;
+      const costCenter = document.getElementById('costCenterFilter').value;
+      const warehouse = document.getElementById('warehouseFilter').value;
+      const status = document.getElementById('statusFilter').value;
+      const date = document.getElementById('dateFilter').value;
+
+      let filteredOrders = [...ordensProducao];
+
+      filteredOrders = filteredOrders.filter(op => {
+        const produto = produtos.find(p => p.id === op.produtoId);
+        const matchesGeneralSearch = !generalSearch || 
+            op.numero.toLowerCase().includes(generalSearch) ||
+            produto.codigo.toLowerCase().includes(generalSearch) ||
+            produto.descricao.toLowerCase().includes(generalSearch);
+
+        const matchesProductCode = !productCode || 
+            produto.codigo.toLowerCase().includes(productCode);
+
+        const matchesProductDescription = !productDescription || 
+            produto.descricao.toLowerCase().includes(productDescription);
+
+        const matchesProductType = !productType || 
+            produto.tipo === productType;
+
+        const matchesCostCenter = !costCenter || 
+            op.centroCustoId === costCenter;
+
+        const matchesWarehouse = !warehouse || 
+            op.armazemProducaoId === warehouse;
+
+        const matchesStatus = !status || 
+            op.status.toLowerCase() === status;
+
+        const matchesDate = !date || 
+            new Date(op.dataEntrega.seconds * 1000).toISOString().split('T')[0] === date;
+
+        return matchesGeneralSearch && matchesProductCode && matchesProductDescription && 
+               matchesProductType && matchesCostCenter && matchesWarehouse && 
+               matchesStatus && matchesDate;
+      });
+
+      const tab = document.getElementById('activeOrders').classList.contains('active') ? 'active' : 'completed';
+      const { field, direction } = sortState[tab];
+
+      filteredOrders.sort((a, b) => {
+        let comparison = 0;
+
+        if (field === 'numero') {
+          comparison = safeCompare(a.numero, b.numero);
+        }
+        if (field === 'produto') {
+          const prodA = produtos.find(p => p.id === a.produtoId);
+          const prodB = produtos.find(p => p.id === b.produtoId);
+          const descA = prodA ? (prodA.codigo || '') + (prodA.descricao || '') : '';
+          const descB = prodB ? (prodB.codigo || '') + (prodB.descricao || '') : '';
+          comparison = safeCompare(descA, descB);
+        }
+        if (field === 'quantidade') {
+          comparison = (a.quantidade || 0) - (b.quantidade || 0);
+        }
+        if (field === 'dataEntrega') {
+          const dateA = a.dataEntrega ? a.dataEntrega.seconds || 0 : 0;
+          const dateB = b.dataEntrega ? b.dataEntrega.seconds || 0 : 0;
+          comparison = dateA - dateB;
+        }
+        if (field === 'prioridade') {
+          const priorities = { urgente: 3, alta: 2, normal: 1 };
+          comparison = (priorities[a.prioridade] || 0) - (priorities[b.prioridade] || 0);
+        }
+        if (field === 'status') {
+          comparison = safeCompare(a.status, b.status);
+        }
+        if (field === 'centroCusto') {
+          const ccA = centrosCusto.find(cc => cc.id === a.centroCustoId);
+          const ccB = centrosCusto.find(cc => cc.id === b.centroCustoId);
+          const codA = ccA ? ccA.codigo || '' : '';
+          const codB = ccB ? ccB.codigo || '' : '';
+          comparison = safeCompare(codA, codB);
+        }
+        if (field === 'armazem') {
+          const armA = armazens.find(arm => arm.id === a.armazemProducaoId);
+          const armB = armazens.find(arm => arm.id === b.armazemProducaoId);
+          const codA = armA ? armA.codigo || '' : '';
+          const codB = armB ? armB.codigo || '' : '';
+          comparison = safeCompare(codA, codB);
+        }
+
+        return direction === 'asc' ? comparison : -comparison;
+      });
+
+      return filteredOrders;
+    }
+
+    window.sortTable = function(field, tab) {
+      if (sortState[tab].field === field) {
+        sortState[tab].direction = sortState[tab].direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortState[tab].field = field;
+        sortState[tab].direction = 'asc';
+      }
+      loadActiveOrders();
+    };
+
+    function updateSortIcons(tab) {
+      const table = document.getElementById(`${tab}OrdersTable`);
+      const headers = table.querySelectorAll('th[data-sort]');
+      headers.forEach(header => {
+        const sortField = header.getAttribute('data-sort');
+        const icon = header.querySelector('.sort-icon');
+        if (sortState[tab].field === sortField) {
+          icon.innerHTML = sortState[tab].direction === 'asc' ? '↑' : '↓';
+        } else {
+          icon.innerHTML = '';
+        }
+      });
+    }
+
+    window.toggleSelectAll = function(tab) {
+      const selectAllCheckbox = document.getElementById(`selectAll${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+      const checkboxes = document.querySelectorAll(`#${tab}OrdersList .select-order`);
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+      });
+    };
+
+    window.deleteSelectedOrders = async function() {
+      const selectedCheckboxes = document.querySelectorAll('.select-order:checked');
+      if (selectedCheckboxes.length === 0) {
+        alert('Nenhuma ordem selecionada.');
+        return;
+      }
+
+      if (!confirm(`Tem certeza que deseja excluir ${selectedCheckboxes.length} ordem(s)?`)) {
+        return;
+      }
+
+      try {
+        for (const checkbox of selectedCheckboxes) {
+          const opId = checkbox.getAttribute('data-id');
+          await cancelOrder(opId);
+        }
+        alert('Ordens excluídas com sucesso!');
+        await loadActiveOrders();
+      } catch (error) {
+        console.error("Erro ao excluir ordens:", error);
+        alert("Erro ao excluir ordens.");
+      }
+    };
+
+    window.viewOrder = function(opId) {
+      const op = ordensProducao.find(op => op.id === opId);
+      const produto = produtos.find(p => p.id === op.produtoId);
+      const centroCusto = centrosCusto.find(cc => cc.id === op.centroCustoId);
+      const armazem = armazens.find(a => a.id === op.armazemProducaoId);
+      const pedido = op.pedidoId ? pedidosVenda.find(p => p.id === op.pedidoId) : null;
+
+      let componentsHtml = '';
+      if (op.materiaisNecessarios) {
+        componentsHtml = '<h3>Materiais Necessários</h3><ul>';
+        for (const material of op.materiaisNecessarios) {
+          const materialProduto = produtos.find(p => p.id === material.produtoId);
+          componentsHtml += `
+            <li>
+              ${materialProduto.codigo} - ${materialProduto.descricao}<br>
+              Necessário: ${material.quantidade} ${materialProduto.unidade} |
+              Estoque: ${material.saldoEstoque} ${materialProduto.unidade} |
+              Falta: ${material.necessidade} ${materialProduto.unidade}
+            </li>`;
+        }
+        componentsHtml += '</ul>';
+      }
+
+      const progress = op.quantidadeProduzida ? 
+        (op.quantidadeProduzida / op.quantidade * 100).toFixed(1) : 0;
+
+      document.getElementById('viewOrderDetails').innerHTML = `
+        <p><strong>Número da Ordem:</strong> ${op.numero}</p>
+        <p><strong>Produto:</strong> ${produto.codigo} - ${produto.descricao}</p>
+        <p><strong>Quantidade:</strong> ${op.quantidade} ${produto.unidade}</p>
+        <p><strong>Data de Entrega:</strong> ${new Date(op.dataEntrega.seconds * 1000).toLocaleDateString()}</p>
+        <p><strong>Prioridade:</strong> ${op.prioridade || 'Normal'}</p>
+        <p><strong>Status:</strong> <span class="status-badge status-${op.status.toLowerCase()}">${op.status}</span></p>
+        <p><strong>Centro de Custo:</strong> ${centroCusto ? centroCusto.codigo : '-'}</p>
+        <p><strong>Armazém de Produção:</strong> ${armazem ? armazem.codigo : '-'}</p>
+        ${op.pedidoId ? `<p><strong>Pedido:</strong> ${pedido.numero}</p>` : ''}
+        ${op.produtoPaiId ? `<p><strong>Produto Pai:</strong> ${produtos.find(p => p.id === op.produtoPaiId)?.codigo || '-'}</p>` : ''}
+        ${op.quantidadeProduzida ? `
+          <p><strong>Progresso:</strong> ${progress}%</p>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${progress}%"></div>
+          </div>
+        ` : ''}
+        ${componentsHtml}
+      `;
+
+      document.getElementById('viewOrderModal').style.display = 'block';
+    };
+
+    window.printOrder = function(opId) {
+      const op = ordensProducao.find(op => op.id === opId);
+      if (!op) {
+        alert('Ordem não encontrada.');
+        return;
+      }
+
+      const produto = produtos.find(p => p.id === op.produtoId);
+      const estrutura = estruturas.find(e => e.produtoPaiId === op.produtoId);
+      const now = new Date();
+      const dataAtual = now.toLocaleDateString();
+      const horaAtual = now.toLocaleTimeString();
+
+      // Verifica se está bloqueada para impressão (falta de material)
+      let bloqueada = false;
+      let motivoBloqueio = '';
+      if (op.materiaisNecessarios && op.materiaisNecessarios.some(m => m.necessidade > 0)) {
+        bloqueada = true;
+        motivoBloqueio = 'Saldo insuficiente de matéria prima';
+      }
+
+      // Tabela de materiais
+      let materiaisHtml = '';
+      if (op.materiaisNecessarios && op.materiaisNecessarios.length > 0) {
+        materiaisHtml = op.materiaisNecessarios.map(m => {
+          const matProd = produtos.find(p => p.id === m.produtoId);
+          return `<tr>
+            <td>${matProd?.codigo || ''}</td>
+            <td>${matProd?.descricao || ''}</td>
+            <td>${matProd?.tipo || ''}</td>
+            <td>${m.quantidade}</td>
+            <td>${matProd?.unidade || ''}</td>
+          </tr>`;
+        }).join('');
+      }
+
+      // Tabela de roteiro de produção (igual relatorio_ordens_setor)
+      let roteiroHtml = '';
+      if (estrutura && estrutura.operacoes && estrutura.operacoes.length > 0) {
+        roteiroHtml = estrutura.operacoes.sort((a, b) => a.sequencia - b.sequencia).map(opr => {
+          const operacao = window.operacoes ? window.operacoes.find(o => o.id === opr.operacaoId) : { operacao: opr.operacao || '' };
+          const recurso = window.recursos ? window.recursos.find(r => r.id === opr.recursoId) : { codigo: opr.recurso || '', maquina: '' };
+          return `<tr>
+            <td>${opr.sequencia}</td>
+            <td>${operacao?.operacao || ''}</td>
+            <td>${recurso?.codigo || ''}${recurso?.maquina ? ' - ' + recurso.maquina : ''}</td>
+            <td>${opr.tempo || ''}</td>
+            <td>${opr.descricao || ''}</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>`;
+        }).join('');
+      }
+
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Ordem de Produção ${op.numero}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #fff; font-size: 12px; }
+              .order-page { background-color: white; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+              .order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px; }
+              .logo { width: 100px; height: auto; }
+              .order-title { text-align: center; flex-grow: 1; margin: 0 10px; }
+              .order-title h1 { margin: 0; font-size: 18px; }
+              .order-title h2 { margin: 3px 0; font-size: 16px; }
+              .order-info { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; border: 1px solid #ccc; padding: 5px; }
+              .info-item { border: 1px solid #ddd; padding: 3px; }
+              .info-item strong { display: block; font-size: 8px; color: #666; }
+              .info-item span { display: block; font-size: 12px; margin-top: 1px; }
+              .section { margin-bottom: 15px; }
+              .section-title { background-color: #f0f0f0; padding: 3px 8px; font-weight: bold; border: 1px solid #ccc; font-size: 11px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 3px; font-size: 11px; }
+              th, td { border: 1px solid #ccc; padding: 4px; text-align: left; }
+              th { background-color: #f8f9fa; font-weight: bold; }
+              .signatures { margin-top: 20px; display: flex; justify-content: space-between; }
+              .signature { flex: 1; margin: 0 10px; text-align: center; }
+              .signature-line { width: 100%; border-top: 1px solid #000; margin-top: 20px; padding-top: 3px; font-size: 10px; }
+              .status-badge { display: inline-block; padding: 1px 4px; border-radius: 2px; font-size: 10px; font-weight: bold; }
+              .status-pendente { background-color: #ffc107; color: #000; }
+              .status-em-producao { background-color: #17a2b8; color: #fff; }
+              .status-concluida { background-color: #28a745; color: #fff; }
+              .status-cancelada { background-color: #dc3545; color: #fff; }
+              .order-warning { margin: 10px 0; }
+              .order-warning strong { color: #e9730c; }
+            </style>
+          </head>
+          <body>
+            <div class="order-page">
+              <div class="order-header">
+                <img src="https://www.naliteck.com.br/img/logo.png" alt="Logo" class="logo">
+                <div class="order-title">
+                  <h1>ORDEM DE PRODUÇÃO</h1>
+                  <h2>${op.numero}</h2>
+                </div>
+                <div style="text-align: right; font-size: 10px;">
+                  <strong>Data: </strong>${dataAtual}<br>
+                  <strong>Hora: </strong>${horaAtual}
+                </div>
+              </div>
+              <div class="order-info">
+                <div class="info-item">
+                  <strong>Produto:</strong>
+                  <span>${produto?.codigo || ''} - ${produto?.descricao || ''}</span>
+                </div>
+                <div class="info-item">
+                  <strong>Tipo:</strong>
+                  <span>${produto?.tipo || ''}</span>
+                </div>
+                <div class="info-item">
+                  <strong>Quantidade:</strong>
+                  <span>${op.quantidade} ${produto?.unidade || ''}</span>
+                </div>
+                <div class="info-item">
+                  <strong>Status:</strong>
+                  <span class="status-badge status-${op.status.toLowerCase()}">${op.status}</span>
+                </div>
+                <div class="info-item">
+                  <strong>Data de Criação:</strong>
+                  <span>${op.dataCriacao ? (op.dataCriacao.seconds ? new Date(op.dataCriacao.seconds * 1000).toLocaleDateString() : '') : ''}</span>
+                </div>
+                <div class="info-item">
+                  <strong>Data de Entrega:</strong>
+                  <span>${op.dataEntrega ? (op.dataEntrega.seconds ? new Date(op.dataEntrega.seconds * 1000).toLocaleDateString() : '') : ''}</span>
+                </div>
+                <div class="info-item">
+                  <strong>Prioridade:</strong>
+                  <span>${op.prioridade || 'Normal'}</span>
+                </div>
+              </div>
+              ${op.materiaisNecessarios && op.materiaisNecessarios.length > 0 ? `
+                <div class="section">
+                  <div class="section-title">LISTA DE MATERIAIS</div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Código</th>
+                        <th>Descrição</th>
+                        <th>Tipo</th>
+                        <th>Quantidade</th>
+                        <th>Unidade</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${materiaisHtml}
+                    </tbody>
+                  </table>
+                </div>
+              ` : ''}
+              ${roteiroHtml ? `
+                <div class="section">
+                  <div class="section-title">ROTEIRO DE PRODUÇÃO</div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Seq.</th>
+                        <th>Operação</th>
+                        <th>Recurso</th>
+                        <th>Tempo (min)</th>
+                        <th>Descrição</th>
+                        <th>Status</th>
+                        <th>Data Início</th>
+                        <th>Data Fim</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${roteiroHtml}
+                    </tbody>
+                  </table>
+                </div>
+              ` : ''}
+              <div class="signatures">
+                <div class="signature"><div class="signature-line">Produção</div></div>
+                <div class="signature"><div class="signature-line">Qualidade</div></div>
+                <div class="signature"><div class="signature-line">Supervisor</div></div>
+              </div>
+              ${bloqueada ? `<div class="order-warning"><strong>OP ${op.numero} - Bloqueada para Impressão</strong><br>${motivoBloqueio}</div>` : ''}
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    };
+
+    window.openAppointmentModal = async function(opId) {
+      currentAppointmentOp = ordensProducao.find(op => op.id === opId);
+      if (!currentAppointmentOp.armazemProducaoId) {
+        alert('A ordem de produção deve estar associada a um armazém do tipo Produção.');
+        return;
+      }
+      const armazemProducao = armazens.find(a => a.id === currentAppointmentOp.armazemProducaoId);
+      if (!armazemProducao || armazemProducao.tipo !== 'PRODUCAO') {
+        alert('A ordem de produção deve estar associada a um armazém do tipo Produção.');
+        return;
+      }
+
+      const produto = produtos.find(p => p.id === currentAppointmentOp.produtoId);
+
+      document.getElementById('appointmentDetails').innerHTML = `
+        <div class="order-info">
+          <p><strong>Ordem:</strong> ${currentAppointmentOp.numero}</p>
+          <p><strong>Produto:</strong> ${produto.codigo} - ${produto.descricao}</p>
+          <p><strong>Quantidade Total:</strong> ${currentAppointmentOp.quantidade} ${produto.unidade}</p>
+          <p><strong>Quantidade Já Produzida:</strong> ${currentAppointmentOp.quantidadeProduzida || 0} ${produto.unidade}</p>
+          <p><strong>Armazém de Produção:</strong> ${armazemProducao.codigo} - ${armazemProducao.nome}</p>
+        </div>`;
+
+      document.getElementById('producedQuantity').value = '';
+      document.getElementById('scrapQuantity').value = '0';
+      document.getElementById('appointmentObservations').value = '';
+      document.getElementById('appointmentModal').style.display = 'block';
+    };
+
+    window.submitAppointment = async function(event) {
+      event.preventDefault();
+      if (!currentAppointmentOp) return;
+
+      const producedQuantity = parseFloat(document.getElementById('producedQuantity').value);
+      const scrapQuantity = parseFloat(document.getElementById('scrapQuantity').value) || 0;
+      const observations = document.getElementById('appointmentObservations').value;
+
+      if (!producedQuantity) {
+        alert('Por favor, informe a quantidade produzida.');
+        return;
+      }
+
+      const totalProduzido = (currentAppointmentOp.quantidadeProduzida || 0) + producedQuantity;
+      if (totalProduzido > currentAppointmentOp.quantidade) {
+        alert('A quantidade total produzida não pode exceder a quantidade da ordem.');
+        return;
+      }
+
+      try {
+        if (currentAppointmentOp.materiaisNecessarios) {
+          for (const material of currentAppointmentOp.materiaisNecessarios) {
+            const consumoReal = (material.quantidade / currentAppointmentOp.quantidade) * producedQuantity;
+            const reservaReal = (material.quantidadeReservada || 0) / currentAppointmentOp.quantidade * producedQuantity;
+
+            await updateInventory(material.produtoId, consumoReal, 'saida', currentAppointmentOp.centroCustoId, currentAppointmentOp.armazemProducaoId);
+            if (reservaReal > 0) {
+              await updateInventoryReservation(material.produtoId, -reservaReal, currentAppointmentOp.armazemProducaoId);
+            }
+          }
+        }
+
+        const produtoApontado = produtos.find(p => p.id === currentAppointmentOp.produtoId);
+        const armazemDestino = produtoApontado.tipo === 'PA' ? 'QUA01' : currentAppointmentOp.armazemProducaoId;
+
+        await updateInventory(currentAppointmentOp.produtoId, producedQuantity, 'entrada', currentAppointmentOp.centroCustoId, armazemDestino);
+
+        let novoStatus = 'Em Produção';
+        if (totalProduzido >= currentAppointmentOp.quantidade) {
+          novoStatus = 'Concluída';
+        }
+
+        const opRef = doc(db, "ordensProducao", currentAppointmentOp.id);
+        await updateDoc(opRef, {
+          status: novoStatus,
+          quantidadeProduzida: totalProduzido,
+          quantidadeRefugo: (currentAppointmentOp.quantidadeRefugo || 0) + scrapQuantity,
+          ultimoApontamento: {
+            quantidade: producedQuantity,
+            refugo: scrapQuantity,
+            observacoes: observations,
+            data: Timestamp.now()
+          }
+        });
+
+        if (novoStatus === 'Concluída' && currentAppointmentOp.pedidoId) {
+          await updateDoc(doc(db, "pedidosVenda", currentAppointmentOp.pedidoId), {
+            status: 'Concluído'
+          });
+        }
+
+        closeModal('appointmentModal');
+        await loadActiveOrders();
+        alert('Apontamento registrado com sucesso!');
+      } catch (error) {
+        console.error("Erro ao registrar apontamento:", error);
+        alert("Erro ao registrar apontamento.");
+      }
+    };
+
+    window.cancelOrder = async function(opId) {
+      if (!confirm('Tem certeza que deseja cancelar esta ordem de produção?')) {
+        return;
+      }
+
+      try {
+        const ordem = ordensProducao.find(op => op.id === opId);
+
+        if (ordem.materiaisNecessarios) {
+          for (const material of ordem.materiaisNecessarios) {
+            if (material.quantidadeReservada > 0) {
+              await updateInventoryReservation(material.produtoId, -material.quantidadeReservada, ordem.armazemProducaoId);
+            }
+          }
+        }
+
+        await updateDoc(doc(db, "ordensProducao", opId), {
+          status: 'Cancelada',
+          dataCancelamento: Timestamp.now()
+        });
+
+        if (ordem.pedidoId) {
+          await updateDoc(doc(db, "pedidosVenda", ordem.pedidoId), {
+            status: 'Pendente'
+          });
+        }
+
+        await loadActiveOrders();
+        alert('Ordem cancelada com sucesso!');
+      } catch (error) {
+        console.error("Erro ao cancelar ordem:", error);
+        alert("Erro ao cancelar ordem.");
+      }
+    };
+
+    window.openNewOrderModal = function() {
+      document.getElementById('newOrderForm').reset();
+      document.getElementById('newOrderModal').style.display = 'block';
+    };
+
+    window.openOrderFromSalesModal = function() {
+      document.getElementById('salesOrderSelect').value = '';
+      document.getElementById('salesOrderDetails').innerHTML = '';
+      document.getElementById('salesOrderModal').style.display = 'block';
+    };
+
+    window.closeModal = function(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+      if (modalId === 'appointmentModal') {
+        currentAppointmentOp = null;
+      }
+    };
+
+    window.switchTab = function(tab) {
+      const tabs = ['active', 'completed'];
+      tabs.forEach(t => {
+        document.getElementById(`${t}Orders`).classList.toggle('active', t === tab);
+        document.querySelector(`button[onclick="switchTab('${t}')"]`).classList.toggle('active', t === tab);
+      });
+      loadActiveOrders();
+    };
+
+    window.filterOrders = function() {
+      loadActiveOrders();
+    };
+
+    window.estornarApontamento = async function(opId) {
+      if (!confirm('Tem certeza que deseja estornar o último apontamento? Esta ação não pode ser desfeita.')) {
+        return;
+      }
+
+      try {
+        const op = ordensProducao.find(o => o.id === opId);
+        if (!op || !op.ultimoApontamento) {
+          alert('Nenhum apontamento encontrado para estorno.');
+          return;
+        }
+
+        const novaQuantidadeProduzida = (op.quantidadeProduzida || 0) - op.ultimoApontamento.quantidade;
+        const novaQuantidadeRefugo = (op.quantidadeRefugo || 0) - (op.ultimoApontamento.refugo || 0);
+
+        if (op.materiaisNecessarios) {
+          for (const material of op.materiaisNecessarios) {
+            const consumoReal = (material.quantidade / op.quantidade) * op.ultimoApontamento.quantidade;
+
+            await updateInventory(material.produtoId, consumoReal, 'entrada', op.centroCustoId, op.armazemProducaoId);
+
+            if (material.quantidadeReservada) {
+              await updateInventoryReservation(material.produtoId, consumoReal, op.armazemProducaoId);
+            }
+          }
+        }
+
+        await updateInventory(op.produtoId, op.ultimoApontamento.quantidade, 'saida', op.centroCustoId, op.armazemProducaoId);
+
+        const novoStatus = novaQuantidadeProduzida > 0 ? 'Em Produção' : 'Pendente';
+
+        await updateDoc(doc(db, "ordensProducao", opId), {
+          status: novoStatus,
+          quantidadeProduzida: novaQuantidadeProduzida,
+          quantidadeRefugo: novaQuantidadeRefugo,
+          ultimoApontamento: null,
+          dataEstorno: Timestamp.now()
+        });
+
+        alert('Apontamento estornado com sucesso!');
+        await loadActiveOrders();
+      } catch (error) {
+        console.error("Erro ao estornar apontamento:", error);
+        alert("Erro ao estornar apontamento: " + error.message);
+      }
+    };
+
+    window.onclick = function(event) {
+      const modals = ['newOrderModal', 'salesOrderModal', 'appointmentModal', 'viewOrderModal'];
+      modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (event.target == modal) {
+          closeModal(modalId);
+        }
+      });
+    };
+
+    async function createOrderFromSimulation(params) {
+      try {
+        const produtoId = params.get('produtoId');
+        const quantidade = parseFloat(params.get('quantidade'));
+        const dataEntrega = params.get('dataEntrega');
+        const prioridade = params.get('prioridade');
+        const centroCustoId = params.get('centroCustoId');
+        const armazemId = params.get('armazemId');
+
+        const estrutura = estruturas.find(e => e.produtoPaiId === produtoId);
+        if (!estrutura) {
+          alert('Erro: Estrutura não encontrada para o produto.');
+          return;
+        }
+
+        const parentOp = {
+          numero: await generateOrderNumber(),
+          produtoId: produtoId,
+          quantidade: quantidade,
+          dataEntrega: new Date(dataEntrega),
+          status: 'Pendente',
+          nivel: 0,
+          prioridade: prioridade,
+          centroCustoId: centroCustoId,
+          dataCriacao: Timestamp.now(),
+          armazemProducaoId: armazemId
+        };
+
+        const parentDocRef = await addDoc(collection(db, "ordensProducao"), parentOp);
+        parentOp.id = parentDocRef.id;
+
+        await explodeComponents(parentOp, estrutura);
+
+        alert('Ordem de produção criada com sucesso!');
+
+        // Limpar os parâmetros da URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        await loadActiveOrders();
+      } catch (error) {
+        console.error("Erro ao criar ordem de produção:", error);
+        alert("Erro ao criar ordem de produção.");
+      }
+    }
+
+    async function buscarProduto() {
+      const codigo = document.getElementById('productCode').value.trim();
+      if (!codigo) return;
+
+      try {
+        const produtosRef = collection(db, 'produtos');
+        const q = query(produtosRef, where('codigo', '==', codigo));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          alert('Produto não encontrado');
+          return;
+        }
+
+        const produto = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+
+        // Verifica se o produto tem opcionais
+        if (produto.opcionais && produto.opcionais.length > 0) {
+          await mostrarSelecaoOpcionais(produto);
+        }
+
+        preencherDadosProduto(produto);
+      } catch (error) {
+        console.error('Erro ao buscar produto:', error);
+        alert('Erro ao buscar produto');
+      }
+    }
+
+    async function mostrarSelecaoOpcionais(produto) {
+      const modal = document.getElementById('modalOpcionais');
+      const lista = document.getElementById('listaOpcionais');
+      lista.innerHTML = '';
+
+      // Busca saldo em estoque de cada opcional
+      for (const opcional of produto.opcionais) {
+        const saldo = await buscarSaldoEstoque(opcional.produtoId);
+        const quantidadeNecessaria = calcularQuantidadeNecessaria(opcional.produtoId);
+
+        const item = document.createElement('div');
+        item.className = 'opcional-item';
+        item.innerHTML = `
+          <input type="radio" 
+                 name="opcional" 
+                 value="${opcional.produtoId}" 
+                 class="opcional-radio"
+                 ${saldo < quantidadeNecessaria ? 'disabled' : ''}>
+          <div class="opcional-info">
+            <div class="opcional-produto">${opcional.codigo} - ${opcional.descricao}</div>
+            <div class="opcional-prioridade">Prioridade: ${opcional.prioridade}</div>
+            <div class="opcional-saldo ${saldo < quantidadeNecessaria ? 'baixo' : 'ok'}">
+              Saldo em estoque: ${saldo} ${saldo < quantidadeNecessaria ? '(Insuficiente)' : ''}
+            </div>
+            ${opcional.obs ? `<div class="opcional-obs">${opcional.obs}</div>` : ''}
+          </div>
+        `;
+        lista.appendChild(item);
+      }
+
+      modal.style.display = 'block';
+    }
+
+    async function buscarSaldoEstoque(produtoId) {
+      try {
+        const estoqueRef = doc(db, 'estoques', produtoId);
+        const estoqueDoc = await getDoc(estoqueRef);
+        return estoqueDoc.exists() ? (estoqueDoc.data().saldo || 0) : 0;
+      } catch (error) {
+        console.error('Erro ao buscar saldo:', error);
+        return 0;
+      }
+    }
+
+    function calcularQuantidadeNecessaria(produtoId) {
+      // Implementar lógica para calcular quantidade necessária
+      // baseado na quantidade da OP e na estrutura do produto
+      return 1; // Placeholder
+    }
+
+    function confirmarOpcionais() {
+      const selecionado = document.querySelector('input[name="opcional"]:checked');
+      if (!selecionado) {
+        alert('Selecione um componente opcional');
+        return;
+      }
+
+      // Armazena o opcional selecionado para usar na criação da OP
+      window.opcionalSelecionado = selecionado.value;
+      fecharModalOpcionais();
+    }
+
+    function fecharModalOpcionais() {
+      document.getElementById('modalOpcionais').style.display = 'none';
+    }
+
+    async function criarOP(event) {
+      event.preventDefault();
+
+      try {
+        const codigo = document.getElementById('productCode').value;
+        const quantidade = parseFloat(document.getElementById('quantity').value);
+        const dataPrevisao = document.getElementById('dueDate').value;
+        const observacoes = document.getElementById('observations').value;
+        const setor = document.getElementById('sector').value;
+
+        if (!codigo || !quantidade || !dataPrevisao || !setor) {
+          alert('Preencha todos os campos obrigatórios');
+          return;
+        }
+
+        // Busca o produto
+        const produtosRef = collection(db, 'produtos');
+        const q = query(produtosRef, where('codigo', '==', codigo));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          alert('Produto não encontrado');
+          return;
+        }
+
+        const produto = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+
+        // Prepara os dados da OP
+        const opData = {
+          produtoId: produto.id,
+          codigo: produto.codigo,
+          descricao: produto.descricao,
+          quantidade,
+          dataPrevisao,
+          observacoes,
+          setor,
+          status: 'pendente',
+          dataCriacao: serverTimestamp(),
+          usuarioCriacao: auth.currentUser.uid,
+          opcionalSelecionado: window.opcionalSelecionado || null
+        };
+
+        // Se tem opcional selecionado, busca seus dados
+        if (window.opcionalSelecionado) {
+          const opcionalRef = doc(db, 'produtos', window.opcionalSelecionado);
+          const opcionalDoc = await getDoc(opcionalRef);
+          if (opcionalDoc.exists()) {
+            opData.opcionalDados = {
+              id: opcionalDoc.id,
+              codigo: opcionalDoc.data().codigo,
+              descricao: opcionalDoc.data().descricao
+            };
+          }
+        }
+
+        // Cria a OP
+        const opRef = await addDoc(collection(db, 'ordens_producao'), opData);
+
+        alert('Ordem de produção criada com sucesso!');
+        limparFormulario();
+        window.opcionalSelecionado = null; // Limpa o opcional selecionado
+
+      } catch (error) {
+        console.error('Erro ao criar OP:', error);
+        alert('Erro ao criar ordem de produção');
+      }
+    }
+
+    function limparFormulario() {
+      document.getElementById('productCode').value = '';
+      document.getElementById('quantity').value = '';
+      document.getElementById('dueDate').value = '';
+      document.getElementById('observations').value = '';
+      document.getElementById('sector').value = '';
+      // Limpa outros campos do produto
+      document.getElementById('productDescription').value = '';
+      document.getElementById('productUnit').value = '';
+    }
+
+    function viewOP(opId) {
+      // Fetch OP details and show print view
+      const op = ordensProducao.find(op => op.id === opId);
+      if (op) {
+        document.getElementById('printOpNumber').textContent = `OP ${op.numero}`;
+        document.getElementById('printProduct').textContent = op.produto;
+        document.getElementById('printQuantity').textContent = op.quantidade;
+        document.getElementById('printStartDate').textContent = op.dataInicio;
+        document.getElementById('printEndDate').textContent = op.dataFim;
+
+        // Populate components
+        const componentsBody = document.getElementById('printComponents');
+        componentsBody.innerHTML = '';
+        op.componentes.forEach(comp => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${comp.codigo}</td>
+            <td>${comp.descricao}</td>
+            <td>${comp.quantidade}</td>
+            <td>${comp.unidade}</td>
+          `;
+          componentsBody.appendChild(row);
+        });
+
+        // Populate operations
+        const operationsBody = document.getElementById('printOperations');
+        operationsBody.innerHTML = '';
+        op.operacoes.forEach(op => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${op.sequencia}</td>
+            <td>${op.operacao}</td>
+            <td>${op.setor}</td>
+            <td>${op.tempo}</td>
+          `;
+          operationsBody.appendChild(row);
+        });
+
+        // Show print view
+        document.getElementById('printViewContainer').style.display = 'block';
+
+        // Print after a short delay to ensure content is rendered
+        setTimeout(() => {
+          window.print();
+          document.getElementById('printViewContainer').style.display = 'none';
+        }, 500);
+      }
+    }
+
+    window.gerarSolicitacoes = async function() {
+      // Carregar solicitações existentes do banco
+      const solicitacoesSnap = await getDocs(collection(db, "solicitacoesCompra"));
+      solicitacoes = solicitacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      try {
+        await reloadData();
+        // ... resto do seu código ...
+        // solicitacoes.push(novaSolicitacao);
+      } catch (error) {
+        console.error('Erro ao gerar solicitações:', error);
+        alert('Erro ao gerar solicitações: ' + error.message);
+      }
+    }
+
+    // Função utilitária para comparação segura
+    function safeCompare(a, b) {
+      a = a || '';
+      b = b || '';
+      return a.toString().localeCompare(b.toString());
+    }
+
+    // Função utilitária para simular necessidades (exemplo: pedidos pendentes)
+    async function obterNecessidadesAgrupadas() {
+      // Exemplo: buscar pedidos pendentes e agrupar por produto
+      // Substitua por sua lógica real de necessidades
+      const pedidosSnap = await getDocs(collection(db, 'pedidosVenda'));
+      const pedidosPendentes = pedidosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(p => p.status === 'Pendente');
+      const necessidades = {};
+      for (const pedido of pedidosPendentes) {
+        if (!necessidades[pedido.produtoId]) necessidades[pedido.produtoId] = { produtoId: pedido.produtoId, quantidade: 0, pedidos: [] };
+        necessidades[pedido.produtoId].quantidade += pedido.quantidade;
+        necessidades[pedido.produtoId].pedidos.push(pedido);
+      }
+      return Object.values(necessidades);
+    }
+
+    // Exibir modal de OPs agrupadas
+    window.showModalOpsAgrupadas = async function() {
+      const necessidades = await obterNecessidadesAgrupadas();
+      const produtosSnap = await getDocs(collection(db, 'produtos'));
+      const produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      let html = `<table class='op-table'><thead><tr><th>Produto</th><th>Quantidade Total</th><th>Pedidos</th></tr></thead><tbody>`;
+      for (const n of necessidades) {
+        const produto = produtos.find(p => p.id === n.produtoId);
+        html += `<tr><td>${produto ? produto.codigo + ' - ' + produto.descricao : n.produtoId}</td><td>${n.quantidade}</td><td>${n.pedidos.map(p => p.numero).join(', ')}</td></tr>`;
+      }
+      html += '</tbody></table>';
+      document.getElementById('agrupadasTableContainer').innerHTML = html;
+      document.getElementById('modalOpsAgrupadas').style.display = 'block';
+    };
+
+    document.getElementById('btnGerarOpsAgrupadas').onclick = showModalOpsAgrupadas;
+
+    document.getElementById('btnCriarOpsAgrupadas').onclick = async function() {
+      const necessidades = await obterNecessidadesAgrupadas();
+      const estruturasSnap = await getDocs(collection(db, 'estruturas'));
+      const estruturas = estruturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const produtosSnap = await getDocs(collection(db, 'produtos'));
+      const produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      let erros = [];
+      let criadas = 0;
+      for (const n of necessidades) {
+        const estrutura = estruturas.find(e => e.produtoPaiId === n.produtoId);
+        const produto = produtos.find(p => p.id === n.produtoId);
+        if (!estrutura) {
+          erros.push(`Produto ${produto ? produto.codigo : n.produtoId} não possui estrutura cadastrada.`);
+          continue;
+        }
+        try {
+          const op = {
+            numero: await generateOrderNumber(),
+            produtoId: n.produtoId,
+            quantidade: n.quantidade,
+            dataEntrega: new Date(), // Ajuste conforme sua lógica
+            status: 'Pendente',
+            nivel: 0,
+            prioridade: 'normal',
+            dataCriacao: Timestamp.now(),
+            materiaisNecessarios: estrutura.componentes.map(c => ({ ...c })),
+            pedidosOrigem: n.pedidos.map(p => p.id)
+          };
+          await addDoc(collection(db, 'ordensProducao'), op);
+          criadas++;
+        } catch (e) {
+          erros.push(`Erro ao criar OP para produto ${produto ? produto.codigo : n.produtoId}: ${e.message}`);
+        }
+      }
+      let msg = `${criadas} OP(s) criadas com sucesso.`;
+      if (erros.length) msg += '\nErros:\n' + erros.join('\n');
+      alert(msg);
+      document.getElementById('modalOpsAgrupadas').style.display = 'none';
+      await loadActiveOrders();
+    };
+
+    // Ajuste na criação manual de OP para garantir cópia da estrutura
+    window.createManualOrder = async function(event) {
+      event.preventDefault();
+      const productId = document.getElementById('productSelect').value;
+      const quantity = parseFloat(document.getElementById('quantity').value);
+      const dueDate = document.getElementById('dueDate').value;
+      const centroCustoId = document.getElementById('centroCusto').value;
+      const warehouseProducaoId = document.getElementById('warehouseProducao').value;
+      const priority = document.getElementById('priority').value;
+      const observations = document.getElementById('observations').value;
+      if (!productId || !quantity || !dueDate || !centroCustoId || !warehouseProducaoId) {
+        alert('Preencha todos os campos obrigatórios.');
+        return;
+      }
+      const estruturasSnap = await getDocs(collection(db, 'estruturas'));
+      const estrutura = estruturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })).find(e => e.produtoPaiId === productId);
+      const armazem = armazens.find(a => a.id === warehouseProducaoId);
+      if (!estrutura) {
+        const produto = produtos.find(p => p.id === productId);
+        alert(`O produto ${produto ? produto.codigo : productId} não possui estrutura cadastrada.`);
+        return;
+      }
+      if (!armazem || armazem.tipo !== 'PRODUCAO') {
+        alert('O armazém selecionado deve ser do tipo Produção.');
+        return;
+      }
+      try {
+        const parentOp = {
+          numero: await generateOrderNumber(),
+          produtoId: productId,
+          produtoPaiId: productId,
+          quantidade: quantity,
+          dataEntrega: new Date(dueDate),
+          status: 'Pendente',
+          nivel: 0,
+          prioridade: priority,
+          centroCustoId,
+          observacoes: observations,
+          dataCriacao: Timestamp.now(),
+          armazemProducaoId: warehouseProducaoId,
+          materiaisNecessarios: estrutura.componentes.map(c => ({ ...c }))
+        };
+        const parentDocRef = await addDoc(collection(db, "ordensProducao"), parentOp);
+        parentOp.id = parentDocRef.id;
+        alert('Ordem de produção criada com sucesso!');
+        closeModal('newOrderModal');
+        document.getElementById('newOrderForm').reset();
+        await loadActiveOrders();
+      } catch (error) {
+        console.error("Erro ao criar ordem de produção:", error);
+        alert("Erro ao criar ordem de produção: " + error.message);
+      }
+    };
+  </script>
+</body>
+</html>

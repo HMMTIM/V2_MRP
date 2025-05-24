@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Ordem de Produção - Estilo SAP</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 15mm;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .no-print {
+        display: none;
+      }
+      .order-page {
+        page-break-after: always;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+      }
+      .order-page:last-child {
+        page-break-after: avoid;
+      }
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      font-size: 12px; /* Reduced base font size */
+    }
+
+    .container {
+      max-width: 210mm; /* A4 portrait width */
+      margin: 0 auto;
+    }
+
+    .order-page {
+      background-color: white;
+      padding: 15px; /* Reduced padding */
+      margin-bottom: 20px; /* Reduced margin */
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px; /* Reduced margin */
+      border-bottom: 1px solid #000; /* Thinner border */
+      padding-bottom: 5px; /* Reduced padding */
+    }
+
+    .logo {
+      width: 100px; /* Smaller logo */
+      height: auto;
+    }
+
+    .order-title {
+      text-align: center;
+      flex-grow: 1;
+      margin: 0 10px; /* Reduced margin */
+    }
+
+    .order-title h1 {
+      margin: 0;
+      font-size: 18px; /* Smaller title */
+    }
+
+    .order-title h2 {
+      margin: 3px 0; /* Reduced margin */
+      font-size: 16px; /* Smaller subtitle */
+    }
+
+    .order-info {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px; /* Reduced gap */
+      margin-bottom: 15px; /* Reduced margin */
+      border: 1px solid #ccc;
+      padding: 5px; /* Reduced padding */
+    }
+
+    .info-item {
+      border: 1px solid #ddd;
+      padding: 3px; /* Reduced padding */
+    }
+
+    .info-item strong {
+      display: block;
+      font-size: 8px;
+      color: #666;
+    }
+
+    .info-item span {
+      display: block;
+      font-size: 12px; /* Smaller text */
+      margin-top: 1px; /* Reduced margin */
+    }
+
+    .section {
+      margin-bottom: 15px; /* Reduced margin */
+    }
+
+    .section-title {
+      background-color: #f0f0f0;
+      padding: 3px 8px; /* Reduced padding */
+      font-weight: bold;
+      border: 1px solid #ccc;
+      font-size: 11px; /* Smaller section title */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 3px; /* Reduced margin */
+      font-size: 11px; /* Smaller table text */
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 4px; /* Reduced padding */
+      text-align: left;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 1px 4px; /* Reduced padding */
+      border-radius: 2px; /* Smaller radius */
+      font-size: 10px; /* Smaller badge text */
+      font-weight: bold;
+    }
+
+    .status-pendente { background-color: #ffc107; color: #000; }
+    .status-em-producao { background-color: #17a2b8; color: #fff; }
+    .status-concluida { background-color: #28a745; color: #fff; }
+    .status-cancelada { background-color: #dc3545; color: #fff; }
+
+    .filters {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+
+    .filter-group {
+      flex: 1;
+    }
+
+    .filter-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .filter-group select,
+    .filter-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .action-buttons {
+      margin-bottom: 20px;
+    }
+
+    .action-buttons button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .action-buttons button:hover {
+      opacity: 0.9;
+    }
+
+    .back-button {
+      background-color: #6c757d;
+    }
+
+    .signatures {
+      margin-top: 20px; /* Reduced margin */
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .signature {
+      flex: 1;
+      margin: 0 10px; /* Reduced margin */
+      text-align: center;
+    }
+
+    .signature-line {
+      width: 100%;
+      border-top: 1px solid #000;
+      margin-top: 20px; /* Reduced margin */
+      padding-top: 3px; /* Reduced padding */
+      font-size: 10px; /* Smaller signature text */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="no-print">
+      <div class="filters">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Número da OP:</label>
+            <input type="text" id="orderNumber" placeholder="Digite o número da OP">
+          </div>
+          <div class="filter-group">
+            <label>Status:</label>
+            <select id="statusFilter">
+              <option value="">Todos</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Em Produção">Em Produção</option>
+              <option value="Concluída">Concluída</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="action-buttons">
+        <button onclick="generateReport()">Gerar Relatório</button>
+        <button onclick="window.print()">Imprimir</button>
+        <button onclick="window.location.href='index.html'" class="back-button">Voltar</button>
+      </div>
+    </div>
+
+    <div id="reportContent">
+      <!-- O conteúdo do relatório será gerado aqui -->
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      getDocs,
+      query,
+      where 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let produtos = [];
+    let estruturas = [];
+    let operacoes = [];
+    let recursos = [];
+    let ordensProducao = [];
+    let estoques = [];
+
+    window.onload = async function() {
+      await loadData();
+    };
+
+    async function loadData() {
+      try {
+        const [produtosSnap, estruturasSnap, operacoesSnap, recursosSnap, ordensSnap, estoquesSnap] = await Promise.all([
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "estruturas")),
+          getDocs(collection(db, "operacoes")),
+          getDocs(collection(db, "recursos")),
+          getDocs(collection(db, "ordensProducao")),
+          getDocs(collection(db, "estoques"))
+        ]);
+
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estruturas = estruturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        operacoes = operacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        recursos = recursosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        ordensProducao = ordensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados. Por favor, recarregue a página.");
+      }
+    }
+
+    function getAllChildOrders(orderId) {
+      const children = ordensProducao.filter(order => order.opPaiId === orderId);
+      let result = [...children];
+      
+      for (const child of children) {
+        const grandChildren = getAllChildOrders(child.id);
+        result = result.concat(grandChildren);
+      }
+      
+      return result;
+    }
+
+    function createOrderPage(order, isChild = false) {
+      const produto = produtos.find(p => p.id === order.produtoId);
+      const estrutura = estruturas.find(e => e.produtoPaiId === order.produtoId);
+      const parentOrder = isChild ? ordensProducao.find(op => op.id === order.opPaiId) : null;
+      
+      const orderPage = document.createElement('div');
+      orderPage.className = 'order-page';
+      
+      orderPage.innerHTML = `
+        <div class="header">
+          <img src="https://www.naliteck.com.br/img/logo.png" alt="Logo" class="logo">
+          <div class="order-title">
+            <h1>ORDEM DE PRODUÇÃO</h1>
+            <h2>${order.numero}</h2>
+          </div>
+          <div style="text-align: right; font-size: 10px;">
+            <strong>Data: </strong>${new Date().toLocaleDateString()}<br>
+            <strong>Hora: </strong>${new Date().toLocaleTimeString()}
+          </div>
+        </div>
+
+        <div class="order-info">
+          <div class="info-item">
+            <strong>Produto:</strong>
+            <span>${produto.codigo} - ${produto.descricao}</span>
+          </div>
+          <div class="info-item">
+            <strong>Tipo:</strong>
+            <span>${produto.tipo}</span>
+          </div>
+          <div class="info-item">
+            <strong>Quantidade:</strong>
+            <span>${order.quantidade} ${produto.unidade}</span>
+          </div>
+          <div class="info-item">
+            <strong>Status:</strong>
+            <span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span>
+          </div>
+          <div class="info-item">
+            <strong>Data de Criação:</strong>
+            <span>${new Date(order.dataCriacao.seconds * 1000).toLocaleDateString()}</span>
+          </div>
+          <div class="info-item">
+            <strong>Data de Entrega:</strong>
+            <span>${new Date(order.dataEntrega.seconds * 1000).toLocaleDateString()}</span>
+          </div>
+          <div class="info-item">
+            <strong>Prioridade:</strong>
+            <span>${order.prioridade || 'Normal'}</span>
+          </div>
+          ${isChild ? `
+            <div class="info-item">
+              <strong>Ordem Pai:</strong>
+              <span>${parentOrder.numero}</span>
+            </div>
+          ` : ''}
+        </div>
+
+        ${order.materiaisNecessarios ? `
+          <div class="section">
+            <div class="section-title">LISTA DE MATERIAIS</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Descrição</th>
+                  <th>Tipo</th>
+                  <th>Quantidade</th>
+                  <th>Unidade</th>
+                  <th>Disponível</th>
+                  <th>Necessidade</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${order.materiaisNecessarios.map(material => {
+                  const materialProduto = produtos.find(p => p.id === material.produtoId);
+                  return `
+                    <tr>
+                      <td>${materialProduto.codigo}</td>
+                      <td>${materialProduto.descricao}</td>
+                      <td>${materialProduto.tipo}</td>
+                      <td>${material.quantidade}</td>
+                      <td>${materialProduto.unidade}</td>
+                      <td>${material.saldoEstoque}</td>
+                      <td>${material.necessidade}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+
+        ${estrutura && estrutura.operacoes ? `
+          <div class="section">
+            <div class="section-title">ROTEIRO DE PRODUÇÃO</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Seq.</th>
+                  <th>Operação</th>
+                  <th>Recurso</th>
+                  <th>Tempo (min)</th>
+                  <th>Descrição</th>
+                  <th>Status</th>
+                  <th>Data Início</th>
+                  <th>Data Fim</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${estrutura.operacoes.sort((a, b) => a.sequencia - b.sequencia).map(op => {
+                  const operacao = operacoes.find(o => o.id === op.operacaoId);
+                  const recurso = recursos.find(r => r.id === op.recursoId);
+                  return `
+                    <tr>
+                      <td>${op.sequencia}</td>
+                      <td>${operacao.operacao}</td>
+                      <td>${recurso.codigo} - ${recurso.maquina}</td>
+                      <td>${op.tempo}</td>
+                      <td>${op.descricao || ''}</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+
+        <div class="signatures">
+          <div class="signature">
+            <div class="signature-line">Produção</div>
+          </div>
+          <div class="signature">
+            <div class="signature-line">Qualidade</div>
+          </div>
+          <div class="signature">
+            <div class="signature-line">Supervisor</div>
+          </div>
+        </div>
+      `;
+
+      return orderPage;
+    }
+
+    window.generateReport = async function() {
+  const orderNumber = document.getElementById('orderNumber').value;
+  const statusFilter = document.getElementById('statusFilter').value;
+
+  let filteredOrders = ordensProducao;
+
+  if (orderNumber) {
+    filteredOrders = filteredOrders.filter(op => op.numero.includes(orderNumber));
+  }
+
+  if (statusFilter) {
+    filteredOrders = filteredOrders.filter(op => op.status === statusFilter);
+  }
+
+  const reportContent = document.getElementById('reportContent');
+  reportContent.innerHTML = '';
+
+  // Separar OPs em pais e filhas
+  const parentOrders = filteredOrders.filter(order => !order.opPaiId);
+  const childOrders = filteredOrders.filter(order => order.opPaiId);
+
+  // Exibir OPs pais
+  for (const parentOrder of parentOrders) {
+    reportContent.appendChild(createOrderPage(parentOrder, false));
+    const allChildren = getAllChildOrders(parentOrder.id);
+    allChildren.forEach(childOrder => {
+      reportContent.appendChild(createOrderPage(childOrder, true));
+    });
+  }
+
+  // Exibir OPs filhas isoladas (caso buscadas diretamente)
+  for (const childOrder of childOrders) {
+    if (!parentOrders.some(op => op.id === childOrder.opPaiId)) {
+      reportContent.appendChild(createOrderPage(childOrder, true));
+    }
+  }
+};
+
+  </script>
+</body>
+</html>

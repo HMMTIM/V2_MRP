@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Custos e Preços</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        /* Estilos básicos */
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .menu-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #0854a0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Gestão de Custos e Preços</h1>
+            <button onclick="window.location.href='index.html'" class="back-button">Voltar</button>
+        </div>
+
+        <div class="menu-grid">
+            <div class="menu-card" onclick="window.location.href='tabela_precos.html'">
+                <i class="fas fa-tags icon"></i>
+                <h3>Tabela de Preços</h3>
+                <p>Gerenciar preços de venda e margens</p>
+            </div>
+            
+            <div class="menu-card" onclick="window.location.href='relatorio_custo.html'">
+                <i class="fas fa-chart-line icon"></i>
+                <h3>Relatório de Custos</h3>
+                <p>Análise detalhada de custos</p>
+            </div>
+            
+            <div class="menu-card" onclick="window.location.href='historico_precos.html'">
+                <i class="fas fa-history icon"></i>
+                <h3>Histórico de Preços</h3>
+                <p>Visualizar alterações de preços</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

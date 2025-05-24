@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório MRP - Necessidades de Compras</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --error-bg: #ffeaea;
+      --danger-color: #bb0000;
+      --loading-color: #888;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 20px;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .form-section {
+      margin-bottom: 20px;
+    }
+
+    .form-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+      margin-right: 10px;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .data-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .data-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--primary-color);
+      margin-bottom: 15px;
+    }
+
+    .no-data {
+      font-style: italic;
+      color: var(--text-secondary);
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    .loading {
+      font-style: italic;
+      color: var(--loading-color);
+      margin: 20px 0;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .error-message {
+      background-color: var(--error-bg);
+      color: var(--danger-color);
+      padding: 10px;
+      border-radius: 4px;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    .quantidade-input {
+      width: 100px;
+      padding: 5px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Relatório MRP - Necessidades de Compras</h1>
+      <button class="btn-primary" onclick="window.print()" aria-label="Imprimir Relatório">Imprimir Relatório</button>
+    </div>
+
+    <div class="form-section">
+      <h2 class="form-title">Filtros do Relatório</h2>
+      <div class="form-group">
+        <label for="startDate">Data Inicial:</label>
+        <input type="date" id="startDate">
+      </div>
+      <div class="form-group">
+        <label for="endDate">Data Final:</label>
+        <input type="date" id="endDate">
+      </div>
+      <div class="form-group">
+        <label for="statusFilter">Status:</label>
+        <select id="statusFilter">
+          <option value="">Todos</option>
+          <option value="Aberta">Aberta</option>
+          <option value="Em Andamento">Em Andamento</option>
+          <option value="Concluída">Concluída</option>
+          <option value="Cancelada">Cancelada</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="grupoFilter">Grupo:</label>
+        <select id="grupoFilter">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" id="considerStock" checked> Considerar Estoque</label>
+      </div>
+      <button class="btn-primary" onclick="generateReport()">Gerar Relatório</button>
+      <button class="btn-primary" onclick="openPurchaseModal()">Criar Solicitações de Compra</button>
+      <button class="btn-primary" onclick="openEmpenhoModal()">Gerenciar Empenhos</button>
+    </div>
+
+    <div id="reportContent"></div>
+
+    <div id="purchaseModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
+      <div style="background: white; margin: 10% auto; padding: 20px; max-width: 900px; border-radius: 8px;">
+        <h2>Criar Solicitações de Compra</h2>
+        <div id="modalContent"></div>
+        <div style="margin-top: 20px;">
+          <button class="btn-primary" onclick="createPurchaseRequests()">Gerar Solicitações</button>
+          <button onclick="closePurchaseModal()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="empenhoModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
+      <div style="background: white; margin: 10% auto; padding: 20px; max-width: 900px; border-radius: 8px;">
+        <h2>Gerenciar Empenhos</h2>
+        <div id="empenhoContent"></div>
+        <div style="margin-top: 20px;">
+          <button onclick="closeEmpenhoModal()">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { getDocs, collection, addDoc, updateDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let ordens = [];
+    let produtos = [];
+    let estoques = [];
+    let gruposData = [];
+    let familiasData = [];
+
+    async function loadData() {
+      try {
+        console.log('Iniciando loadData...');
+        const [ordensSnap, produtosSnap, estoquesSnap, gruposSnap, familiasSnap] = await Promise.all([
+          getDocs(collection(db, 'ordensProducao')),
+          getDocs(collection(db, 'produtos')),
+          getDocs(collection(db, 'estoques')),
+          getDocs(collection(db, 'grupos')),
+          getDocs(collection(db, 'familias')),
+        ]);
+        ordens = ordensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        gruposData = gruposSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        familiasData = familiasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        console.log('Dados carregados:', {
+          ordens: ordens.length,
+          produtos: produtos.length,
+          estoques: estoques.length,
+          grupos: gruposData.length,
+          familias: familiasData.length
+        });
+
+        // Preencher o filtro de grupo
+        const grupoFilter = document.getElementById('grupoFilter');
+        grupoFilter.innerHTML = '<option value="">Todos</option>' + 
+          gruposData.map(grupo => `<option value="${grupo.codigoGrupo}">${grupo.nomeGrupo}</option>`).join('');
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        alert('Erro ao carregar dados: ' + error.message);
+      }
+    }
+
+    function filterOrders(startDate, endDate, status, grupo) {
+      console.log('Filtrando ordens:', { startDate, endDate, status, grupo });
+      let filtered = ordens;
+      if (startDate && !isNaN(startDate)) {
+        filtered = filtered.filter((ordem) => new Date(ordem.dataInicio) >= startDate);
+      }
+      if (endDate && !isNaN(endDate)) {
+        filtered = filtered.filter((ordem) => new Date(ordem.dataFim) <= endDate);
+      }
+      if (status) {
+        filtered = filtered.filter((ordem) => ordem.status === status);
+      }
+      if (grupo) {
+        filtered = filtered.filter((ordem) => 
+          ordem.materiaisNecessarios?.some((material) => {
+            const produto = produtos.find((p) => p.id === material.produtoId);
+            return produto && produto.grupo === grupo;
+          })
+        );
+      }
+      console.log('Ordens filtradas:', filtered.length);
+      return filtered;
+    }
+
+    function calculatePurchaseNeedsByGroup(ordens, considerStock, grupoFiltro) {
+      console.log('Calculando necessidades de compra:', { considerStock, grupoFiltro });
+      const grupos = new Map();
+      const ordensAtivas = ordens.filter((ordem) => ordem.status !== 'Cancelada');
+
+      ordensAtivas.forEach((ordem) => {
+        if (!ordem.materiaisNecessarios) return;
+
+        ordem.materiaisNecessarios.forEach((material) => {
+          const produto = produtos.find((p) => p.id === material.produtoId);
+          if (!produto || !produto.grupo || (grupoFiltro && produto.grupo !== grupoFiltro)) return;
+
+          const grupo = gruposData.find((g) => g.codigoGrupo === produto.grupo)?.nomeGrupo || produto.grupo;
+          const estoque = estoques.find((e) => e.produtoId === material.produtoId) || { saldo: 0 };
+          const grupoData = grupos.get(grupo) || new Map();
+          const materialData = grupoData.get(material.produtoId) || {
+            quantidade: 0,
+            saldoEstoque: estoque.saldo,
+            produto: produto,
+            pontoPedido: produto.pontoPedido || 0,
+            estoqueMinimo: produto.estoqueMinimo || 0,
+            loteCompra: produto.loteCompra || 0,
+          };
+
+          materialData.quantidade += material.quantidade;
+
+          let necessidadeAjustada = materialData.quantidade;
+          if (considerStock) {
+            necessidadeAjustada = Math.max(0, materialData.quantidade - estoque.saldo);
+            if (estoque.saldo < materialData.pontoPedido) {
+              necessidadeAjustada += materialData.estoqueMinimo - estoque.saldo;
+            }
+          }
+
+          if (materialData.loteCompra > 0 && necessidadeAjustada > 0) {
+            const multiplosLote = Math.ceil(necessidadeAjustada / materialData.loteCompra);
+            necessidadeAjustada = multiplosLote * materialData.loteCompra;
+          }
+
+          materialData.necessidadeAjustada = necessidadeAjustada;
+          grupoData.set(material.produtoId, materialData);
+          grupos.set(grupo, grupoData);
+        });
+      });
+
+      console.log('Grupos calculados:', grupos.size);
+      return grupos;
+    }
+
+    function generatePurchaseNeedsTableContent(ordens, considerStock, grupoFiltro) {
+      console.log('Gerando conteúdo da tabela de necessidades...');
+      const grupos = calculatePurchaseNeedsByGroup(ordens, considerStock, grupoFiltro);
+      let rows = '';
+
+      Array.from(grupos.entries()).forEach(([grupo, materiais]) => {
+        Array.from(materiais.entries()).forEach(([produtoId, dados]) => {
+          const produto = dados.produto;
+          const necessidade = dados.necessidadeAjustada;
+          const estoque = dados.saldoEstoque;
+          const deficit = considerStock ? Math.max(0, necessidade - estoque) : necessidade;
+          const loteCompra = dados.loteCompra || 'N/A';
+
+          rows += `
+            <tr>
+              <td>${grupo}</td>
+              <td>${produto.codigo}</td>
+              <td>${produto.descricao}</td>
+              <td>${necessidade} ${produto.unidade}</td>
+              ${considerStock ? `
+                <td>${estoque} ${produto.unidade}</td>
+                <td>${deficit} ${produto.unidade}</td>
+              ` : ''}
+              <td>${loteCompra !== 'N/A' ? `${loteCompra} ${produto.unidade}` : 'N/A'}</td>
+            </tr>
+          `;
+        });
+      });
+
+      console.log('Linhas da tabela geradas:', rows ? rows.length : 0);
+      return rows;
+    }
+
+    function createPurchaseNeedsByGroupSection(ordens, considerStock, grupoFiltro) {
+      console.log('Criando seção de necessidades por grupo...');
+      const section = document.createElement('div');
+      section.className = 'section';
+      const tableContent = generatePurchaseNeedsTableContent(ordens, considerStock, grupoFiltro);
+      section.innerHTML = `
+        <h2 class="section-title">Necessidades de Compras por Grupo de Produtos</h2>
+        ${tableContent ? `
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Grupo</th>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Necessidade Total</th>
+                ${considerStock ? '<th>Estoque Atual</th><th>Déficit</th>' : ''}
+                <th>Lote Econômico</th>
+              </tr>
+            </thead>
+            <tbody>${tableContent}</tbody>
+          </table>
+        ` : '<p class="no-data">Nenhuma necessidade de compra encontrada.</p>'}
+      `;
+      return section;
+    }
+
+    function generateReport() {
+      console.log('Iniciando generateReport...');
+      try {
+        const startDateInput = document.getElementById('startDate').value;
+        const endDateInput = document.getElementById('endDate').value;
+        const status = document.getElementById('statusFilter').value;
+        const grupo = document.getElementById('grupoFilter').value;
+        const considerStock = document.getElementById('considerStock').checked;
+
+        const startDate = startDateInput ? new Date(startDateInput) : null;
+        const endDate = endDateInput ? new Date(endDateInput) : null;
+        if (endDate) endDate.setHours(23, 59, 59);
+
+        console.log('Filtros:', { startDate, endDate, status, grupo, considerStock });
+
+        const filteredOrdens = filterOrders(startDate, endDate, status, grupo);
+        const reportContent = document.getElementById('reportContent');
+
+        if (!reportContent) {
+          console.error('Elemento reportContent não encontrado.');
+          alert('Erro: Área de relatório não encontrada.');
+          return;
+        }
+
+        reportContent.innerHTML = '';
+        console.log('reportContent limpo.');
+
+        const purchaseNeeds = createPurchaseNeedsByGroupSection(filteredOrdens, considerStock, grupo);
+        reportContent.appendChild(purchaseNeeds);
+
+        console.log('Relatório gerado com sucesso.');
+      } catch (error) {
+        console.error('Erro ao gerar relatório:', error);
+        alert('Erro ao gerar relatório: ' + error.message);
+        const reportContent = document.getElementById('reportContent');
+        if (reportContent) {
+          reportContent.innerHTML = `<p class="error-message">Erro ao gerar relatório: ${error.message}</p>`;
+        }
+      }
+    }
+
+    function toggleGroupSelection(checkbox, grupo) {
+      console.log('Toggling group selection:', grupo, checkbox.checked);
+      document.querySelectorAll(`.material-checkbox[data-grupo="${grupo}"]`).forEach(cb => {
+        cb.checked = checkbox.checked;
+      });
+    }
+
+    function validateQuantidade(input, loteCompra) {
+      console.log('Validando quantidade:', input.value, loteCompra);
+      const quantidade = parseFloat(input.value);
+      if (loteCompra > 0 && quantidade > 0) {
+        if (quantidade % loteCompra !== 0) {
+          const multiploCorreto = Math.ceil(quantidade / loteCompra) * loteCompra;
+          input.value = multiploCorreto;
+          input.style.borderColor = 'orange';
+          setTimeout(() => (input.style.borderColor = ''), 2000);
+          alert(`A quantidade deve ser um múltiplo do lote econômico (${loteCompra}). Ajustado para ${multiploCorreto}.`);
+        } else {
+          input.style.borderColor = 'green';
+          setTimeout(() => (input.style.borderColor = ''), 1000);
+        }
+      }
+    }
+
+    async function openPurchaseModal() {
+      console.log('Abrindo modal de compras...');
+      try {
+        const startDate = new Date(document.getElementById('startDate').value);
+        const endDate = new Date(document.getElementById('endDate').value);
+        endDate.setHours(23, 59, 59);
+        const considerStock = document.getElementById('considerStock').checked;
+        const grupoFiltro = document.getElementById('grupoFilter').value;
+        const filteredOrdens = filterOrders(startDate, endDate, document.getElementById('statusFilter').value, grupoFiltro);
+        const grupos = calculatePurchaseNeedsByGroup(filteredOrdens, considerStock, grupoFiltro);
+
+        let fornecedores = [];
+        try {
+          const fornecedoresSnap = await getDocs(collection(db, 'fornecedores'));
+          fornecedores = fornecedoresSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          console.log('Fornecedores carregados:', fornecedores.length);
+        } catch (error) {
+          console.error('Erro ao carregar fornecedores:', error);
+          alert('Erro ao carregar fornecedores: ' + error.message);
+        }
+
+        const modalContent = document.getElementById('modalContent');
+        modalContent.innerHTML = '';
+
+        if (grupos.size === 0) {
+          modalContent.innerHTML = '<p class="no-data">Nenhum item encontrado para o grupo selecionado.</p>';
+          document.getElementById('purchaseModal').style.display = 'block';
+          console.log('Nenhum grupo encontrado para o filtro.');
+          return;
+        }
+
+        Array.from(grupos.entries()).forEach(([grupo, materiais]) => {
+          const table = document.createElement('table');
+          table.className = 'data-table';
+          table.innerHTML = `
+            <thead>
+              <tr>
+                <th colspan="8">Grupo: ${grupo}</th>
+              </tr>
+              <tr>
+                <th>Fornecedor: 
+                  <select class="fornecedor-select" data-grupo="${grupo}">
+                    <option value="">Selecione um fornecedor</option>
+                    ${fornecedores.map(f => `<option value="${f.id}">${f.nome}</option>`).join('')}
+                  </select>
+                </th>
+                <th><input type="checkbox" onchange="toggleGroupSelection(this, '${grupo}')"></th>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Necessidade Total</th>
+                ${considerStock ? '<th>Estoque Atual</th><th>Déficit</th>' : ''}
+                <th>Lote Econômico</th>
+                <th>Quantidade</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${Array.from(materiais.entries())
+                .map(([produtoId, dados]) => {
+                  const produto = dados.produto;
+                  const necessidade = dados.necessidadeAjustada;
+                  const estoque = dados.saldoEstoque;
+                  const deficit = considerStock ? Math.max(0, necessidade - estoque) : necessidade;
+                  const loteCompra = dados.loteCompra || 'N/A';
+                  return `
+                    <tr>
+                      <td></td>
+                      <td><input type="checkbox" class="material-checkbox" data-grupo="${grupo}" data-produto-id="${produtoId}" data-lote-compra="${dados.loteCompra}"></td>
+                      <td>${produto.codigo}</td>
+                      <td>${produto.descricao}</td>
+                      <td>${necessidade} ${produto.unidade}</td>
+                      ${considerStock ? `
+                        <td>${estoque} ${produto.unidade}</td>
+                        <td>${deficit} ${produto.unidade}</td>
+                      ` : ''}
+                      <td>${loteCompra !== 'N/A' ? `${loteCompra} ${produto.unidade}` : 'N/A'}</td>
+                      <td><input type="number" class="quantidade-input" data-produto-id="${produtoId}" value="${deficit}" min="0" step="0.001" onchange="validateQuantidade(this, ${dados.loteCompra})"></td>
+                    </tr>
+                  `;
+                })
+                .join('')}
+            </tbody>
+          `;
+          modalContent.appendChild(table);
+        });
+
+        document.getElementById('purchaseModal').style.display = 'block';
+        console.log('Modal de compras aberto.');
+      } catch (error) {
+        console.error('Erro ao abrir modal de compras:', error);
+        alert('Erro ao abrir modal de compras: ' + error.message);
+      }
+    }
+
+    function closePurchaseModal() {
+      console.log('Fechando modal de compras...');
+      document.getElementById('purchaseModal').style.display = 'none';
+    }
+
+    async function createPurchaseRequests() {
+      console.log('Criando solicitações de compra...');
+      try {
+        const selectedItems = Array.from(document.querySelectorAll('.material-checkbox:checked'));
+        if (selectedItems.length === 0) {
+          alert('Selecione pelo menos um item para criar a solicitação.');
+          return;
+        }
+
+        const solicitacoesPorGrupo = new Map();
+        selectedItems.forEach((checkbox) => {
+          const grupo = checkbox.dataset.grupo;
+          const produtoId = checkbox.dataset.produtoId;
+          const quantidadeInput = document.querySelector(`.quantidade-input[data-produto-id="${produtoId}"]`);
+          const quantidade = parseFloat(quantidadeInput.value);
+          if (quantidade <= 0) return;
+
+          const grupoData = solicitacoesPorGrupo.get(grupo) || { itens: [], fornecedorId: null };
+          grupoData.itens.push({ produtoId, quantidade });
+          const fornecedorSelect = document.querySelector(`.fornecedor-select[data-grupo="${grupo}"]`);
+          grupoData.fornecedorId = fornecedorSelect ? fornecedorSelect.value : null;
+          solicitacoesPorGrupo.set(grupo, grupoData);
+        });
+
+        for (const [grupo, data] of solicitacoesPorGrupo) {
+          if (data.itens.length === 0) continue;
+
+          const solicitacao = {
+            numero: `SC-${new Date().getTime()}`,
+            dataCriacao: new Date(),
+            solicitante: 'Sistema MRP',
+            itens: data.itens.map((item) => ({
+              produtoId: item.produtoId,
+              quantidade: item.quantidade,
+              statusEmpenho: 'Pendente'
+            })),
+            fornecedorId: data.fornecedorId || null,
+            status: 'Pendente',
+            grupo: grupo,
+          };
+
+          await addDoc(collection(db, 'solicitacoesCompra'), solicitacao);
+          console.log(`Solicitação para o grupo ${grupo} criada com sucesso.`);
+        }
+
+        alert('Solicitações de compra criadas com sucesso!');
+        closePurchaseModal();
+        generateReport();
+      } catch (error) {
+        console.error('Erro ao criar solicitações:', error);
+        alert('Erro ao criar solicitações: ' + error.message);
+      }
+    }
+
+    async function openEmpenhoModal() {
+      console.log('Abrindo modal de empenhos...');
+      const grupoFiltro = document.getElementById('grupoFilter').value;
+      const empenhoContent = document.getElementById('empenhoContent');
+      empenhoContent.innerHTML = '<p class="loading">Carregando empenhos...</p>';
+
+      try {
+        const solicitacoesQuery = grupoFiltro 
+          ? query(collection(db, 'solicitacoesCompra'), where('grupo', '==', grupoFiltro))
+          : collection(db, 'solicitacoesCompra');
+        const solicitacoesSnap = await getDocs(solicitacoesQuery);
+        const solicitacoes = solicitacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        let html = '';
+        if (solicitacoes.length === 0) {
+          html = '<p class="no-data">Nenhuma solicitação encontrada.</p>';
+        } else {
+          solicitacoes.forEach(solicitacao => {
+            html += `
+              <h3>Solicitação ${solicitacao.numero} - Grupo: ${solicitacao.grupo}</h3>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Descrição</th>
+                    <th>Quantidade</th>
+                    <th>Status Empenho</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${solicitacao.itens.map(item => {
+                    const produto = produtos.find(p => p.id === item.produtoId);
+                    return `
+                      <tr>
+                        <td>${produto?.codigo || '-'}</td>
+                        <td>${produto?.descricao || '-'}</td>
+                        <td>${item.quantidade} ${produto?.unidade || ''}</td>
+                        <td>${item.statusEmpenho}</td>
+                        <td>
+                          ${item.statusEmpenho === 'Pendente' ? `
+                            <button onclick="createCotacao('${solicitacao.id}', '${item.produtoId}')">Criar Cotação</button>
+                          ` : ''}
+                          ${item.statusEmpenho === 'Em Cotação' ? `
+                            <button onclick="createPedidoCompra('${solicitacao.id}', '${item.produtoId}')">Gerar Pedido</button>
+                          ` : ''}
+                          ${item.statusEmpenho === 'Pedido Gerado' ? `
+                            <button onclick="registrarRecebimento('${solicitacao.id}', '${item.produtoId}')">Registrar Recebimento</button>
+                          ` : ''}
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            `;
+          });
+        }
+
+        empenhoContent.innerHTML = html;
+        document.getElementById('empenhoModal').style.display = 'block';
+        console.log('Modal de empenhos aberto.');
+      } catch (error) {
+        console.error('Erro ao carregar empenhos:', error);
+        empenhoContent.innerHTML = `<p class="error-message">Erro ao carregar empenhos: ${error.message}</p>`;
+      }
+    }
+
+    function closeEmpenhoModal() {
+      console.log('Fechando modal de empenhos...');
+      document.getElementById('empenhoModal').style.display = 'none';
+    }
+
+    async function createCotacao(solicitacaoId, produtoId) {
+      console.log('Criando cotação:', { solicitacaoId, produtoId });
+      try {
+        const solicitacaoRef = doc(db, 'solicitacoesCompra', solicitacaoId);
+        const solicitacaoSnap = await getDocs(solicitacaoRef);
+        const solicitacao = solicitacaoSnap.docs[0]?.data();
+        if (!solicitacao) {
+          throw new Error('Solicitação não encontrada.');
+        }
+        const item = solicitacao.itens.find(i => i.produtoId === produtoId);
+        if (!item) {
+          throw new Error('Item não encontrado na solicitação.');
+        }
+
+        const cotacao = {
+          solicitacaoId,
+          fornecedorId: solicitacao.fornecedorId,
+          dataCotacao: new Date(),
+          itens: [{
+            produtoId,
+            quantidade: item.quantidade,
+            precoUnitario: parseFloat(prompt('Informe o preço unitário:', '0')) || 0,
+            prazoEntrega: prompt('Informe o prazo de entrega (YYYY-MM-DD):')
+          }],
+          status: 'Pendente'
+        };
+
+        await addDoc(collection(db, 'cotacoes'), cotacao);
+        await updateDoc(solicitacaoRef, {
+          itens: solicitacao.itens.map(i => 
+            i.produtoId === produtoId ? { ...i, statusEmpenho: 'Em Cotação' } : i
+          )
+        });
+        alert('Cotação criada com sucesso!');
+        openEmpenhoModal();
+      } catch (error) {
+        console.error('Erro ao criar cotação:', error);
+        alert('Erro ao criar cotação: ' + error.message);
+      }
+    }
+
+    async function createPedidoCompra(solicitacaoId, produtoId) {
+      console.log('Criando pedido de compra:', { solicitacaoId, produtoId });
+      try {
+        const cotacaoSnap = await getDocs(query(
+          collection(db, 'cotacoes'),
+          where('solicitacaoId', '==', solicitacaoId)
+        ));
+        const cotacao = cotacaoSnap.docs.find(doc => 
+          doc.data().itens.some(item => item.produtoId === produtoId)
+        )?.data();
+
+        if (!cotacao) {
+          alert('Nenhuma cotação encontrada.');
+          return;
+        }
+
+        const pedido = {
+          solicitacaoId,
+          cotacaoId: cotacaoSnap.docs[0].id,
+          fornecedorId: cotacao.fornecedorId,
+          dataEmissao: new Date(),
+          itens: cotacao.itens.filter(i => i.produtoId === produtoId),
+          status: 'Emitido'
+        };
+
+        await addDoc(collection(db, 'pedidosCompra'), pedido);
+        await updateDoc(doc(db, 'solicitacoesCompra', solicitacaoId), {
+          itens: (await getDocs(doc(db, 'solicitacoesCompra', solicitacaoId))).data().itens.map(i => 
+            i.produtoId === produtoId ? { ...i, statusEmpenho: 'Pedido Gerado' } : i
+          )
+        });
+        alert('Pedido de compra criado com sucesso!');
+        openEmpenhoModal();
+      } catch (error) {
+        console.error('Erro ao criar pedido:', error);
+        alert('Erro ao criar pedido: ' + error.message);
+      }
+    }
+
+    async function registrarRecebimento(solicitacaoId, produtoId) {
+      console.log('Registrando recebimento:', { solicitacaoId, produtoId });
+      try {
+        const pedidoSnap = await getDocs(query(
+          collection(db, 'pedidosCompra'),
+          where('solicitacaoId', '==', solicitacaoId)
+        ));
+        const pedido = pedidoSnap.docs.find(doc => 
+          doc.data().itens.some(item => item.produtoId === produtoId)
+        )?.data();
+
+        if (!pedido) {
+          alert('Nenhum pedido encontrado.');
+          return;
+        }
+
+        const quantidadeRecebida = parseFloat(prompt('Informe a quantidade recebida:', '0')) || 0;
+        const recebimento = {
+          pedidoId: pedidoSnap.docs[0].id,
+          dataRecebimento: new Date(),
+          itens: [{ produtoId, quantidadeRecebida }],
+          status: quantidadeRecebida >= pedido.itens[0].quantidade ? 'Concluído' : 'Parcial'
+        };
+
+        await addDoc(collection(db, 'recebimentos'), recebimento);
+
+        // Atualizar estoque
+        const estoque = estoques.find(e => e.produtoId === produtoId) || { produtoId, saldo: 0 };
+        const novoSaldo = estoque.saldo + quantidadeRecebida;
+        if (estoque.id) {
+          await updateDoc(doc(db, 'estoques', estoque.id), { saldo: novoSaldo });
+        } else {
+          await addDoc(collection(db, 'estoques'), { produtoId, saldo: novoSaldo });
+        }
+
+        // Atualizar status do empenho
+        await updateDoc(doc(db, 'solicitacoesCompra', solicitacaoId), {
+          itens: (await getDocs(doc(db, 'solicitacoesCompra', solicitacaoId))).data().itens.map(i => 
+            i.produtoId === produtoId ? { ...i, statusEmpenho: 'Recebido' } : i
+          )
+        });
+
+        alert('Recebimento registrado com sucesso!');
+        openEmpenhoModal();
+      } catch (error) {
+        console.error('Erro ao registrar recebimento:', error);
+        alert('Erro ao registrar recebimento: ' + error.message);
+      }
+    }
+
+    // Expose functions to the global scope
+    window.generateReport = generateReport;
+    window.openPurchaseModal = openPurchaseModal;
+    window.openEmpenhoModal = openEmpenhoModal;
+    window.closePurchaseModal = closePurchaseModal;
+    window.createPurchaseRequests = createPurchaseRequests;
+    window.closeEmpenhoModal = closeEmpenhoModal;
+    window.createCotacao = createCotacao;
+    window.createPedidoCompra = createPedidoCompra;
+    window.registrarRecebimento = registrarRecebimento;
+
+    window.onload = async function() {
+      console.log('Inicializando página...');
+      await loadData();
+      const urlParams = new URLSearchParams(window.location.search);
+      const grupo = urlParams.get('grupo');
+      if (grupo) {
+        document.getElementById('grupoFilter').value = grupo;
+        console.log('Grupo selecionado via URL:', grupo);
+      }
+      generateReport();
+    };
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93e670eb4d278bb5',t:'MTc0NzAxNjQ3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>

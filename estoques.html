@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Estoques</title>
+  <link rel="stylesheet" href="styles/estoques.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Controle de Estoques</h1>
+    <div>
+      <button class="btn-success type-entrada" onclick="openMovementModal('entrada')">Nova Entrada</button>
+      <button class="btn-danger type-saida" onclick="openMovementModal('saida')">Nova Saída</button>
+      <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+    </div>
+  </div>
+
+  <div class="import-export-container">
+    <div class="import-container">
+      <h2>Importar Estoques</h2>
+      <label for="excelFileInput" class="file-input-container">
+        <button type="button" class="btn-primary file-input-button">Selecionar Arquivo Excel</button>
+        <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="handleFileSelect(event)">
+      </label>
+      <div id="importStatus" class="status-message"></div>
+    </div>
+    <div class="export-container">
+      <h2>Exportar Estoques</h2>
+      <button class="btn-success export-button" onclick="exportToExcel()">Exportar para Excel</button>
+      <div id="exportStatus" class="status-message"></div>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <div class="form-row">
+      <div class="form-col">
+        <input type="text" id="searchInput" placeholder="Buscar por código ou descrição...">
+      </div>
+      <div class="form-col">
+        <label for="typeFilter">Filtrar por Tipo:</label>
+        <select id="typeFilter" title="Filtrar por tipo">
+          <option value="">Todos os tipos</option>
+          <option value="MP">Matéria Prima</option>
+          <option value="SP">Semi-Produto</option>
+          <option value="PA">Produto Acabado</option>
+        </select>
+      </div>
+      <div class="form-col">
+        <label for="warehouseFilter">Filtrar por Armazém:</label>
+        <select id="warehouseFilter" title="Filtrar por armazém">
+          <option value="">Todos os armazéns</option>
+        </select>
+      </div>
+      <div class="form-col" style="align-self: flex-end;">
+        <button class="btn-primary" id="btnBuscarSaldos" type="button">Buscar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-container">
+    <div class="tab-buttons">
+      <button class="tab-button active" onclick="switchTab('saldos')">Saldos</button>
+      <button class="tab-button" onclick="switchTab('movimentacoes')">Movimentações</button>
+    </div>
+
+    <div id="saldosTab" class="tab-content active">
+      <div class="table-container">
+        <table class="stock-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Descrição</th>
+              <th>Tipo</th>
+              <th>Unidade</th>
+              <th>Armazém</th>
+              <th>Saldo</th>
+              <th>Custo Unitário</th>
+              <th>Valor Total</th>
+              <th>Última Movimentação</th>
+            </tr>
+          </thead>
+          <tbody id="stockTableBody"></tbody>
+        </table>
+      </div>
+      <div class="loading">
+        <p>Carregando dados...</p>
+      </div>
+      <div class="pagination"></div>
+    </div>
+
+    <div id="movimentacoesTab" class="tab-content">
+      <table class="stock-table">
+        <thead>
+          <tr>
+            <th>Data/Hora</th>
+            <th>Produto</th>
+            <th>Tipo</th>
+            <th>Quantidade</th>
+            <th>Custo Unitário</th>
+            <th>Documento</th>
+            <th>Observações</th>
+            <th>TES</th>
+          </tr>
+        </thead>
+        <tbody id="movementsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="movementModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modalTitle">Nova Movimentação</h2>
+      <span class="close-button" onclick="closeModal()">×</span>
+    </div>
+
+    <div class="modal-body">
+      <form id="movementForm" onsubmit="handleMovement(event)">
+        <input type="hidden" id="movementType">
+
+        <div class="form-group">
+          <label for="productSelect">Produto:</label>
+          <select id="productSelect" required onchange="updateCalculations()">
+            <option value="">Selecione o produto...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="movementUnit">Unidade:</label>
+          <select id="movementUnit" onchange="updateCalculations()">
+            <option value="principal">Unidade Principal</option>
+            <option value="secundaria">Unidade Secundária</option>
+          </select>
+        </div>
+        <div class="form-group">
+            <label for="warehouseOrigin">Armazém de Origem:</label>
+            <select id="warehouseOrigin" required>
+              <option value="">Selecione o armazém de origem...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="warehouseDestiny">Armazém de Destino:</label>
+            <select id="warehouseDestiny" required>
+              <option value="">Selecione o armazém de destino...</option>
+            </select>
+          </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="quantity">Quantidade:</label>
+            <input type="number" id="quantity" min="0.001" step="0.001" required oninput="updateCalculations()">
+          </div>
+          <div class="form-col">
+            <label for="valorUnitario">Valor Unitário (R$):</label>
+            <input type="number" id="valorUnitario" min="0" step="0.01" required oninput="updateCalculations()">
+          </div>
+          <div class="form-col">
+            <label for="documentType">Tipo de Documento:</label>
+            <select id="documentType" required onchange="updateTESOptions()">
+              <option value="COMPRA">Nota Fiscal de Compra</option>
+              <option value="VENDA">Nota Fiscal de Venda</option>
+              <option value="PRODUCAO">Ordem de Produção</option>
+              <option value="CONSUMO">Requisição de Material</option>
+              <option value="AJUSTE">Ajuste de Inventário</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+            <label for="tes">TES - Tipo de Entrada/Saída:</label>
+            <select id="tes" required>
+              <option value="">Selecione o TES...</option>
+            </select>
+          </div>
+
+        <div class="form-group">
+          <label for="documentNumber">Número do Documento:</label>
+          <input type="text" id="documentNumber" required>
+        </div>
+
+        <div class="form-group">
+          <label for="observations">Observações:</label>
+          <textarea id="observations" rows="3"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label>Estoque Atual:</label>
+            <div id="currentStock" style="padding: 8px; background-color: var(--secondary-color); border-radius: 4px;">-</div>
+          </div>
+          <div class="form-col">
+            <label>Saldo Futuro:</label>
+            <div id="futureStock" style="padding: 8px; background-color: var(--secondary-color); border-radius: 4px;">-</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label>Valor Total:</label>
+            <div id="totalValue" style="padding: 8px; background-color: var(--secondary-color); border-radius: 4px;">-</div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-success">Confirmar Movimentação</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { db } from './firebase-config.js';
+  import { 
+    collection, 
+    addDoc, 
+    onSnapshot,
+    doc,
+    updateDoc,
+    Timestamp,
+    getDoc
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  let produtos = [];
+  let estoques = [];
+  let movimentacoes = [];
+  let armazens = [];
+
+  window.onload = function() {
+    setupRealTimeListeners();
+    document.getElementById('btnBuscarSaldos').onclick = filterStock;
+  };
+
+  function setupRealTimeListeners() {
+    try {
+      onSnapshot(collection(db, "produtos"), (snapshot) => {
+        produtos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        updateProductSelect();
+        loadStock(); // Carregar estoque após atualizar produtos
+      });
+
+      onSnapshot(collection(db, "estoques"), (snapshot) => {
+        estoques = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        loadStock(); // Carregar estoque após atualizar estoques
+      });
+
+      onSnapshot(collection(db, "movimentacoesEstoque"), (snapshot) => {
+        movimentacoes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        loadStock(); // Carregar estoque após atualizar movimentações
+      });
+
+      onSnapshot(collection(db, "armazens"), (snapshot) => {
+        armazens = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        updateWarehouseSelects();
+        updateWarehouseFilter();
+      });
+
+    } catch (error) {
+      console.error("Erro ao configurar listeners:", error);
+      alert("Erro ao carregar dados do Firestore: " + error.message);
+    }
+  }
+
+  function updateProductSelect() {
+    const select = document.getElementById('productSelect');
+    select.innerHTML = '<option value="">Selecione o produto...</option>';
+    produtos.forEach(produto => {
+      select.innerHTML += `
+        <option value="${produto.id}">
+          ${produto.codigo} - ${produto.descricao} (${produto.tipo})
+        </option>`;
+    });
+  }
+
+  async function loadStock() {
+    const tableBody = document.getElementById('stockTableBody');
+    const loadingElement = document.querySelector('.loading');
+    loadingElement.classList.add('active');
+
+    try {
+      const produtosComEstoque = produtos.filter(produto => 
+        estoques.some(estoque => estoque.produtoId === produto.id)
+      );
+
+      // Calcular total de itens para paginação
+      totalItems = produtosComEstoque.length;
+
+      // Calcular itens da página atual
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+      const produtosPaginados = produtosComEstoque.slice(startIndex, endIndex);
+
+      tableBody.innerHTML = '';
+
+      for (const produto of produtosPaginados) {
+        const estoquesProduto = estoques.filter(e => e.produtoId === produto.id);
+        const custo = produto.custo || 0;
+        const ultimaMovimentacao = movimentacoes
+          .filter(m => m.produtoId === produto.id)
+          .sort((a, b) => b.dataHora.seconds - a.dataHora.seconds)[0];
+
+        estoquesProduto.forEach(estoque => {
+          const row = document.createElement('tr');
+          const armazemEncontrado = armazens.find(a => a.id === estoque.armazemId);
+          const armazem = armazemEncontrado ? armazemEncontrado.codigo : armazens[0]?.codigo || 'Não definido';
+
+          row.innerHTML = `
+            <td>${produto.codigo}</td>
+            <td>${produto.descricao}</td>
+            <td>${produto.tipo}</td>
+            <td>${produto.unidade}</td>
+            <td>${armazem}</td>
+            <td class="text-right">${estoque.saldo.toFixed(3)} ${produto.unidade}</td>
+            <td class="text-right">R$ ${custo.toFixed(2)}</td>
+            <td class="text-right">R$ ${(estoque.saldo * custo).toFixed(2)}</td>
+            <td>${ultimaMovimentacao ? 
+              new Date(ultimaMovimentacao.dataHora.seconds * 1000).toLocaleString() : 
+              'Sem movimentações'}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      }
+
+      renderPagination();
+    } catch (error) {
+      console.error("Erro ao carregar estoque:", error);
+      showMessage("Erro ao carregar estoque. Tente novamente.", "error");
+    } finally {
+      loadingElement.classList.remove('active');
+    }
+  }
+
+  window.switchTab = function(tab) {
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+    document.getElementById(`${tab}Tab`).classList.add('active');
+    document.querySelector(`button[onclick="switchTab('${tab}')"]`).classList.add('active');
+    if (tab === 'movimentacoes') loadMovements();
+  }
+
+  async function loadMovements() {
+    const tableBody = document.getElementById('movementsTableBody');
+    tableBody.innerHTML = '';
+
+    // Adicionar filtros para movimentações
+    const searchText = document.getElementById('searchInput')?.value?.toLowerCase() || '';
+    const typeFilter = document.getElementById('typeFilter')?.value || '';
+    const warehouseFilter = document.getElementById('warehouseFilter')?.value || '';
+
+    const sortedMovements = movimentacoes.sort((a, b) => b.dataHora.seconds - a.dataHora.seconds);
+
+    sortedMovements.forEach(mov => {
+      const produto = produtos.find(p => p.id === mov.produtoId);
+      if (!produto) return;
+      const armazem = armazens.find(a => a.id === mov.armazemId);
+      const matchSearch = !searchText || produto.codigo.toLowerCase().includes(searchText) || produto.descricao.toLowerCase().includes(searchText);
+      const matchType = !typeFilter || produto.tipo === typeFilter;
+      const matchWarehouse = !warehouseFilter || (armazem && armazem.id === warehouseFilter);
+      if (matchSearch && matchType && matchWarehouse) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${new Date(mov.dataHora.seconds * 1000).toLocaleString()}</td>
+          <td>${produto.codigo} - ${produto.descricao}</td>
+          <td><span class="movement-type type-${mov.tipo.toLowerCase()}">${mov.tipo}</span></td>
+          <td>${mov.quantidade.toFixed(3)} ${produto.unidade}</td>
+          <td>${mov.valorUnitario ? 'R$ ' + mov.valorUnitario.toFixed(2) : '-'}</td>
+          <td>${mov.tipoDocumento} ${mov.numeroDocumento}</td>
+          <td>${mov.observacoes || ''}</td>
+          <td>${mov.tes || ''}</td>
+        `;
+        tableBody.appendChild(row);
+      }
+    });
+  }
+
+  window.filterStock = function() {
+    const searchText = document.getElementById('searchInput').value.toLowerCase();
+    const typeFilter = document.getElementById('typeFilter').value;
+    const warehouseFilter = document.getElementById('warehouseFilter').value;
+    const tableBody = document.getElementById('stockTableBody');
+    tableBody.innerHTML = '';
+
+    // Filtros combinados e independentes
+    const produtosFiltrados = produtos.filter(produto => {
+      const temEstoque = estoques.some(estoque => estoque.produtoId === produto.id && (!warehouseFilter || estoque.armazemId === warehouseFilter));
+      const matchSearch = !searchText || produto.codigo.toLowerCase().includes(searchText) || produto.descricao.toLowerCase().includes(searchText);
+      const matchType = !typeFilter || produto.tipo === typeFilter;
+      return temEstoque && matchSearch && matchType;
+    });
+
+    produtosFiltrados.forEach(produto => {
+      const estoquesProduto = estoques.filter(e => e.produtoId === produto.id && (!warehouseFilter || e.armazemId === warehouseFilter));
+      estoquesProduto.forEach(estoque => {
+        const row = document.createElement('tr');
+        const armazem = armazens.find(a => a.id === estoque.armazemId)?.codigo || 'Não definido';
+        const ultimaMovimentacao = movimentacoes
+          .filter(m => m.produtoId === produto.id)
+          .sort((a, b) => b.dataHora.seconds - a.dataHora.seconds)[0];
+        row.innerHTML = `
+          <td>${produto.codigo}</td>
+          <td>${produto.descricao}</td>
+          <td>${produto.tipo}</td>
+          <td>${produto.unidade}</td>
+          <td>${armazem}</td>
+          <td>${estoque.saldo.toFixed(3)} ${produto.unidade}</td>
+          <td>R$ ${(produto.custo || 0).toFixed(2)}</td>
+          <td>R$ ${(estoque.saldo * (produto.custo || 0)).toFixed(2)}</td>
+          <td>${ultimaMovimentacao ? 
+            new Date(ultimaMovimentacao.dataHora.seconds * 1000).toLocaleString() : 
+            'Sem movimentações'}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    });
+  }
+
+  window.openMovementModal = function(type) {
+    document.getElementById('movementType').value = type;
+    document.getElementById('modalTitle').textContent = 
+      type === 'entrada' ? 'Nova Entrada de Estoque' : 'Nova Saída de Estoque';
+
+    const docTypeSelect = document.getElementById('documentType');
+    docTypeSelect.innerHTML = type === 'entrada' ? `
+      <option value="COMPRA">Nota Fiscal de Compra</option>
+      <option value="PRODUCAO">Ordem de Produção</option>
+      <option value="AJUSTE">Ajuste de Inventário</option>
+    ` : `
+      <option value="VENDA">Nota Fiscal de Venda</option>
+      <option value="CONSUMO">Requisição de Material</option>
+      <option value="AJUSTE">Ajuste de Inventário</option>
+    `;
+
+    document.getElementById('currentStock').textContent = '-';
+    document.getElementById('futureStock').textContent = '-';
+    document.getElementById('totalValue').textContent = '-';
+
+    document.getElementById('movementModal').style.display = 'block';
+    updateTESOptions();
+  };
+
+  window.closeModal = function() {
+    document.getElementById('movementModal').style.display = 'none';
+    document.getElementById('movementForm').reset();
+  };
+
+  window.updateCalculations = function() {
+    const produtoId = document.getElementById('productSelect').value;
+    const type = document.getElementById('movementType').value;
+    const unitSelect = document.getElementById('movementUnit').value;
+    const quantidade = parseFloat(document.getElementById('quantity').value) || 0;
+    const valorUnitario = parseFloat(document.getElementById('valorUnitario').value) || 0;
+
+    if (!produtoId) return;
+
+    const produto = produtos.find(p => p.id === produtoId);
+    if (unitSelect === 'secundaria' && !produto.unidadeSecundaria) {
+      alert('Este produto não possui unidade secundária cadastrada. Altere o cadastro do produto para usar esta opção.');
+      document.getElementById('movementUnit').value = 'principal';
+      return;
+    }
+
+    // Buscar saldo do produto no armazém selecionado
+    const armazemId = type === 'entrada'
+      ? document.getElementById('warehouseDestiny').value
+      : document.getElementById('warehouseOrigin').value;
+    const estoque = estoques.find(e => e.produtoId === produtoId && e.armazemId === armazemId) || { saldo: 0 };
+
+    const fatorConversao = produto.fatorConversao || 1;
+
+    let quantidadeConvertida = quantidade;
+    let unidadeOriginal = unitSelect === 'principal' ? produto.unidade : produto.unidadeSecundaria;
+    let quantidadeOriginal = quantidade;
+    if (unitSelect === 'secundaria' && produto.unidadeSecundaria) {
+      quantidadeConvertida = quantidade / fatorConversao;
+      unidadeOriginal = produto.unidadeSecundaria;
+      quantidadeOriginal = quantidade;
+    }
+    let quantidadeMov;
+    if (type === 'entrada') {
+      quantidadeMov = Math.abs(quantidadeConvertida);
+    } else {
+      quantidadeMov = -Math.abs(quantidadeConvertida);
+    }
+
+    const saldoFuturo = type === 'entrada' 
+      ? estoque.saldo + quantidadeConvertida 
+      : estoque.saldo - quantidadeConvertida;
+
+    document.getElementById('currentStock').textContent = `${estoque.saldo.toFixed(3)} ${produto.unidade}`;
+    document.getElementById('futureStock').textContent = `${saldoFuturo.toFixed(3)} ${produto.unidade}`;
+    document.getElementById('totalValue').textContent = `R$ ${(quantidade * valorUnitario).toFixed(2)}`;
+
+    document.getElementById('futureStock').style.color = (type === 'saida' && saldoFuturo < 0) ? 'red' : '';
+  };
+
+  window.updateTESOptions = function() {
+      const docType = document.getElementById('documentType').value;
+      const tesSelect = document.getElementById('tes');
+      tesSelect.innerHTML = '<option value="">Selecione o TES...</option>';
+
+      switch(docType) {
+        case 'COMPRA':
+          tesSelect.innerHTML += `
+            <option value="001">001 - Compra para estoque</option>
+            <option value="002">002 - Compra para consumo</option>
+            <option value="003">003 - Devolução de venda</option>
+            <option value="004">004 - Compra para industrialização</option>
+            <option value="005">005 - Compra por importação</option>
+            <option value="006">006 - Compra para revenda</option>`;
+          break;
+        case 'VENDA':
+          tesSelect.innerHTML += `
+            <option value="500">500 - Venda de produto</option>
+            <option value="501">501 - Remessa para beneficiamento</option>
+            <option value="502">502 - Devolução de compra</option>
+            <option value="503">503 - Venda para entrega futura</option>
+            <option value="504">504 - Remessa por conta e ordem</option>
+            <option value="505">505 - Remessa para demonstração</option>`;
+          break;
+        case 'PRODUCAO':
+          tesSelect.innerHTML += `
+            <option value="200">200 - Entrada por produção</option>
+            <option value="201">201 - Consumo de componentes</option>
+            <option value="202">202 - Baixa por perda</option>
+            <option value="203">203 - Baixa por refugo</option>
+            <option value="204">204 - Entrada por retrabalho</option>
+            <option value="205">205 - Consumo por industrialização</option>`;
+          break;
+        case 'CONSUMO':
+          tesSelect.innerHTML += `
+            <option value="400">400 - Requisição para consumo</option>
+            <option value="401">401 - Requisição para manutenção</option>
+            <option value="402">402 - Requisição para projeto</option>
+            <option value="403">403 - Consumo por amostra</option>
+            <option value="404">404 - Requisição para marketing</option>
+            <option value="405">405 - Requisição para P&D</option>`;
+          break;
+        case 'AJUSTE':
+          tesSelect.innerHTML += `
+            <option value="900">900 - Ajuste de inventário entrada</option>
+            <option value="901">901 - Ajuste de inventário saída</option>
+            <option value="902">902 - Ajuste por divergência</option>
+            <option value="903>903 - Ajuste por avaria</option>
+            <option value="904">904 - Ajuste por validade</option>
+            <option value="905">905 - Ajuste por qualidade</option>`;
+          break;
+      }
+    }
+
+    window.updateUnitPrice = function() {
+
+    }
+
+  window.handleMovement = async function(event) {
+    event.preventDefault();
+
+    // Verificar parâmetros do sistema
+    const parametrosDoc = await getDoc(doc(db, "parametros", "sistema"));
+    const params = parametrosDoc.exists() ? parametrosDoc.data() : {};
+
+    const armazemDestino = document.getElementById('warehouseDestiny')?.value;
+    const armazemOrigem = document.getElementById('warehouseOrigin')?.value;
+
+    if (params.controleQualidadeObrigatorio) {
+      const isQualityMovement = armazemDestino?.includes('QUALIDADE') || armazemOrigem?.includes('QUALIDADE');
+      if (!isQualityMovement && params.controleQualidadeObrigatorio) {
+        alert('Movimentação requer inspeção de qualidade conforme parâmetros do sistema.');
+        return;
+      }
+    }
+
+    const type = document.getElementById('movementType').value;
+    const produtoId = document.getElementById('productSelect').value;
+    const unitSelect = document.getElementById('movementUnit').value;
+    const quantidade = parseFloat(document.getElementById('quantity').value);
+    const valorUnitario = parseFloat(document.getElementById('valorUnitario').value);
+    const tipoDocumento = document.getElementById('documentType').value;
+    const numeroDocumento = document.getElementById('documentNumber').value;
+    const observacoes = document.getElementById('observations').value;
+    const tes = document.getElementById('tes').value;
+
+
+    const produto = produtos.find(p => p.id === produtoId);
+    let quantidadeConvertida = quantidade;
+    let unidadeOriginal = unitSelect === 'principal' ? produto.unidade : produto.unidadeSecundaria;
+    let quantidadeOriginal = quantidade;
+    if (unitSelect === 'secundaria' && produto.unidadeSecundaria) {
+      quantidadeConvertida = quantidade / produto.fatorConversao;
+      unidadeOriginal = produto.unidadeSecundaria;
+      quantidadeOriginal = quantidade;
+    }
+    let quantidadeMov;
+    if (type === 'entrada') {
+      quantidadeMov = Math.abs(quantidadeConvertida);
+    } else {
+      quantidadeMov = -Math.abs(quantidadeConvertida);
+    }
+
+    try {
+      const movimentacao = {
+        produtoId,
+        tipo: type === 'entrada' ? 'ENTRADA' : 'SAIDA',
+        quantidade: quantidadeMov,
+        unidade: produto.unidade,
+        quantidadeOriginal: quantidadeOriginal,
+        unidadeOriginal: unidadeOriginal,
+        valorUnitario,
+        tipoDocumento,
+        numeroDocumento,
+        observacoes,
+        dataHora: Timestamp.now(),
+        tes,
+        armazemOrigem,
+        armazemDestino,
+        armazemId: type === 'entrada' ? armazemDestino : armazemOrigem
+      };
+
+      let estoque;
+      let novoSaldo;
+      if (type === 'entrada') {
+        estoque = estoques.find(e => e.produtoId === produtoId && e.armazemId === armazemDestino);
+        novoSaldo = (estoque?.saldo || 0) + Math.abs(quantidadeConvertida);
+      } else {
+        estoque = estoques.find(e => e.produtoId === produtoId && e.armazemId === armazemOrigem);
+        novoSaldo = (estoque?.saldo || 0) - Math.abs(quantidadeConvertida);
+      }
+
+      if (type === 'saida' && novoSaldo < 0) {
+        alert('Saldo insuficiente para realizar esta saída!');
+        return;
+      }
+
+      await addDoc(collection(db, "movimentacoesEstoque"), movimentacao);
+
+      if (estoque) {
+        await updateDoc(doc(db, "estoques", estoque.id), {
+          saldo: novoSaldo,
+          ultimaMovimentacao: Timestamp.now()
+        });
+      } else {
+        await addDoc(collection(db, "estoques"), {
+          produtoId,
+          armazemId: type === 'entrada' ? armazemDestino : armazemOrigem,
+          saldo: novoSaldo,
+          ultimaMovimentacao: Timestamp.now()
+        });
+      }
+
+      alert('Movimentação registrada com sucesso!');
+      closeModal();
+    } catch (error) {
+      console.error("Erro ao registrar movimentação:", error);
+      alert("Erro ao registrar movimentação: " + error.message);
+    }
+  };
+
+  window.handleFileSelect = async function(event) {
+    const file = event.target.files[0];
+    const importStatus = document.getElementById('importStatus');
+
+    if (!file) return;
+
+    try {
+      importStatus.textContent = "Processando arquivo...";
+      importStatus.className = "status-message";
+      importStatus.style.display = "block";
+
+      const data = await readExcelFile(file);
+
+      if (!data || !data.length) throw new Error("Arquivo vazio ou formato inválido");
+
+      const headers = Object.keys(data[0]).map(h => h.toLowerCase());
+      if (!headers.includes('código') || !headers.includes('saldo')) {
+        throw new Error("O arquivo deve conter as colunas 'Código' e 'Saldo'");
+      }
+
+      let atualizados = 0, erros = 0, detalhesErros = [];
+      for (const [index, row] of data.entries()) {
+        try {
+          const codigo = row.código || row.Código || row.CODIGO;
+          let saldo = row.saldo || row.Saldo || row.SALDO;
+
+          if (!codigo) throw new Error("Código não especificado");
+          if (typeof saldo === 'string') saldo = parseFloat(saldo.replace(/\./g, '').replace(',', '.'));
+          if (isNaN(saldo)) throw new Error(`Saldo inválido: ${row.saldo}`);
+
+          const produto = produtos.find(p => p.codigo === codigo);
+          if (!produto) throw new Error(`Produto não encontrado no sistema`);
+
+          const estoque = estoques.find(e => e.produtoId === produto.id);
+          if (estoque) {
+            await updateDoc(doc(db, "estoques", estoque.id), {
+              saldo,
+              ultimaMovimentacao: Timestamp.now()
+            });
+            const diferenca = saldo - estoque.saldo;
+            if (diferenca !== 0) {
+              await addDoc(collection(db, "movimentacoesEstoque"), {
+                produtoId: produto.id,
+                tipo: diferenca > 0 ? 'ENTRADA' : 'SAIDA',
+                quantidade: Math.abs(diferenca),
+                tipoDocumento: 'AJUSTE',
+                numeroDocumento: 'IMPORTACAO',
+                observacoes: 'Ajuste por importação de planilha',
+                dataHora: Timestamp.now()
+              });
+            }
+            atualizados++;
+          } else {
+            await addDoc(collection(db, "estoques"), {
+                            produtoId: produto.id,
+              saldo,
+              ultimaMovimentacao: Timestamp.now()
+            });
+            await addDoc(collection(db, "movimentacoesEstoque"), {
+              produtoId: produto.id,
+              tipo: 'ENTRADA',
+              quantidade: saldo,
+              tipoDocumento: 'AJUSTE',
+              numeroDocumento: 'IMPORTACAO',
+              observacoes: 'Entrada inicial por importação de planilha',
+              dataHora: Timestamp.now()
+            });
+            atualizados++;
+          }
+        } catch (rowError) {
+          erros++;
+          detalhesErros.push(`Linha ${index + 2}: ${rowError.message}`);
+        }
+      }
+
+      importStatus.innerHTML = `Importação concluída!<br>Atualizados: ${atualizados}<br>Erros: ${erros}` + 
+        (erros > 0 ? `<br><br>Detalhes dos erros:<br>${detalhesErros.join('<br>')}` : '');
+      importStatus.className = erros > 0 ? "status-message error" : "status-message success";
+    } catch (error) {
+      importStatus.textContent = `Erro na importação: ${error.message}`;
+      importStatus.className = "status-message error";
+    }
+    event.target.value = '';
+  };
+
+  async function readExcelFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = e.target.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const json = XLSX.utils.sheet_to_json(worksheet);
+          resolve(json);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsBinaryString(file);
+    });
+  }
+
+  window.exportToExcel = async function() {
+    const exportStatus = document.getElementById('exportStatus');
+    try {
+      exportStatus.textContent = "Preparando exportação...";
+      exportStatus.className = "status-message";
+      exportStatus.style.display = "block";
+
+      const stockData = produtos.map(produto => {
+        const estoque = estoques.find(e => e.produtoId === produto.id) || { saldo: 0 };
+        return { 'Código': produto.codigo, 'Saldo': estoque.saldo };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(stockData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Estoques");
+
+      worksheet['!cols'] = [{ wch: 15 }, { wch: 15 }];
+      const range = XLSX.utils.decode_range(worksheet['!ref']);
+      for (let row = range.s.r + 1; row <= range.e.r; row++) {
+        const cellAddress = XLSX.utils.encode_cell({r: row, c: 1});
+        if (worksheet[cellAddress]) {
+          worksheet[cellAddress].t = 'n';
+          worksheet[cellAddress].z = '0.000';
+        }
+      }
+
+      const fileName = `Estoques_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      exportStatus.textContent = "Exportação concluída com sucesso!";
+      exportStatus.className = "status-message success";
+      setTimeout(() => exportStatus.style.display = "none", 3000);
+    } catch (error) {
+      exportStatus.textContent = `Erro na exportação: ${error.message}`;
+      exportStatus.className = "status-message error";
+    }
+  };
+
+  function updateWarehouseSelects() {
+    const warehouseOriginSelect = document.getElementById('warehouseOrigin');
+    const warehouseDestinySelect = document.getElementById('warehouseDestiny');
+    warehouseOriginSelect.innerHTML = '<option value="">Selecione o armazém de origem...</option>';
+    warehouseDestinySelect.innerHTML = '<option value="">Selecione o armazém de destino...</option>';
+    armazens.forEach(armazem => {
+      warehouseOriginSelect.innerHTML += `<option value="${armazem.id}">${armazem.codigo}</option>`;
+      warehouseDestinySelect.innerHTML += `<option value="${armazem.id}">${armazem.codigo}</option>`;
+    });
+  }
+
+  function updateWarehouseFilter() {
+    const select = document.getElementById('warehouseFilter');
+    if (!select) return;
+    const current = select.value;
+    select.innerHTML = '<option value="">Todos os armazéns</option>';
+
+    // Ordenar armazéns por código para facilitar a visualização
+    const armazensOrdenados = [...armazens].sort((a, b) => a.codigo.localeCompare(b.codigo));
+
+    armazensOrdenados.forEach(armazem => {
+      select.innerHTML += `<option value="${armazem.id}">${armazem.codigo}</option>`;
+    });
+
+    // Debug para verificar os armazéns disponíveis
+    console.log('Armazéns disponíveis:', armazensOrdenados.map(a => a.codigo));
+
+    select.value = current;
+  }
+
+  window.onclick = function(event) {
+    const modal = document.getElementById('movementModal');
+    if (event.target === modal) {
+      closeModal();
+    }
+  };
+
+  // Configurações de paginação
+  const ITEMS_PER_PAGE = 50;
+  let currentPage = 1;
+  let totalItems = 0;
+  let filteredData = [];
+
+  // Função para renderizar paginação
+  function renderPagination() {
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+    const paginationContainer = document.querySelector('.pagination');
+    paginationContainer.innerHTML = '';
+
+    // Botão anterior
+    const prevButton = document.createElement('button');
+    prevButton.innerHTML = '&laquo;';
+    prevButton.disabled = currentPage === 1;
+    prevButton.onclick = () => changePage(currentPage - 1);
+    paginationContainer.appendChild(prevButton);
+
+    // Páginas
+    for (let i = 1; i <= totalPages; i++) {
+      if (
+        i === 1 || 
+        i === totalPages || 
+        (i >= currentPage - 2 && i <= currentPage + 2)
+      ) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        pageButton.classList.toggle('active', i === currentPage);
+        pageButton.onclick = () => changePage(i);
+        paginationContainer.appendChild(pageButton);
+      } else if (
+        i === currentPage - 3 || 
+        i === currentPage + 3
+      ) {
+        const ellipsis = document.createElement('span');
+        ellipsis.textContent = '...';
+        ellipsis.style.padding = '0 10px';
+        paginationContainer.appendChild(ellipsis);
+      }
+    }
+
+    // Botão próximo
+    const nextButton = document.createElement('button');
+    nextButton.innerHTML = '&raquo;';
+    nextButton.disabled = currentPage === totalPages;
+    nextButton.onclick = () => changePage(currentPage + 1);
+    paginationContainer.appendChild(nextButton);
+  }
+
+  // Função para mudar de página
+  function changePage(page) {
+    currentPage = page;
+    loadStock();
+  }
+
+  function showMessage(message, type) {
+    const statusElement = document.getElementById('importStatus');
+    statusElement.textContent = message;
+    statusElement.className = `status-message ${type}`;
+    statusElement.style.display = 'block';
+    setTimeout(() => {
+      statusElement.style.display = 'none';
+    }, 3000);
+  }
+
+  // Inicialização
+  document.addEventListener('DOMContentLoaded', () => {
+    loadStock();
+
+    // Configurar busca
+    const searchInput = document.getElementById('searchInput');
+    let searchTimeout;
+
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filtered = filteredData.filter(item => 
+          item.codigo.toLowerCase().includes(searchTerm) ||
+          item.descricao.toLowerCase().includes(searchTerm)
+        );
+        renderTable(filtered);
+      }, 300);
+    });
+  });
+</script>
+</body>
+</html>

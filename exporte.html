@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Importar Dados</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    async function importarDadosColados() {
+      const textarea = document.getElementById('pasteData');
+      const statusDiv = document.getElementById('pasteStatus');
+      const importBtn = document.getElementById('importPasteBtn');
+      importBtn.disabled = true;
+      
+      const linhas = textarea.value.trim().split('\n');
+      const familiasData = linhas.map(linha => {
+        const [codigoFamilia, nomeFamilia, grupo] = linha.split('\t'); // Assume colagem de tabela (tab-separated)
+        return { codigoFamilia, nomeFamilia, grupo };
+      });
+
+      try {
+        let importados = 0;
+        let erros = 0;
+
+        for (const familia of familiasData) {
+          if (!familia.codigoFamilia || !familia.nomeFamilia || !familia.grupo) {
+            erros++;
+            continue;
+          }
+
+          const familiaQuery = query(collection(db, "familias"), where("codigoFamilia", "==", familia.codigoFamilia));
+          const familiaSnapshot = await getDocs(familiaQuery);
+
+          if (familiaSnapshot.empty) {
+            await addDoc(collection(db, "familias"), {
+              codigoFamilia: familia.codigoFamilia,
+              nomeFamilia: familia.nomeFamilia,
+              grupo: familia.grupo,
+              dataCadastro: new Date()
+            });
+            importados++;
+          } else {
+            erros++;
+          }
+        }
+
+        statusDiv.innerHTML = `<div class='success'>Importação concluída!<br> Famílias importadas: ${importados}<br> Erros: ${erros}</div>`;
+      } catch (error) {
+        console.error("Erro na importação:", error);
+        statusDiv.innerHTML = '<div class="error">Erro ao realizar a importação. Tente novamente.</div>';
+      }
+
+      importBtn.disabled = false;
+    }
+
+    window.importarDadosColados = importarDadosColados;
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>Importar Famílias por Colagem</h1>
+    <textarea id="pasteData" rows="10" cols="50" placeholder="Cole os dados aqui..."></textarea>
+    <button id="importPasteBtn" onclick="importarDadosColados()">Importar</button>
+    <div id="pasteStatus"></div>
+  </div>
+</body>
+</html>

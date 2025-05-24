@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alterar Ordem de Produção</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .header {
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin: 0 0 10px 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        select, input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .materials-list {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+        }
+        .material-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .material-item:last-child {
+            border-bottom: none;
+        }
+        .material-info {
+            flex: 1;
+        }
+        .stock-status {
+            margin-left: 20px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .status-ok {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #28a745;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Alterar Ordem de Produção</h1>
+        </div>
+
+        <form id="editForm">
+            <div class="grid">
+                <div class="form-group">
+                    <label for="opSelect">Selecionar OP:</label>
+                    <select id="opSelect" onchange="loadOpData()">
+                        <option value="">Selecione uma OP...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="produto">Produto:</label>
+                    <select id="produto" disabled>
+                        <option value="">Carregando...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="quantidade">Quantidade:</label>
+                    <input type="number" id="quantidade" min="0.001" step="0.001" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="dataEntrega">Data de Entrega:</label>
+                    <input type="date" id="dataEntrega" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="prioridade">Prioridade:</label>
+                    <select id="prioridade" required>
+                        <option value="normal">Normal</option>
+                        <option value="alta">Alta</option>
+                        <option value="urgente">Urgente</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="observacoes">Observações:</label>
+                <textarea id="observacoes" rows="3"></textarea>
+            </div>
+
+            <div class="materials-list">
+                <h3>Materiais Necessários</h3>
+                <div id="materialsList"></div>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn-primary">Salvar Alterações</button>
+                <button type="button" class="btn-danger" onclick="cancelOrder()">Cancelar OP</button>
+                <button type="button" class="btn-secondary" onclick="window.location.href='ordens_producao.html'">Voltar</button>
+            </div>
+        </form>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { 
+            collection, 
+            doc, 
+            getDoc,
+            getDocs,
+            updateDoc,
+            addDoc,
+            query,
+            where,
+            Timestamp 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let currentOp = null;
+        let produtos = [];
+        let estruturas = [];
+        let estoques = [];
+
+        window.onload = async function() {
+            await loadInitialData();
+            await loadOrders();
+        };
+
+        async function loadInitialData() {
+            try {
+                const [produtosSnap, estruturasSnap, estoquesSnap] = await Promise.all([
+                    getDocs(collection(db, "produtos")),
+                    getDocs(collection(db, "estruturas")),
+                    getDocs(collection(db, "estoques"))
+                ]);
+
+                produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                estruturas = estruturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                updateProductSelect();
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+                alert("Erro ao carregar dados iniciais.");
+            }
+        }
+
+        async function loadOrders() {
+            try {
+                const ordersQuery = query(
+                    collection(db, "ordensProducao"), 
+                    where("status", "in", ["Pendente", "Em Produção"])
+                );
+                const ordersSnap = await getDocs(ordersQuery);
+                
+                const opSelect = document.getElementById('opSelect');
+                opSelect.innerHTML = '<option value="">Selecione uma OP...</option>';
+
+                ordersSnap.docs.forEach(doc => {
+                    const op = doc.data();
+                    const produto = produtos.find(p => p.id === op.produtoId);
+                    if (produto) {
+                        opSelect.innerHTML += `
+                            <option value="${doc.id}">
+                                ${op.numero} - ${produto.codigo} - ${produto.descricao}
+                            </option>`;
+                    }
+                });
+            } catch (error) {
+                console.error("Erro ao carregar ordens:", error);
+                alert("Erro ao carregar ordens de produção.");
+            }
+        }
+
+        function updateProductSelect() {
+            const produtoSelect = document.getElementById('produto');
+            produtoSelect.innerHTML = '<option value="">Selecione o produto...</option>';
+            
+            produtos
+                .filter(p => p.tipo === 'PA' || p.tipo === 'SP')
+                .forEach(produto => {
+                    produtoSelect.innerHTML += `
+                        <option value="${produto.id}">
+                            ${produto.codigo} - ${produto.descricao}
+                        </option>`;
+                });
+        }
+
+        window.loadOpData = async function() {
+            const opId = document.getElementById('opSelect').value;
+            if (!opId) {
+                resetForm();
+                return;
+            }
+
+            try {
+                const opDoc = await getDoc(doc(db, "ordensProducao", opId));
+                if (!opDoc.exists()) {
+                    alert("Ordem de produção não encontrada.");
+                    return;
+                }
+
+                currentOp = { id: opDoc.id, ...opDoc.data() };
+                
+                // Preencher formulário
+                document.getElementById('produto').value = currentOp.produtoId;
+                document.getElementById('quantidade').value = currentOp.quantidade;
+                document.getElementById('dataEntrega').value = new Date(currentOp.dataEntrega.seconds * 1000)
+                    .toISOString().split('T')[0];
+                document.getElementById('prioridade').value = currentOp.prioridade || 'normal';
+                document.getElementById('observacoes').value = currentOp.observacoes || '';
+
+                await updateMaterialsList();
+            } catch (error) {
+                console.error("Erro ao carregar dados da OP:", error);
+                alert("Erro ao carregar dados da ordem de produção.");
+            }
+        };
+
+        async function updateMaterialsList() {
+            if (!currentOp) return;
+
+            const estrutura = estruturas.find(e => e.produtoPaiId === currentOp.produtoId);
+            if (!estrutura) {
+                document.getElementById('materialsList').innerHTML = 
+                    '<p>Nenhuma estrutura encontrada para este produto.</p>';
+                return;
+            }
+
+            const quantidade = parseFloat(document.getElementById('quantidade').value);
+            const materialsHtml = [];
+
+            for (const componente of estrutura.componentes) {
+                const produto = produtos.find(p => p.id === componente.componentId);
+                const estoque = estoques.find(e => e.produtoId === componente.componentId);
+                const quantidadeNecessaria = quantidade * componente.quantidade;
+                const saldoDisponivel = estoque ? estoque.saldo : 0;
+                const percentualDisponivel = (saldoDisponivel / quantidadeNecessaria * 100).toFixed(1);
+
+                let statusClass = 'status-ok';
+                let statusText = 'Disponível';
+                
+                if (saldoDisponivel < quantidadeNecessaria) {
+                    statusClass = 'status-error';
+                    statusText = 'Insuficiente';
+                } else if (saldoDisponivel < quantidadeNecessaria * 1.2) {
+                    statusClass = 'status-warning';
+                    statusText = 'Atenção';
+                }
+
+                materialsHtml.push(`
+                    <div class="material-item">
+                        <div class="material-info">
+                            <strong>${produto.codigo} - ${produto.descricao}</strong>
+                            <div>Necessário: ${quantidadeNecessaria.toFixed(3)} ${produto.unidade}</div>
+                            <div>Disponível: ${saldoDisponivel.toFixed(3)} ${produto.unidade}</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${Math.min(100, percentualDisponivel)}%"></div>
+                            </div>
+                        </div>
+                        <span class="stock-status ${statusClass}">${statusText}</span>
+                    </div>
+                `);
+            }
+
+            document.getElementById('materialsList').innerHTML = materialsHtml.join('');
+        }
+
+        document.getElementById('quantidade').addEventListener('change', updateMaterialsList);
+
+        document.getElementById('editForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            if (!currentOp) {
+                alert('Selecione uma ordem de produção.');
+                return;
+            }
+
+            const newQuantity = parseFloat(document.getElementById('quantidade').value);
+            const estrutura = estruturas.find(e => e.produtoPaiId === currentOp.produtoId);
+
+            if (!estrutura) {
+                alert('Estrutura do produto não encontrada.');
+                return;
+            }
+
+            try {
+                // Verificar disponibilidade de materiais
+                for (const componente of estrutura.componentes) {
+                    const estoque = estoques.find(e => e.produtoId === componente.componentId);
+                    const quantidadeNecessaria = newQuantity * componente.quantidade;
+                    const saldoDisponivel = estoque ? estoque.saldo : 0;
+
+                    if (saldoDisponivel < quantidadeNecessaria) {
+                        const produto = produtos.find(p => p.id === componente.componentId);
+                        if (!confirm(`Material insuficiente: ${produto.codigo} - ${produto.descricao}\n` +
+                                   `Necessário: ${quantidadeNecessaria.toFixed(3)}\n` +
+                                   `Disponível: ${saldoDisponivel.toFixed(3)}\n\n` +
+                                   `Deseja continuar mesmo assim?`)) {
+                            return;
+                        }
+                        break;
+                    }
+                }
+
+                // Reverter empenhos anteriores
+                if (currentOp.materiaisNecessarios) {
+                    for (const material of currentOp.materiaisNecessarios) {
+                        const estoque = estoques.find(e => e.produtoId === material.produtoId);
+                        if (estoque) {
+                            await updateDoc(doc(db, "estoques", estoque.id), {
+                                saldo: estoque.saldo + material.quantidade,
+                                ultimaMovimentacao: Timestamp.now()
+                            });
+
+                            // Registrar movimentação de estoque
+                            await addDoc(collection(db, "movimentacoesEstoque"), {
+                                produtoId: material.produtoId,
+                                tipo: 'ENTRADA',
+                                quantidade: material.quantidade,
+                                tipoDocumento: 'ESTORNO',
+                                numeroDocumento: currentOp.numero,
+                                observacoes: `Estorno de empenho - Alteração OP ${currentOp.numero}`,
+                                dataHora: Timestamp.now()
+                            });
+                        }
+                    }
+                }
+
+                // Calcular e registrar novos empenhos
+                const novosEmpenhos = [];
+                for (const componente of estrutura.componentes) {
+                    const quantidadeNecessaria = newQuantity * componente.quantidade;
+                    const estoque = estoques.find(e => e.produtoId === componente.componentId);
+                    
+                    if (estoque) {
+                        await updateDoc(doc(db, "estoques", estoque.id), {
+                            saldo: estoque.saldo - quantidadeNecessaria,
+                            ultimaMovimentacao: Timestamp.now()
+                        });
+
+                        // Registrar movimentação de estoque
+                        await addDoc(collection(db, "movimentacoesEstoque"), {
+                            produtoId: componente.componentId,
+                            tipo: 'SAIDA',
+                            quantidade: quantidadeNecessaria,
+                            tipoDocumento: 'EMPENHO',
+                            numeroDocumento: currentOp.numero,
+                            observacoes: `Empenho para OP ${currentOp.numero}`,
+                            dataHora: Timestamp.now()
+                        });
+                    }
+
+                    novosEmpenhos.push({
+                        produtoId: componente.componentId,
+                        quantidade: quantidadeNecessaria
+                    });
+                }
+
+                // Atualizar ordem de produção
+                await updateDoc(doc(db, "ordensProducao", currentOp.id), {
+                    quantidade: newQuantity,
+                    dataEntrega: Timestamp.fromDate(new Date(document.getElementById('dataEntrega').value)),
+                    prioridade: document.getElementById('prioridade').value,
+                    observacoes: document.getElementById('observacoes').value,
+                    materiaisNecessarios: novosEmpenhos,
+                    dataAlteracao: Timestamp.now()
+                });
+
+                alert('Ordem de produção atualizada com sucesso!');
+                window.location.href = 'ordens_producao.html';
+            } catch (error) {
+                console.error("Erro ao atualizar ordem de produção:", error);
+                alert("Erro ao atualizar ordem de produção.");
+            }
+        });
+
+        window.cancelOrder = async function() {
+            if (!currentOp || !confirm('Tem certeza que deseja cancelar esta ordem de produção?')) {
+                return;
+            }
+
+            try {
+                // Reverter empenhos
+                if (currentOp.materiaisNecessarios) {
+                    for (const material of currentOp.materiaisNecessarios) {
+                        const estoque = estoques.find(e => e.produtoId === material.produtoId);
+                        if (estoque) {
+                            await updateDoc(doc(db, "estoques", estoque.id), {
+                                saldo: estoque.saldo + material.quantidade,
+                                ultimaMovimentacao: Timestamp.now()
+                            });
+
+                            // Registrar movimentação de estoque
+                            await addDoc(collection(db, "movimentacoesEstoque"), {
+                                produtoId: material.produtoId,
+                                tipo: 'ENTRADA',
+                                quantidade: material.quantidade,
+                                tipoDocumento: 'ESTORNO',
+                                numeroDocumento: currentOp.numero,
+                                observacoes: `Estorno de empenho - Cancelamento OP ${currentOp.numero}`,
+                                dataHora: Timestamp.now()
+                            });
+                        }
+                    }
+                }
+
+                // Atualizar ordem de produção
+                await updateDoc(doc(db, "ordensProducao", currentOp.id), {
+                    status: 'Cancelada',
+                    dataCancelamento: Timestamp.now()
+                });
+
+                // Se a ordem veio de um pedido, atualizar o pedido para pendente
+                if (currentOp.pedidoId) {
+                    await updateDoc(doc(db, "pedidosVenda", currentOp.pedidoId), {
+                        status: 'Pendente'
+                    });
+                }
+
+                alert('Ordem de produção cancelada com sucesso!');
+                window.location.href = 'ordens_producao.html';
+            } catch (error) {
+                console.error("Erro ao cancelar ordem:", error);
+                alert("Erro ao cancelar ordem de produção.");
+            }
+        };
+
+        function resetForm() {
+            currentOp = null;
+            document.getElementById('produto').value = '';
+            document.getElementById('quantidade').value = '';
+            document.getElementById('dataEntrega').value = '';
+            document.getElementById('prioridade').value = 'normal';
+            document.getElementById('observacoes').value = '';
+            document.getElementById('materialsList').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatórios de Qualidade</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --header-bg: #354a5f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 { font-size: 24px; font-weight: 500; }
+
+    .tab {
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 20px;
+    }
+
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+      font-size: 16px;
+      color: var(--text-secondary);
+    }
+
+    .tab button:hover { background-color: var(--secondary-color); }
+    .tab button.active { background-color: var(--primary-color); color: white; }
+
+    .tabcontent {
+      display: none;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+    }
+
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; color: var(--text-secondary); font-weight: 500; font-size: 14px; }
+    .form-group input, .form-group select {
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    .form-row { display: flex; gap: 15px; align-items: flex-end; }
+    .form-col { flex: 1; }
+
+    .report-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .report-table th, .report-table td { padding: 12px 15px; border: 1px solid var(--border-color); text-align: left; }
+    .report-table th { background-color: var(--secondary-color); font-weight: 600; color: var(--text-secondary); }
+    .report-table tr:hover { background-color: #f8f9fa; }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary { background-color: var(--primary-color); color: white; }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-success { background-color: var(--success-color); color: white; }
+    .btn-success:hover { background-color: var(--success-hover); }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .btn-secondary:hover { background-color: #5a6268; }
+
+    @media (max-width: 768px) {
+      .container { margin: 20px auto; padding: 15px; }
+      .header h1 { font-size: 20px; }
+      .tab button { padding: 10px 12px; font-size: 14px; }
+      .report-table { font-size: 12px; }
+      .report-table th, .report-table td { padding: 8px 10px; }
+      .form-group input, .form-group select { font-size: 12px; }
+      .form-row { flex-direction: column; gap: 10px; align-items: stretch; }
+      button { padding: 6px 12px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Relatórios de Qualidade</h1>
+      <div>
+        <button class="btn-primary" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Atualizar Dados</button>
+        <button class="btn-secondary" onclick="navigateBack()">Voltar</button>
+      </div>
+    </div>
+
+    <div class="tab">
+      <button class="tablinks active" onclick="openTab(event, 'inspecoes')">Resultados de Inspeção</button>
+      <button class="tablinks" onclick="openTab(event, 'rejeitados')">Itens Rejeitados/Devolvidos</button>
+      <button class="tablinks" onclick="openTab(event, 'estoque')">Movimentação de Estoque</button>
+      <button class="tablinks" onclick="openTab(event, 'trocas')">Solicitações de Troca</button>
+      <button class="tablinks" onclick="openTab(event, 'fornecedores')">Desempenho por Fornecedor</button>
+      <button class="tablinks" onclick="openTab(event, 'criterios')">Auditoria de Critérios</button>
+    </div>
+
+    <div class="form-group">
+      <label>Filtrar</label>
+      <div class="form-row">
+        <div class="form-col">
+          <label for="startDate">Data Início</label>
+          <input type="date" id="startDate">
+        </div>
+        <div class="form-col">
+          <label for="endDate">Data Fim</label>
+          <input type="date" id="endDate">
+        </div>
+        <div class="form-col">
+          <label for="warehouseFilter">Armazém</label>
+          <select id="warehouseFilter">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="form-col">
+          <button class="btn-primary" onclick="generateReports()">Filtrar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="inspecoes" class="tabcontent" style="display: block;">
+      <h2>Resultados de Inspeção</h2>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Armazém</th>
+            <th>Aprovados</th>
+            <th>Rejeitados</th>
+            <th>% Aprovação</th>
+            <th>Última Inspeção</th>
+          </tr>
+        </thead>
+        <tbody id="inspecoesBody"></tbody>
+      </table>
+    </div>
+
+    <div id="rejeitados" class="tabcontent">
+      <h2>Itens Rejeitados e Devolvidos</h2>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Armazém</th>
+            <th>Quantidade</th>
+            <th>NF</th>
+            <th>Status</th>
+            <th>Data Devolução</th>
+            <th>Documento</th>
+            <th>Troca Solicitada</th>
+          </tr>
+        </thead>
+        <tbody id="rejeitadosBody"></tbody>
+      </table>
+    </div>
+
+    <div id="estoque" class="tabcontent">
+      <h2>Movimentação de Estoque</h2>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Descrição</th>
+            <th>Armazém</th>
+            <th>Quantidade</th>
+            <th>Data Entrada</th>
+            <th>Origem</th>
+            <th>Lote Fornecedor</th>
+          </tr>
+        </thead>
+        <tbody id="estoqueBody"></tbody>
+      </table>
+    </div>
+
+    <div id="trocas" class="tabcontent">
+      <h2>Solicitações de Troca</h2>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Pedido Original</th>
+            <th>Novo Pedido</th>
+            <th>Item</th>
+            <th>Quantidade</th>
+            <th>Status</th>
+            <th>Data Solicitação</th>
+            <th>Fornecedor</th>
+          </tr>
+        </thead>
+        <tbody id="trocasBody"></tbody>
+      </table>
+    </div>
+
+    <div id="fornecedores" class="tabcontent">
+      <h2>Desempenho por Fornecedor</h2>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Fornecedor</th>
+            <th>Total Itens</th>
+            <th>Aprovados</th>
+            <th>Rejeitados</th>
+            <th>% Aprovação</th>
+            <th>Última Entrega</th>
+          </tr>
+        </thead>
+        <tbody id="fornecedoresBody"></tbody>
+      </table>
+    </div>
+
+    <div id="criterios" class="tabcontent">
+      <h2>Auditoria de Critérios</h2>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Armazém</th>
+            <th>Critério</th>
+            <th>Valor Esperado</th>
+            <th>Tolerância</th>
+            <th>Valor Medido</th>
+            <th>Status</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody id="criteriosBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, getDocs, query, where, limit, orderBy, getDoc, doc, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let estoqueQualidade = [];
+    let produtos = [];
+    let inspecoes = [];
+    let estoque = [];
+    let pedidos = [];
+    let armazens = [];
+    const CACHE_KEY = 'relatorios_qualidade_cache';
+    const CACHE_DURATION = 60 * 60 * 1000; // 1 hora
+
+    window.onload = async function() {
+      if (!localStorage.getItem('currentUser')) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      setDefaultStartDate();
+      await loadCachedData();
+      populateWarehouseFilter();
+      document.getElementById('startDate').addEventListener('change', generateReports);
+      document.getElementById('endDate').addEventListener('change', generateReports);
+      document.getElementById('warehouseFilter').addEventListener('change', generateReports);
+    };
+
+    function setDefaultStartDate() {
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - daysToMonday);
+      const formattedDate = monday.toISOString().split('T')[0];
+      document.getElementById('startDate').value = formattedDate;
+    }
+
+    function populateWarehouseFilter() {
+      const select = document.getElementById('warehouseFilter');
+      armazens
+        .sort((a, b) => a.codigo.localeCompare(b.codigo))
+        .forEach(armazem => {
+          const option = document.createElement('option');
+          option.value = armazem.id;
+          option.textContent = `${armazem.codigo} - ${armazem.nome}`;
+          select.appendChild(option);
+        });
+    }
+
+    async function loadCachedData() {
+      const cache = JSON.parse(localStorage.getItem(CACHE_KEY));
+      const now = new Date().getTime();
+
+      if (cache && (now - cache.timestamp < CACHE_DURATION)) {
+        estoqueQualidade = cache.estoqueQualidade;
+        produtos = cache.produtos;
+        inspecoes = cache.inspecoes;
+        estoque = cache.estoque;
+        pedidos = cache.pedidos;
+        armazens = cache.armazens;
+        generateReports();
+      } else {
+        await fetchData();
+      }
+    }
+
+    async function fetchData() {
+      try {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        let inspecoesQuery = query(
+          collection(db, "inspecoesQualidade"),
+          orderBy("dataInspecao", "desc"),
+          limit(100)
+        );
+        if (startDate) inspecoesQuery = query(inspecoesQuery, where("dataInspecao", ">=", Timestamp.fromDate(new Date(startDate))));
+        if (endDate) inspecoesQuery = query(inspecoesQuery, where("dataInspecao", "<=", Timestamp.fromDate(new Date(endDate + "T23:59:59"))));
+        const inspecoesSnap = await getDocs(inspecoesQuery);
+        inspecoes = inspecoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const produtoIds = new Set(inspecoes.map(i => i.produtoId).filter(id => id));
+        const estoqueQualidadeIds = new Set(inspecoes.map(i => i.estoqueQualidadeId).filter(id => id));
+        const pedidoIds = new Set(inspecoes.map(i => i.estoqueQualidadeId?.pedidoId).filter(id => id));
+
+        produtos = [];
+        for (const id of produtoIds) {
+          const docSnap = await getDoc(doc(db, "produtos", id));
+          if (docSnap.exists()) produtos.push({ id: docSnap.id, ...docSnap.data() });
+        }
+
+        estoqueQualidade = [];
+        for (const id of estoqueQualidadeIds) {
+          const docSnap = await getDoc(doc(db, "estoqueQualidade", id));
+          if (docSnap.exists()) estoqueQualidade.push({ id: docSnap.id, ...docSnap.data() });
+        }
+
+        const estoqueQuery = query(
+          collection(db, "estoque"),
+          orderBy("dataEntrada", "desc"),
+          limit(100)
+        );
+        const estoqueSnap = await getDocs(estoqueQuery);
+        estoque = estoqueSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        pedidos = [];
+        for (const id of pedidoIds) {
+          const docSnap = await getDoc(doc(db, "pedidosCompra", id));
+          if (docSnap.exists()) pedidos.push({ id: docSnap.id, ...docSnap.data() });
+        }
+
+        const armazensSnap = await getDocs(collection(db, "armazens"));
+        armazens = armazensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const cache = {
+          estoqueQualidade,
+          produtos,
+          inspecoes,
+          estoque,
+          pedidos,
+          armazens,
+          timestamp: new Date().getTime()
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+
+        generateReports();
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados. Verifique sua conexão ou tente novamente.");
+      }
+    }
+
+    window.refreshData = async function() {
+      localStorage.removeItem(CACHE_KEY);
+      await fetchData();
+      document.getElementById('warehouseFilter').innerHTML = '<option value="">Todos</option>';
+      populateWarehouseFilter();
+    };
+
+    function extractNF(origem) {
+      const match = origem.match(/NF\s+(\w+)/);
+      return match ? match[1] : origem;
+    }
+
+    window.openTab = (evt, tabName) => {
+      const tabcontent = document.getElementsByClassName("tabcontent");
+      for (let i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+      }
+      const tablinks = document.getElementsByClassName("tablinks");
+      for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(tabName).style.display = "block";
+      evt.currentTarget.className += " active";
+    };
+
+    window.generateReports = () => {
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const warehouseId = document.getElementById('warehouseFilter').value;
+      const start = startDate ? Timestamp.fromDate(new Date(startDate)) : null;
+      const end = endDate ? Timestamp.fromDate(new Date(endDate + "T23:59:59")) : null;
+
+      generateInspecoesReport(start, end, warehouseId);
+      generateRejeitadosReport(start, end, warehouseId);
+      generateEstoqueReport(start, end, warehouseId);
+      generateTrocasReport(start, end);
+      generateFornecedoresReport(start, end);
+      generateCriteriosReport(start, end, warehouseId);
+    };
+
+    function generateInspecoesReport(start, end, warehouseId) {
+      let filteredInspecoes = inspecoes.filter(i => {
+        if (start && i.dataInspecao < start) return false;
+        if (end && i.dataInspecao > end) return false;
+        if (warehouseId) {
+          const estoqueItem = estoqueQualidade.find(e => e.id === i.estoqueQualidadeId);
+          return estoqueItem?.armazemId === warehouseId;
+        }
+        return true;
+      });
+
+      const reportData = {};
+      filteredInspecoes.forEach(inspecao => {
+        const produtoId = inspecao.produtoId;
+        if (!reportData[produtoId]) {
+          reportData[produtoId] = { aprovados: 0, rejeitados: 0, ultimaInspecao: null, armazem: '' };
+        }
+        if (inspecao.status === 'APROVADO') reportData[produtoId].aprovados += inspecao.quantidade;
+        else if (inspecao.status === 'REJEITADO') reportData[produtoId].rejeitados += inspecao.quantidade;
+        const inspecaoDate = inspecao.dataInspecao.toDate();
+        if (!reportData[produtoId].ultimaInspecao || inspecaoDate > reportData[produtoId].ultimaInspecao) {
+          reportData[produtoId].ultimaInspecao = inspecaoDate;
+        }
+        const estoqueItem = estoqueQualidade.find(e => e.id === inspecao.estoqueQualidadeId);
+        reportData[produtoId].armazem = armazens.find(a => a.id === estoqueItem?.armazemId)?.codigo || '-';
+      });
+
+      const tableBody = document.getElementById('inspecoesBody');
+      tableBody.innerHTML = '';
+      for (const produtoId in reportData) {
+        const produto = produtos.find(p => p.id === produtoId);
+        const { aprovados, rejeitados, ultimaInspecao, armazem } = reportData[produtoId];
+        const total = aprovados + rejeitados;
+        const percentAprovacao = total ? ((aprovados / total) * 100).toFixed(2) : 0;
+        tableBody.innerHTML += `
+          <tr>
+            <td>${produto ? `${produto.codigo} - ${produto.descricao}` : produtoId}</td>
+            <td>${armazem}</td>
+            <td>${aprovados}</td>
+            <td>${rejeitados}</td>
+            <td>${percentAprovacao}%</td>
+            <td>${ultimaInspecao.toLocaleDateString()}</td>
+          </tr>
+        `;
+      }
+    }
+
+    function generateRejeitadosReport(start, end, warehouseId) {
+      let filteredEstoque = estoqueQualidade.filter(i => {
+        if (!(i.status === 'REJEITADO' || i.status === 'DEVOLVIDO')) return false;
+        if (start && i.dataEntrada < start) return false;
+        if (end && i.dataEntrada > end) return false;
+        if (warehouseId) return i.armazemId === warehouseId;
+        return true;
+      });
+
+      const tableBody = document.getElementById('rejeitadosBody');
+      tableBody.innerHTML = '';
+      filteredEstoque.forEach(item => {
+        const trocaSolicitada = pedidos.some(p => p.pedidoOriginalId === item.pedidoId && p.status === 'TROCA SOLICITADA') ? 'Sim' : 'Não';
+        const armazem = armazens.find(a => a.id === item.armazemId)?.codigo || '-';
+        tableBody.innerHTML += `
+          <tr>
+            <td>${item.codigo}</td>
+            <td>${armazem}</td>
+            <td>${item.quantidade}</td>
+            <td>${extractNF(item.origem)}</td>
+            <td>${item.status}</td>
+            <td>${item.dataDevolucao ? item.dataDevolucao.toDate().toLocaleDateString() : '-'}</td>
+            <td>${item.documentoDevolucao || '-'}</td>
+            <td>${trocaSolicitada}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function generateEstoqueReport(start, end, warehouseId) {
+      let filteredEstoque = estoque.filter(e => {
+        if (start && e.dataEntrada < start) return false;
+        if (end && e.dataEntrada > end) return false;
+        if (warehouseId) return e.armazemId === warehouseId;
+        return true;
+      });
+
+      const tableBody = document.getElementById('estoqueBody');
+      tableBody.innerHTML = '';
+      filteredEstoque.forEach(item => {
+        const armazem = armazens.find(a => a.id === item.armazemId)?.codigo || '-';
+        tableBody.innerHTML += `
+          <tr>
+            <td>${item.codigo}</td>
+            <td>${item.descricao}</td>
+            <td>${armazem}</td>
+            <td>${item.quantidade}</td>
+            <td>${item.dataEntrada.toDate().toLocaleDateString()}</td>
+            <td>${extractNF(item.origem)}</td>
+            <td>${item.loteFornecedor || '-'}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function generateTrocasReport(start, end) {
+      let filteredPedidos = pedidos.filter(p => 
+        (p.status === 'TROCA SOLICITADA' || p.pedidoOriginalId) && 
+        (!start || p.dataCriacao >= start) && (!end || p.dataCriacao <= end)
+      );
+      const tableBody = document.getElementById('trocasBody');
+      tableBody.innerHTML = '';
+      filteredPedidos.forEach(pedido => {
+        const item = pedido.itens[0];
+        const pedidoOriginal = pedidos.find(p => p.id === pedido.pedidoOriginalId);
+        tableBody.innerHTML += `
+          <tr>
+            <td>${pedido.pedidoOriginalId || '-'}</td>
+            <td>${pedido.pedidoOriginalId ? pedido.id : '-'}</td>
+            <td>${item.codigo}</td>
+            <td>${item.quantidade}</td>
+            <td>${pedido.status}</td>
+            <td>${pedido.dataCriacao.toDate().toLocaleDateString()}</td>
+            <td>${pedido.fornecedorId || '-'}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function generateFornecedoresReport(start, end) {
+      let filteredInspecoes = inspecoes.filter(i => (!start || i.dataInspecao >= start) && (!end || i.dataInspecao <= end));
+      const reportData = {};
+      filteredInspecoes.forEach(inspecao => {
+        const pedido = pedidos.find(p => p.id === inspecao.estoqueQualidadeId?.pedidoId || p.itens.some(i => i.produtoId === inspecao.produtoId));
+        const fornecedorId = pedido?.fornecedorId || 'Desconhecido';
+        if (!reportData[fornecedorId]) {
+          reportData[fornecedorId] = { total: 0, aprovados: 0, rejeitados: 0, ultimaEntrega: null };
+        }
+        reportData[fornecedorId].total += inspecao.quantidade;
+        if (inspecao.status === 'APROVADO') reportData[fornecedorId].aprovados += inspecao.quantidade;
+        else if (inspecao.status === 'REJEITADO') reportData[fornecedorId].rejeitados += inspecao.quantidade;
+        const entregaDate = inspecao.dataInspecao.toDate();
+        if (!reportData[fornecedorId].ultimaEntrega || entregaDate > reportData[fornecedorId].ultimaEntrega) {
+          reportData[fornecedorId].ultimaEntrega = entregaDate;
+        }
+      });
+
+      const tableBody = document.getElementById('fornecedoresBody');
+      tableBody.innerHTML = '';
+      for (const fornecedorId in reportData) {
+        const { total, aprovados, rejeitados, ultimaEntrega } = reportData[fornecedorId];
+        const percentAprovacao = total ? ((aprovados / total) * 100).toFixed(2) : 0;
+        tableBody.innerHTML += `
+          <tr>
+            <td>${fornecedorId}</td>
+            <td>${total}</td>
+            <td>${aprovados}</td>
+            <td>${rejeitados}</td>
+            <td>${percentAprovacao}%</td>
+            <td>${ultimaEntrega.toLocaleDateString()}</td>
+          </tr>
+        `;
+      }
+    }
+
+    function generateCriteriosReport(start, end, warehouseId) {
+      let filteredInspecoes = inspecoes.filter(i => {
+        if (start && i.dataInspecao < start) return false;
+        if (end && i.dataInspecao > end) return false;
+        if (warehouseId) {
+          const estoqueItem = estoqueQualidade.find(e => e.id === i.estoqueQualidadeId);
+          return estoqueItem?.armazemId === warehouseId;
+        }
+        return true;
+      });
+
+      const tableBody = document.getElementById('criteriosBody');
+      tableBody.innerHTML = '';
+      filteredInspecoes.forEach(inspecao => {
+        const produto = produtos.find(p => p.id === inspecao.produtoId);
+        const estoqueItem = estoqueQualidade.find(e => e.id === inspecao.estoqueQualidadeId);
+        const armazem = armazens.find(a => a.id === estoqueItem?.armazemId)?.codigo || '-';
+        inspecao.resultados?.forEach(criterio => {
+          tableBody.innerHTML += `
+            <tr>
+              <td>${produto ? `${produto.codigo} - ${produto.descricao}` : inspecao.produtoId}</td>
+              <td>${armazem}</td>
+              <td>${criterio.criterio}</td>
+              <td>${criterio.valorEsperado}</td>
+              <td>${criterio.tolerancia}</td>
+              <td>${criterio.valorMedido}</td>
+              <td>${inspecao.status}</td>
+              <td>${inspecao.dataInspecao.toDate().toLocaleDateString()}</td>
+            </tr>
+          `;
+        });
+      });
+    }
+
+    window.navigateBack = () => {
+      try {
+        window.location.href = 'index.html';
+      } catch (error) {
+        // Suprimir o log no console para evitar ruído
+        alert("Funcionalidade de voltar não disponível no StackBlitz. Use o menu do sistema.");
+      }
+    };
+  </script>
+</body>
+</html>

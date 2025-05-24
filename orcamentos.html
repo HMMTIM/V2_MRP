@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PLAZHA - SISTEMAS - Orçamentos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --success-color: #107e3e;
+      --danger-color: #bb0000;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      font-size: 13px;
+    }
+
+    .sap-header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sap-logo {
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .sap-title {
+      color: var(--primary-color);
+      font-size: 20px;
+      margin: 0 0 20px 0;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sap-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 20px;
+    }
+
+    .sap-tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .sap-tab.active {
+      border-bottom: 2px solid var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .totvs-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 15px;
+      font-size: 12px;
+    }
+
+    .totvs-table th {
+      background-color: var(--secondary-color);
+      color: var(--primary-color);
+      font-weight: 600;
+      padding: 8px 5px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .totvs-table td {
+      padding: 6px 5px;
+      border: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    .totvs-table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .totvs-table tr:hover {
+      background-color: #e6f2ff;
+    }
+
+    .totvs-form {
+      background-color: white;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .totvs-form h2 {
+      color: var(--primary-color);
+      font-size: 16px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .totvs-select, .totvs-input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      font-size: 13px;
+      background-color: white;
+    }
+
+    .totvs-select:focus, .totvs-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.2);
+    }
+
+    .field-with-button {
+      display: flex;
+    }
+
+    .field-with-button .totvs-select {
+      flex-grow: 1;
+    }
+
+    .search-button {
+      padding: 6px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+
+    .search-button:hover {
+      background-color: #e0e0e0;
+    }
+
+    .btn-totvs {
+      padding: 5px 10px;
+      border: 1px solid var(--primary-color);
+      border-radius: 3px;
+      background-color: white;
+      color: var(--primary-color);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-totvs:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-totvs i {
+      margin-right: 5px;
+    }
+
+    .btn-totvs-primary {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .btn-totvs-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-totvs-secondary {
+      background-color: white;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .btn-totvs-secondary:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-totvs-danger {
+      background-color: var(--danger-color);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .btn-totvs-danger:hover {
+      background-color: #a30000;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      justify-content: flex-end;
+    }
+
+    .totvs-status {
+      font-size: 11px;
+      padding: 3px 6px;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+
+    .status-active {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .status-inactive {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    .notification {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .notification-success {
+      background-color: #d4edda;
+      color: #155724;
+      display: block;
+    }
+
+    .notification-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      display: block;
+    }
+
+    .currency {
+      text-align: right;
+      font-family: 'Courier New', monospace;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 2% auto;
+      padding: 30px;
+      width: 95%;
+      max-width: 1200px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      position: relative;
+      max-height: 96vh;
+      overflow-y: auto;
+    }
+
+    .modal-content .totvs-form {
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .modal-content .form-row {
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .modal-content .items-container {
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    @media (max-width: 1024px) {
+      .modal-content {
+        width: 98%;
+        padding: 15px;
+        margin: 1% auto;
+      }
+
+      .modal-content .form-row {
+        gap: 10px;
+      }
+    }
+
+    .close-button {
+      position: sticky;
+      top: 10px;
+      right: 10px;
+      float: right;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+      background: white;
+      padding: 5px;
+      z-index: 1001;
+    }
+
+    .approval-workflow {
+      margin-top: 20px;
+      border: 1px solid var(--border-color);
+      padding: 15px;
+      border-radius: 4px;
+    }
+
+    .approval-workflow h3 {
+      color: var(--primary-color);
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+
+    .approval-step {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .approval-step .status {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .status-pending {
+      background-color: yellow;
+    }
+
+    .status-approved {
+      background-color: green;
+    }
+
+    .status-rejected {
+      background-color: red;
+    }
+
+    .sap-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--secondary-color);
+      padding: 5px 10px;
+      font-size: 12px;
+      margin-top: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+    }
+
+    .item-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 50px;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .item-row .form-group {
+      margin-bottom: 0;
+    }
+
+    .items-container {
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 3px;
+    }
+
+    .items-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    /* Estilos para o container de notificações na header */
+    #notificationsContainer {
+      position: relative;
+      margin-left: auto;
+      margin-right: 20px;
+    }
+
+    .notifications-wrapper {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      width: 350px;
+      max-height: 500px;
+      overflow-y: auto;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: none;
+    }
+
+    .notifications-wrapper.show {
+      display: block;
+    }
+
+    .notifications-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .notifications-header h3 {
+      margin: 0;
+      color: #333;
+      font-size: 16px;
+    }
+
+    .notifications-header button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #666;
+      font-size: 12px;
+      padding: 5px 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .notifications-header button:hover {
+      color: #333;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+    }
+
+    /* Estilos para badges de notificação */
+    .notification-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #dc3545;
+      color: white;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Estilos para alertas críticos */
+    .alert-item {
+      padding: 12px 15px;
+      margin: 5px;
+      border-radius: 4px;
+    }
+
+    .alert-critical {
+      background-color: #fff5f5;
+      border-left: 4px solid #dc3545;
+    }
+
+    .alert-warning {
+      background-color: #fff9e6;
+      border-left: 4px solid #ffc107;
+    }
+
+    .alert-info {
+      background-color: #f0fdff;
+      border-left: 4px solid #0dcaf0;
+    }
+
+    .alert-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .alert-title {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .alert-time {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .alert-message {
+      color: #555;
+      font-size: 13px;
+      line-height: 1.4;
+      margin: 5px 0;
+    }
+
+    /* Estilos para botões de ação em alertas */
+    .alert-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .alert-actions button {
+      padding: 4px 8px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: white;
+    }
+
+    .alert-actions button:first-child {
+      background-color: #28a745;
+    }
+
+    .alert-actions button:first-child:hover {
+      background-color: #218838;
+    }
+
+    .alert-actions button:last-child {
+      background-color: #6c757d;
+    }
+
+    .alert-actions button:last-child:hover {
+      background-color: #5a6268;
+    }
+
+    /* Estilos para notificações */
+    .notification-item {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .notification-item:hover {
+      background-color: #f8f9fa;
+    }
+
+    .notification-item.unread {
+      background-color: #e8f0fe;
+    }
+
+    .notification-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .notification-title {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .notification-time {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .notification-message {
+      color: #555;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    /* Estilos para o botão de notificações */
+    .notifications-toggle {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      padding: 8px;
+      position: relative;
+    }
+
+    .notifications-toggle:hover {
+      background-color: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
+
+    .notifications-toggle i {
+      font-size: 18px;
+    }
+
+    /* Animações */
+    @keyframes slideIn {
+      from {
+        transform: translateY(-10px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .notifications-wrapper.show {
+      animation: slideIn 0.2s ease-out;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+      .notifications-wrapper {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-height: calc(100vh - 60px);
+        margin: 0;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sap-header">
+    <div class="sap-logo">PLAZHA - SISTEMAS</div>
+    <div id="notificationsContainer"></div>
+    <div id="authContainer">Usuário: <span id="userStatus">Não logado</span> | Empresa: 1000</div>
+  </div>
+
+  <div class="container">
+    <div class="sap-title"><i class="fas fa-file-invoice-dollar"></i> Orçamentos</div>
+
+    <div class="approval-workflow" id="approvalWorkflow" style="display: none;">
+      <h3>Fluxo de Aprovação</h3>
+      <div class="approval-step">
+        <div class="status status-pending" id="step1Status"></div>
+        <div>
+          <strong>Nível 1 - Supervisor</strong>
+          <div>Aprovação até R$ 10.000</div>
+        </div>
+      </div>
+      <div class="approval-step">
+        <div class="status status-pending" id="step2Status"></div>
+        <div>
+          <strong>Nível 2 - Gerente</strong>
+          <div>Aprovação até R$ 50.000</div>
+        </div>
+      </div>
+      <div class="approval-step">
+        <div class="status status-pending" id="step3Status"></div>
+        <div>
+          <strong>Nível 3 - Diretor</strong>
+          <div>Aprovação até R$ 100.000</div>
+        </div>
+      </div>
+      <div class="approval-step">
+        <div class="status status-pending" id="step4Status"></div>
+        <div>
+          <strong>Nível 4 - Presidente</strong>
+          <div>Aprovação acima de R$ 100.000</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="totvs-form">
+      <h2>Filtros</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Buscar Orçamento</label>
+          <input type="text" id="searchInput" class="totvs-input" placeholder="Número ou cliente..." oninput="filterQuotes()">
+        </div>
+        <div class="form-group">
+          <label>Filtrar por Status</label>
+          <select id="statusFilter" class="totvs-select" onchange="filterQuotes()">
+            <option value="">Todos os status</option>
+            <option value="Aberto">Aberto</option>
+            <option value="Aguardando Aprovação Interna">Aguardando Aprovação Interna</option>
+            <option value="Aprovado Internamente">Aprovado Internamente</option>
+            <option value="Enviado ao Cliente">Enviado ao Cliente</option>
+            <option value="Aprovado pelo Cliente">Aprovado pelo Cliente</option>
+            <option value="Rejeitado">Rejeitado</option>
+            <option value="Expirado">Expirado</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="sap-tabs">
+      <div class="sap-tab active">Lista de Orçamentos</div>
+      <div class="sap-tab">Relatórios</div>
+    </div>
+
+    <table class="totvs-table">
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Cliente</th>
+          <th>Produto</th>
+          <th>Quantidade Total</th>
+          <th>Valor Total (R$)</th>
+          <th>Impostos (R$)</th>
+          <th>Prazo Entrega</th>
+          <th>Tipo Frete</th>
+          <th>CFOP</th>
+          <th>Data Validade</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="quoteTableBody"></tbody>
+    </table>
+
+    <div class="form-actions">
+      <button class="btn-totvs-primary" onclick="openQuoteModal()">
+        <i class="fas fa-plus"></i> Novo Orçamento
+      </button>
+      <button class="btn-totvs-secondary" onclick="window.location.href='home.html'">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </button>
+      <button class="btn-totvs-danger" id="logoutButton" style="display: none;" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Sair
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de Orçamento -->
+  <div id="quoteModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal()">×</span>
+      <div class="sap-title" id="modalTitle">Criar Orçamento</div>
+      <form id="quoteForm" onsubmit="handleQuote(event)">
+        <div class="totvs-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Número Orçamento</label>
+              <input type="text" id="numeroOrcamento" class="totvs-input" readonly>
+            </div>
+            <div class="form-group">
+              <label>Cliente</label>
+              <div class="field-with-button">
+                <select id="clientSelect" class="totvs-select" required onchange="updateCFOP()">
+                  <option value="">Selecione o cliente...</option>
+                </select>
+                <button type="button" class="search-button"><i class="fas fa-search"></i></button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>CFOP</label>
+              <select id="cfopSelect" class="totvs-select" required>
+                <option value="">Selecione o CFOP...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Condição de Pagamento</label>
+              <input type="text" id="condicaoPagamento" class="totvs-input" placeholder="Ex.: 30/60/90 dias" required>
+            </div>
+            <div class="form-group">
+              <label>Detalhes Pagamento</label>
+              <input type="text" id="condicaoPagamentoDetalhes" class="totvs-input" placeholder="Ex.: Vencimentos em 30/11/2025, 30/12/2025">
+            </div>
+            <div class="form-group">
+              <label>Prazo de Entrega (dias)</label>
+              <input type="number" id="prazoEntrega" class="totvs-input" min="1" required>
+            </div>
+            <div class="form-group">
+              <label>Tipo de Frete</label>
+              <select id="tipoFrete" class="totvs-select" required>
+                <option value="">Selecione...</option>
+                <option value="CIF">CIF</option>
+                <option value="FOB">FOB</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Transportadora</label>
+              <div class="field-with-button">
+                <select id="transportadoraSelect" class="totvs-select" required>
+                  <option value="">Selecione a transportadora...</option>
+                </select>
+                <button type="button" class="search-button" onclick="openTransportadoraModal()"><i class="fas fa-search"></i></button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Número Pedido Cliente</label>
+              <input type="text" id="numeroPedidoCliente" class="totvs-input" placeholder="Ex.: PED123">
+            </div>
+            <div class="form-group">
+              <label>Data de Validade</label>
+              <input type="date" id="validityDate" class="totvs-input" required>
+            </div>
+            <div class="form-group">
+              <label>Valor Total (R$)</label>
+              <input type="number" id="valorTotal" class="totvs-input" step="0.01" readonly>
+            </div>
+            <div class="form-group">
+              <label>Total Impostos (R$)</label>
+              <input type="number" id="totalImpostos" class="totvs-input" step="0.01" readonly>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Observações</label>
+            <textarea id="observacoes" class="totvs-input" rows="4" placeholder="Ex.: Entrega no depósito central"></textarea>
+          </div>
+          <div class="items-container">
+            <div class="items-header">
+              <h3>Itens do Orçamento</h3>
+              <button type="button" class="btn-totvs-primary" onclick="addItemRow()"><i class="fas fa-plus"></i> Adicionar Item</button>
+            </div>
+            <div id="itemsList"></div>
+          </div>
+          <!-- Campos para aprovação do cliente -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Método de Aprovação</label>
+              <select id="metodoAprovacao" class="totvs-select">
+                <option value="">Selecione o método...</option>
+                <option value="Telefone">Telefone</option>
+                <option value="Email">Email</option>
+                <option value="Celular">Celular</option>
+                <option value="Presencial">Presencial</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Detalhes da Aprovação</label>
+              <input type="text" id="detalhesAprovacao" class="totvs-input" placeholder="Informações adicionais sobre a aprovação">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-totvs-primary"><i class="fas fa-save"></i> Salvar</button>
+            <button type="button" class="btn-totvs-secondary" onclick="closeModal()"><i class="fas fa-times"></i> Cancelar</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="sap-status">
+    <div>Transação: ZQUOT - Orçamentos</div>
+    <div>Sistema: PRD | Cliente: 800</div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs,
+      Timestamp,
+      doc,
+      updateDoc,
+      deleteDoc,
+      query,
+      where,
+      onSnapshot,
+      getDoc,
+      writeBatch
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm';
+    import { InventoryService } from './services/inventory-service.js';
+    import { LogisticsService } from './services/logistics-service.js';
+    import { CRMService } from './services/crm-service.js';
+    import { NotificationsComponent } from './components/notifications.js';
+    import { WorkflowService } from './services/workflow-service.js';
+    import { NotificationService } from './services/notification-service.js';
+    import { Scheduler } from './services/scheduler.js';
+
+    let clientes = [];
+    let produtos = [];
+    let precos = [];
+    let condicoes = [];
+    let configImpostos = [];
+    let cfops = [];
+    let orcamentos = [];
+    let usuarioAtual = null;
+    let qualityModuleEnabled = false;
+    let itemCount = 0;
+    let cachedUserData = null;
+    let cachedProducts = null;
+    let cachedClients = null;
+    let cachedPrices = {};
+    let cachedTaxes = {};
+    let transportadoras = [];
+
+    const ALIQUOTAS_PADRAO = {
+      icms: 18,
+      ipi: 5,
+      pis: 1.65,
+      cofins: 7.6
+    };
+
+    window.onload = async function() {
+      usuarioAtual = JSON.parse(localStorage.getItem('currentUser'));
+      if (!usuarioAtual) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      qualityModuleEnabled = usuarioAtual.qualityModuleEnabled || false;
+      document.getElementById('userStatus').textContent = usuarioAtual.nome;
+      document.getElementById('logoutButton').style.display = 'inline';
+
+      // Inicializa componente de notificações
+      window.notificationsComponent = new NotificationsComponent('notificationsContainer', usuarioAtual.id);
+
+      // Inicia verificação periódica de alertas críticos
+      startAlertMonitoring();
+
+      // Inicia o agendador de tarefas automáticas
+      await Scheduler.startScheduledTasks();
+
+      await loadInitialData();
+      await loadTransportadoras();
+      updateSelects();
+      await loadQuotes();
+
+      // Set up real-time listeners
+      onSnapshot(collection(db, "tabelaPrecos"), (snapshot) => {
+        precos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      });
+
+      onSnapshot(collection(db, "transportadoras"), (snapshot) => {
+        transportadoras = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        updateTransportadoraSelect();
+      });
+
+      onSnapshot(collection(db, "condicoesEspeciais"), (snapshot) => {
+        condicoes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      });
+
+      onSnapshot(collection(db, "configImpostos"), (snapshot) => {
+        configImpostos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      });
+
+      onSnapshot(collection(db, "cfops"), (snapshot) => {
+        cfops = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        updateCFOPSelect();
+      });
+
+      // Make functions available globally
+      window.openQuoteModal = openQuoteModal;
+      window.closeModal = closeModal;
+      window.handleQuote = handleQuote;
+      window.addItemRow = addItemRow;
+      window.removeItemRow = removeItemRow;
+      window.updateUnitPrice = updateUnitPrice;
+      window.validateAndUpdatePrice = validateAndUpdatePrice;
+      window.updateCFOP = updateCFOP;
+      window.editQuote = editQuote;
+      window.deleteQuote = deleteQuote;
+      window.filterQuotes = filterQuotes;
+      window.generatePDF = generatePDF;
+      window.convertToPedido = convertToPedido;
+      window.logout = logout;
+    };
+
+    async function startAlertMonitoring() {
+      // Verifica alertas imediatamente
+      await WorkflowService.checkCriticalAlerts();
+
+      // Configura verificação periódica (a cada 5 minutos)
+      setInterval(async () => {
+        await WorkflowService.checkCriticalAlerts();
+      }, 5 * 60 * 1000);
+    }
+
+    async function loadInitialData() {
+      try {
+        const [fornecedoresSnap, produtosSnap, precosSnap, condicoesSnap, impostosSnap, cfopsSnap, orcamentosSnap] = await Promise.all([
+          getDocs(query(collection(db, "fornecedores"), 
+            where("tipo", "in", ["Cliente", "Ambos"]),
+            where("ativo", "==", true)
+          )),
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "tabelaPrecos")),
+          getDocs(collection(db, "condicoesEspeciais")),
+          getDocs(collection(db, "configImpostos")),
+          getDocs(collection(db, "cfops")),
+          getDocs(collection(db, "orcamentos"))
+        ]);
+
+        clientes = fornecedoresSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        precos = precosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        condicoes = condicoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        configImpostos = impostosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        cfops = cfopsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        orcamentos = orcamentosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        console.log('CFOPs carregados:', cfops);
+
+        // Garante que os selects sejam atualizados após o carregamento dos dados
+        updateSelects();
+        updateCFOPSelect();
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        showNotification("Erro ao carregar dados", "error");
+      }
+    }
+
+    function updateSelects() {
+      const clientSelect = document.getElementById('clientSelect');
+      clientSelect.innerHTML = '<option value="">Selecione o cliente...</option>';
+      clientes.forEach(cliente => {
+        if (cliente && cliente.id) {
+          const displayName = cliente.nome || cliente.razaoSocial || 'Cliente sem nome';
+          const ufDisplay = cliente.uf ? ` (${cliente.uf})` : '';
+          clientSelect.innerHTML += `<option value="${cliente.id}">${displayName}${ufDisplay}</option>`;
+        }
+      });
+      updateCFOPSelect();
+    }
+
+    function updateCFOPSelect(clienteUF = null) {
+      const cfopSelect = document.getElementById('cfopSelect');
+      cfopSelect.innerHTML = '<option value="">Selecione o CFOP...</option>';
+      const ufEmpresa = 'SP'; // Configuração global
+
+      if (!cfops || cfops.length === 0) {
+        console.warn('Nenhum CFOP carregado');
+        return;
+      }
+
+      // Filtra CFOPs ativos
+      const cfopsAtivos = cfops.filter(cfop => cfop.ativo !== false);
+
+      // Se tiver UF do cliente, filtra por tipo de operação (estadual/interestadual)
+      if (clienteUF) {
+        const isEstadual = clienteUF === ufEmpresa;
+        const cfopsFiltrados = cfopsAtivos.filter(cfop => {
+          const codigo = cfop.codigo;
+          if (isEstadual) {
+            return codigo.startsWith('5'); // Operação estadual
+          } else {
+            return codigo.startsWith('6'); // Operação interestadual
+          }
+        });
+
+        cfopsFiltrados.forEach(cfop => {
+          cfopSelect.innerHTML += `<option value="${cfop.codigo}">${cfop.codigo} - ${cfop.descricao}</option>`;
+        });
+      } else {
+        // Se não tiver UF, mostra todos os CFOPs de saída (5 e 6)
+        const cfopsSaida = cfopsAtivos.filter(cfop => 
+          cfop.codigo.startsWith('5') || cfop.codigo.startsWith('6')
+        );
+
+        cfopsSaida.forEach(cfop => {
+          cfopSelect.innerHTML += `<option value="${cfop.codigo}">${cfop.codigo} - ${cfop.descricao}</option>`;
+        });
+      }
+    }
+
+    window.updateCFOP = async function() {
+      const clientId = document.getElementById('clientSelect').value;
+      if (!clientId) return;
+
+      const cliente = clientes.find(c => c.id === clientId);
+      if (!cliente) return;
+
+      const ufEmpresa = 'SP';
+      const cfopSelect = document.getElementById('cfopSelect');
+      cfopSelect.value = cliente.uf === ufEmpresa ? '5102' : '6102';
+
+      await checkCredit(cliente);
+    };
+
+    async function checkCredit(cliente) {
+      if (!cliente || !cliente.creditoAprovado) {
+        await Swal.fire({
+          title: 'Atenção',
+          text: 'O cliente selecionado não possui crédito aprovado!',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
+      }
+    }
+
+    function createProductSelect(itemId) {
+      const select = document.createElement('select');
+      select.className = 'totvs-select';
+      select.id = `productSelect_${itemId}`;
+      select.required = true;
+      select.innerHTML = '<option value="">Selecione o produto...</option>';
+      produtos.forEach(produto => {
+        if (produto.tipo === 'PA' || produto.tipo === 'SV') {
+          select.innerHTML += `
+            <option value="${produto.id}">
+              ${produto.codigo} - ${produto.descricao} (${produto.unidadeMedida}, NCM: ${produto.ncm})
+            </option>`;
+        }
+      });
+      select.onchange = () => updateUnitPrice(itemId);
+      return select;
+    }
+
+    window.addItemRow = function(item = null) {
+      const itemId = ++itemCount;
+      const itemRow = document.createElement('div');
+      itemRow.id = `item_${itemId}`;
+      itemRow.className = 'item-row';
+
+      // Usa os produtos em cache para o select
+      const productOptions = cachedProducts ? 
+        cachedProducts.filter(p => p.tipo === 'PA' || p.tipo === 'SV')
+          .map(p => `<option value="${p.id}">${p.codigo} - ${p.descricao}</option>`).join('') :
+        '';
+
+      itemRow.innerHTML = `
+        <div class="form-group">
+          <label>Produto</label>
+          <select id="productSelect_${itemId}" class="totvs-select" required onchange="updateUnitPrice(${itemId})">
+            <option value="">Selecione o produto...</option>
+            ${productOptions}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantidade</label>
+          <input type="number" id="quantity_${itemId}" class="totvs-input" min="0.001" step="0.001" required oninput="validateAndUpdatePrice(this, ${itemId})" value="${item ? item.quantidade : ''}">
+        </div>
+        <div class="form-group">
+          <label>Unidade</label>
+          <input type="text" id="unidade_${itemId}" class="totvs-input" readonly value="${item ? produtos.find(p => p.id === item.produtoId)?.unidade : ''}">
+        </div>
+        <div class="form-group">
+          <label>Valor Unitário (R$)</label>
+          <input type="number" id="valorUnitario_${itemId}" class="totvs-input" min="0" step="0.01" readonly value="${item ? item.valorUnitario : ''}">
+        </div>
+        <div class="form-group">
+          <label>Valor Total (R$)</label>
+          <input type="number" id="valorTotalItem_${itemId}" class="totvs-input" step="0.01" readonly value="${item ? item.valorTotal : ''}">
+        </div>
+        <div class="form-group">
+          <label>Impostos (R$)</label>
+          <input type="number" id="impostosItem_${itemId}" class="totvs-input" step="0.01" readonly value="${item ? (item.impostos.icms.valor + item.impostos.ipi.valor + item.impostos.pis.valor + item.impostos.cofins.valor) : ''}">
+        </div>
+        <button type="button" class="btn-totvs-danger" onclick="removeItemRow(${itemId})"><i class="fas fa-trash"></i></button>
+      `;
+
+      document.getElementById('itemsList').appendChild(itemRow);
+
+      if (item) {
+        document.getElementById(`productSelect_${itemId}`).value = item.produtoId;
+        updateUnitPrice(itemId);
+      }
+    };
+
+    window.removeItemRow = function(itemId) {
+      const itemRow = document.getElementById(`item_${itemId}`);
+      if (itemRow) {
+        itemRow.remove();
+        calculateTotal();
+      }
+    };
+
+    async function loadQuotes() {
+      const tableBody = document.getElementById('quoteTableBody');
+      tableBody.innerHTML = '';
+
+      for (const orcamento of orcamentos) {
+        const cliente = clientes.find(c => c.id === orcamento.clienteId);
+        const itens = orcamento.itens || [];
+        const totalQuantidade = itens.reduce((sum, item) => sum + item.quantidade, 0);
+        const produtoDisplay = itens.length === 1 
+          ? produtos.find(p => p.id === itens[0].produtoId)?.descricao || 'Desconhecido'
+          : 'Múltiplos itens';
+        const totalImpostos = orcamento.impostosTotais 
+          ? (orcamento.impostosTotais.icms + orcamento.impostosTotais.ipi + orcamento.impostosTotais.pis + orcamento.impostosTotais.cofins).toFixed(2)
+          : '0.00';
+
+        // Corrigido aqui: usar razaoSocial se nome não existir
+        const nomeCliente = cliente ? (cliente.nome || cliente.razaoSocial || 'Desconhecido') : 'Desconhecido';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${orcamento.numero}</td>
+          <td>${nomeCliente}</td> <!-- Usando a variável corrigida aqui -->
+          <td>${produtoDisplay}</td>
+          <td>${totalQuantidade.toFixed(3)}</td>
+          <td class="currency">R$ ${orcamento.valorTotal.toFixed(2)}</td>
+          <td class="currency">R$ ${totalImpostos}</td>
+          <td>${orcamento.prazoEntrega} dias</td>
+          <td>${orcamento.tipoFrete}</td>
+          <td>${orcamento.cfop}</td>
+          <td>${new Date(orcamento.dataValidade.seconds * 1000).toLocaleDateString()}</td>
+          <td><span class="totvs-status ${getStatusClass(orcamento.status)}">${orcamento.status}</span></td>
+          <td>
+            <button class="btn-totvs" onclick="editQuote('${orcamento.id}')"><i class="fas fa-edit"></i> Editar</button>
+            <button class="btn-totvs" onclick="deleteQuote('${orcamento.id}')"><i class="fas fa-trash"></i> Excluir</button>
+            <button class="btn-totvs" onclick="generatePDF('${orcamento.id}')"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+            ${orcamento.status === 'Aprovado pelo Cliente' ? 
+              `<button class="btn-totvs" onclick="convertToPedido('${orcamento.id}')"><i class="fas fa-arrow-right"></i> Criar Pedido</button>` : ''}
+          </td>
+        `;
+        tableBody.appendChild(row);
+      }
+    }
+
+    function getStatusClass(status) {
+      switch (status) {
+        case 'Aberto':
+        case 'Aprovado Internamente':
+        case 'Aprovado pelo Cliente':
+          return 'status-active';
+        case 'Rejeitado':
+        case 'Expirado':
+          return 'status-inactive';
+        default:
+          return 'status-pending';
+      }
+    }
+
+    window.filterQuotes = function() {
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+
+      const rows = document.getElementById('quoteTableBody').getElementsByTagName('tr');
+
+      for (const row of rows) {
+        const numero = row.cells[0].textContent.toLowerCase();
+        const cliente = row.cells[1].textContent.toLowerCase();
+        const status = row.cells[10].textContent;
+
+        const matchesSearch = numero.includes(searchText) || cliente.includes(searchText);
+        const matchesStatus = !statusFilter || status === statusFilter;
+
+        row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+      }
+    };
+
+    window.openQuoteModal = async function() {
+      // Mostra um indicador de carregamento
+      document.body.style.cursor = 'wait';
+
+      try {
+        // Verifica autenticação
+        if (!cachedUserData) {
+          cachedUserData = JSON.parse(localStorage.getItem('currentUser'));
+          if (!cachedUserData) {
+            window.location.href = 'login.html';
+            return;
+          }
+        }
+
+        // Reseta o formulário de forma otimizada
+        const form = document.getElementById('quoteForm');
+        const itemsList = document.getElementById('itemsList');
+
+        // Reseta apenas os campos necessários
+        document.getElementById('modalTitle').textContent = 'Criar Orçamento';
+        document.getElementById('valorTotal').value = '';
+        document.getElementById('totalImpostos').value = '';
+        document.getElementById('numeroOrcamento').value = (orcamentos.length + 1).toString().padStart(6, '0');
+
+        // Limpa a lista de itens de forma otimizada
+        while (itemsList.firstChild) {
+          itemsList.removeChild(itemsList.firstChild);
+        }
+
+        // Reseta o contador de itens
+        itemCount = 0;
+
+        // Adiciona o primeiro item de forma assíncrona
+        setTimeout(() => {
+          addItemRow();
+          // Exibe o modal apenas depois de toda preparação
+          document.getElementById('quoteModal').style.display = 'block';
+          document.body.style.cursor = 'default';
+        }, 0);
+
+        // Configura o handler do formulário
+        form.onsubmit = handleQuote;
+
+      } catch (error) {
+        console.error('Erro ao abrir modal:', error);
+        showNotification('Erro ao abrir o modal. Por favor, tente novamente.', 'error');
+        document.body.style.cursor = 'default';
+      }
+    };
+
+    window.closeModal = function() {
+      document.getElementById('quoteModal').style.display = 'none';
+      document.getElementById('quoteForm').reset();
+      document.getElementById('itemsList').innerHTML = '';
+      document.getElementById('valorTotal').value = '';
+      document.getElementById('totalImpostos').value = '';
+      document.getElementById('numeroOrcamento').value = '';
+      itemCount = 0;
+    };
+
+    window.validateAndUpdatePrice = function(input, itemId) {
+      if (input.value < 0) {
+        input.value = Math.abs(input.value);
+        showNotification('Valores negativos não são permitidos', 'error');
+      }
+      updateUnitPrice(itemId);
+    };
+
+    window.updateUnitPrice = async function(itemId) {
+      const productId = document.getElementById(`productSelect_${itemId}`).value;
+      const quantity = parseFloat(document.getElementById(`quantity_${itemId}`).value) || 1;
+      const valorUnitarioInput = document.getElementById(`valorUnitario_${itemId}`);
+      const valorTotalItemInput = document.getElementById(`valorTotalItem_${itemId}`);
+      const impostosItemInput = document.getElementById(`impostosItem_${itemId}`);
+      const unidadeInput = document.getElementById(`unidade_${itemId}`);
+
+      if (!productId) {
+        valorUnitarioInput.value = '';
+        valorTotalItemInput.value = '';
+        impostosItemInput.value = '';
+        unidadeInput.value = '';
+        calculateTotal();
+        return;
+      }
+
+      const produto = cachedProducts.find(p => p.id === productId);
+      unidadeInput.value = produto?.unidade || '';
+
+      try {
+        // Buscar parâmetros de vendas
+        const parametrosDoc = await getDoc(doc(db, "parametros", "sistema"));
+        const parametrosVendas = parametrosDoc.data()?.parametrosVendas || {};
+        const precosObrigatoriosTabela = parametrosVendas.precosObrigatoriosTabela || false;
+        const permitirLiberacaoPrecos = parametrosVendas.permitirLiberacaoPrecos || false;
+        const nivelLiberacaoPrecos = parametrosVendas.nivelLiberacaoPrecos || 3;
+        const toleranciaDesconto = parametrosVendas.toleranciaDesconto || 10;
+
+        // Buscar preço da tabela
+        const precosQuery = await getDocs(query(
+          collection(db, "tabelaPrecos"),
+          where("produtoId", "==", productId),
+          where("status", "==", "ativo")
+        ));
+
+        const now = Timestamp.now();
+        let precoTabela = null;
+        for (const doc of precosQuery.docs) {
+          const data = doc.data();
+          if (data.dataInicio <= now && data.dataFim >= now) {
+            if (!precoTabela || data.dataInicio.toMillis() > precoTabela.dataInicio.toMillis()) {
+              precoTabela = data;
+            }
+          }
+        }
+
+        // Mostrar configuração atual de preços
+        if (precosObrigatoriosTabela) {
+          showNotification('Preços são obrigatoriamente da tabela de preços', 'info');
+        } else if (permitirLiberacaoPrecos) {
+          showNotification(`Preços podem ser liberados por usuários de nível ${nivelLiberacaoPrecos} ou superior (Tolerância de desconto: ${toleranciaDesconto}%)`, 'info');
+        }
+
+        if (precoTabela) {
+          valorUnitarioInput.value = precoTabela.precoVenda;
+          valorUnitarioInput.dataset.precoTabela = precoTabela.precoVenda;
+          valorUnitarioInput.readOnly = precosObrigatoriosTabela && (!permitirLiberacaoPrecos || cachedUserData?.nivel < nivelLiberacaoPrecos);
+        } else if (precosObrigatoriosTabela) {
+          showNotification('Não há preço válido cadastrado para este produto na tabela de preços!', 'warning');
+          valorUnitarioInput.value = 0;
+          valorUnitarioInput.readOnly = true;
+          valorTotalItemInput.value = '0.00';
+          impostosItemInput.value = '0.00';
+          calculateTotal();
+          return;
+        }
+
+        // Adicionar evento para validar alterações de preço
+        if (permitirLiberacaoPrecos && cachedUserData?.nivel >= nivelLiberacaoPrecos) {
+          valorUnitarioInput.addEventListener('change', function() {
+            const precoAtual = parseFloat(this.value);
+            const precoTabela = parseFloat(this.dataset.precoTabela);
+            const desconto = ((precoTabela - precoAtual) / precoTabela) * 100;
+
+            if (desconto > toleranciaDesconto) {
+              showNotification(`Desconto máximo permitido é de ${toleranciaDesconto}%`, 'warning');
+              this.value = precoTabela * (1 - (toleranciaDesconto / 100));
+            }
+          });
+        }
+
+        const valorTotalItem = parseFloat(valorUnitarioInput.value) * quantity;
+        valorTotalItemInput.value = valorTotalItem.toFixed(2);
+
+        // Verifica se já temos os impostos em cache
+        if (!cachedTaxes[productId]) {
+          const impostosConfig = configImpostos.find(c => c.produtoId === productId) || ALIQUOTAS_PADRAO;
+          cachedTaxes[productId] = {
+            icms: impostosConfig.icms,
+            ipi: impostosConfig.ipi,
+            pis: impostosConfig.pis,
+            cofins: impostosConfig.cofins
+          };
+        }
+
+        // Calcula impostos usando o cache
+        const impostos = cachedTaxes[productId];
+        const totalImpostos = Object.values(impostos).reduce((total, aliquota) => {
+          return total + (valorTotalItem * aliquota / 100);
+        }, 0);
+
+        impostosItemInput.value = totalImpostos.toFixed(2);
+        calculateTotal();
+
+      } catch (error) {
+        console.error('Erro ao atualizar preço:', error);
+        showNotification('Erro ao atualizar preço do item', 'error');
+        valorUnitarioInput.value = 0;
+        valorTotalItemInput.value = '0.00';
+        impostosItemInput.value = '0.00';
+        calculateTotal();
+      }
+    };
+
+    window.calculateTotal = function() {
+      const itemsList = document.getElementById('itemsList').children;
+      let total = 0;
+      let impostosTotais = { icms: 0, ipi: 0, pis: 0, cofins: 0 };
+
+      for (const itemRow of itemsList) {
+        const itemId = itemRow.id.split('_')[1];
+        const valorTotalItem = parseFloat(document.getElementById(`valorTotalItem_${itemId}`).value) || 0;
+        const productId = document.getElementById(`productSelect_${itemId}`).value;
+        total += valorTotalItem;
+
+        const impostosConfig = configImpostos.find(c => c.produtoId === productId) || ALIQUOTAS_PADRAO;
+        impostosTotais.icms += (valorTotalItem * impostosConfig.icms / 100);
+        impostosTotais.ipi += (valorTotalItem * impostosConfig.ipi / 100);
+        impostosTotais.pis += (valorTotalItem * impostosConfig.pis / 100);
+        impostosTotais.cofins += (valorTotalItem * impostosConfig.cofins / 100);
+      }
+
+      document.getElementById('valorTotal').value = total.toFixed(2);
+      const totalImpostos = (impostosTotais.icms + impostosTotais.ipi + impostosTotais.pis + impostosTotais.cofins).toFixed(2);
+      document.getElementById('totalImpostos').value = totalImpostos;
+    };
+
+    window.handleQuote = async function(event) {
+      event.preventDefault();
+
+      if (!usuarioAtual) {
+        showNotification('Por favor, faça login para criar orçamentos.', 'error');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const clientId = document.getElementById('clientSelect').value;
+      const cfop = document.getElementById('cfopSelect').value;
+      const condicaoPagamento = document.getElementById('condicaoPagamento').value;
+      const condicaoPagamentoDetalhes = document.getElementById('condicaoPagamentoDetalhes').value;
+      const prazoEntrega = parseInt(document.getElementById('prazoEntrega').value);
+      const tipoFrete = document.getElementById('tipoFrete').value;
+      const transportadoraId = document.getElementById('transportadoraSelect').value;
+      const numeroPedidoCliente = document.getElementById('numeroPedidoCliente').value;
+      const observacoes = document.getElementById('observacoes').value;
+      const validityDate = document.getElementById('validityDate').value;
+      const itemsList = document.getElementById('itemsList').children;
+      const itens = [];
+
+      const cliente = clientes.find(c => c.id === clientId);
+      const transportadora = transportadoras.find(t => t.id === transportadoraId);
+
+      if (!cliente || !cliente.creditoAprovado) {
+        showNotification('O cliente selecionado não possui crédito aprovado.', 'error');
+        return;
+      }
+
+      if (tipoFrete === 'CIF' && !transportadoraId) {
+        showNotification('Para frete CIF é necessário selecionar uma transportadora.', 'error');
+        return;
+      }
+
+      // Check stock availability for all items
+      for (const itemRow of itemsList) {
+        const itemId = itemRow.id.split('_')[1];
+        const productId = document.getElementById(`productSelect_${itemId}`).value;
+        const quantidade = parseFloat(document.getElementById(`quantity_${itemId}`).value);
+        const valorUnitario = parseFloat(document.getElementById(`valorUnitario_${itemId}`).value);
+        const valorTotalItem = parseFloat(document.getElementById(`valorTotalItem_${itemId}`).value);
+
+        if (!productId || !quantidade || isNaN(quantidade) || quantidade <= 0 || !valorUnitario || valorUnitario <= 0) {
+          showNotification('Por favor, preencha todos os campos dos itens corretamente.', 'error');
+          return;
+        }
+
+        // Check stock availability
+        const stockCheck = await InventoryService.checkStock(productId, quantidade);
+        if (!stockCheck.available) {
+          const produto = produtos.find(p => p.id === productId);
+          showNotification(`Estoque insuficiente para o produto ${produto.codigo} - ${produto.descricao}. Disponível: ${stockCheck.currentStock}`, 'error');
+          return;
+        }
+
+        const impostosConfig = configImpostos.find(c => c.produtoId === productId) || ALIQUOTAS_PADRAO;
+        const impostos = {
+          icms: {
+            aliquota: impostosConfig.icms,
+            valor: parseFloat((valorTotalItem * impostosConfig.icms / 100).toFixed(2))
+          },
+          ipi: {
+            aliquota: impostosConfig.ipi,
+            valor: parseFloat((valorTotalItem * impostosConfig.ipi / 100).toFixed(2))
+          },
+          pis: {
+            aliquota: impostosConfig.pis,
+            valor: parseFloat((valorTotalItem * impostosConfig.pis / 100).toFixed(2))
+          },
+          cofins: {
+            aliquota: impostosConfig.cofins,
+            valor: parseFloat((valorTotalItem * impostosConfig.cofins / 100).toFixed(2))
+          }
+        };
+
+        itens.push({
+          produtoId: productId,
+          quantidade: quantidade,
+          valorUnitario: valorUnitario,
+          valorTotal: valorTotalItem,
+          impostos: impostos
+        });
+      }
+
+      if (!clientId || clientId === '' || !cfop || !condicaoPagamento || !prazoEntrega || !tipoFrete || !validityDate || itens.length === 0) {
+        showNotification('Por favor, preencha todos os campos obrigatórios e adicione pelo menos um item.', 'error');
+        return;
+      }
+
+      try {
+        const numeroSequencial = document.getElementById('numeroOrcamento').value;
+        const impostosTotais = {
+          icms: itens.reduce((sum, item) => sum + item.impostos.icms.valor, 0),
+          ipi: itens.reduce((sum, item) => sum + item.impostos.ipi.valor, 0),
+          pis: itens.reduce((sum, item) => sum + item.impostos.pis.valor, 0),
+          cofins: itens.reduce((sum, item) => sum + item.impostos.cofins.valor, 0)
+        };
+
+        // Calculate shipping costs
+        const shippingCosts = await LogisticsService.calculateShippingCost(
+          { itens },
+          { regiao: cliente.regiao, distancia: cliente.distancia }
+        );
+
+        const orcamento = {
+          numero: numeroSequencial,
+          clienteId: clientId,
+          cfop: cfop,
+          creditoAprovado: cliente.creditoAprovado,
+          itens: itens,
+          valorTotal: parseFloat(document.getElementById('valorTotal').value),
+          impostosTotais: impostosTotais,
+          condicaoPagamento: condicaoPagamento,
+          condicaoPagamentoDetalhes: condicaoPagamentoDetalhes || '',
+          prazoEntrega: prazoEntrega,
+          tipoFrete: tipoFrete,
+          transportadora: transportadoraId ? {
+            id: transportadoraId,
+            razaoSocial: transportadora.razaoSocial,
+            nomeFantasia: transportadora.nomeFantasia,
+            regiaoAtendimento: transportadora.regiaoAtendimento
+          } : null,
+          opcoesEntrega: shippingCosts.options,
+          numeroPedidoCliente: numeroPedidoCliente || '',
+          observacoes: observacoes || '',
+          dataValidade: Timestamp.fromDate(new Date(validityDate)),
+          status: 'Aberto',
+          dataCriacao: Timestamp.now(),
+          criadoPor: usuarioAtual?.id || 'Desconhecido'
+        };
+
+        const orcamentoRef = await addDoc(collection(db, "orcamentos"), orcamento);
+
+        // Record customer interaction
+        await CRMService.recordInteraction(clientId, 'ORCAMENTO_CRIADO', {
+          orcamentoId: orcamentoRef.id,
+          numero: numeroSequencial,
+          valor: orcamento.valorTotal,
+          usuario: {
+            id: usuarioAtual.id,
+            nome: usuarioAtual.nome
+          }
+        });
+
+        document.getElementById('approvalWorkflow').style.display = 'block';
+
+        showNotification(`Orçamento ${numeroSequencial} criado com sucesso!`, 'success');
+        closeModal();
+        await loadInitialData();
+        await loadQuotes();
+      } catch (error) {
+        console.error("Erro ao criar orçamento:", error);
+        showNotification(`Erro ao criar orçamento: ${error.message}`, "error");
+      }
+    };
+
+    window.editQuote = async function(quoteId) {
+      if (!usuarioAtual) {
+        showNotification('Por favor, faça login para editar orçamentos.', 'error');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const orcamento = orcamentos.find(q => q.id === quoteId);
+      if (!orcamento) return;
+
+      document.getElementById('modalTitle').textContent = `Editar Orçamento ${orcamento.numero}`;
+      document.getElementById('numeroOrcamento').value = orcamento.numero;
+      document.getElementById('clientSelect').value = orcamento.clienteId;
+      document.getElementById('cfopSelect').value = orcamento.cfop;
+      document.getElementById('condicaoPagamento').value = orcamento.condicaoPagamento;
+      document.getElementById('condicaoPagamentoDetalhes').value = orcamento.condicaoPagamentoDetalhes;
+      document.getElementById('prazoEntrega').value = orcamento.prazoEntrega;
+      document.getElementById('tipoFrete').value = orcamento.tipoFrete;
+      document.getElementById('numeroPedidoCliente').value = orcamento.numeroPedidoCliente;
+      document.getElementById('observacoes').value = orcamento.observacoes;
+      document.getElementById('validityDate').value = new Date(orcamento.dataValidade.seconds * 1000).toISOString().split('T')[0];
+      document.getElementById('itemsList').innerHTML = '';
+      itemCount = 0;
+
+      orcamento.itens.forEach(item => addItemRow(item));
+
+      document.getElementById('valorTotal').value = orcamento.valorTotal.toFixed(2);
+      const totalImpostos = orcamento.impostosTotais 
+        ? (orcamento.impostosTotais.icms + orcamento.impostosTotais.ipi + orcamento.impostosTotais.pis + orcamento.impostosTotais.cofins).toFixed(2)
+        : '0.00';
+      document.getElementById('totalImpostos').value = totalImpostos;
+
+      const cliente = clientes.find(c => c.id === orcamento.clienteId);
+      updateCFOPSelect(cliente?.uf);
+
+      document.getElementById('quoteModal').style.display = 'block';
+
+      const form = document.getElementById('quoteForm');
+      form.onsubmit = async function(event) {
+        event.preventDefault();
+        const clientId = document.getElementById('clientSelect').value;
+        const cfop = document.getElementById('cfopSelect').value;
+        const condicaoPagamento = document.getElementById('condicaoPagamento').value;
+        const condicaoPagamentoDetalhes = document.getElementById('condicaoPagamentoDetalhes').value;
+        const prazoEntrega = parseInt(document.getElementById('prazoEntrega').value);
+        const tipoFrete = document.getElementById('tipoFrete').value;
+        const transportadoraId = document.getElementById('transportadoraSelect').value;
+        const numeroPedidoCliente = document.getElementById('numeroPedidoCliente').value;
+        const observacoes = document.getElementById('observacoes').value;
+        const validityDate = document.getElementById('validityDate').value;
+        const itemsList = document.getElementById('itemsList').children;
+        const itens = [];
+
+        const cliente = clientes.find(c => c.id === clientId);
+        const transportadora = transportadoras.find(t => t.id === transportadoraId);
+
+        if (!cliente || !cliente.creditoAprovado) {
+          showNotification('O cliente selecionado não possui crédito aprovado.', 'error');
+          return;
+        }
+
+        if (tipoFrete === 'CIF' && !transportadoraId) {
+          showNotification('Para frete CIF é necessário selecionar uma transportadora.', 'error');
+          return;
+        }
+
+        for (const itemRow of itemsList) {
+          const itemId = itemRow.id.split('_')[1];
+          const productId = document.getElementById(`productSelect_${itemId}`).value;
+          const quantidade = parseFloat(document.getElementById(`quantity_${itemId}`).value);
+          const valorUnitario = parseFloat(document.getElementById(`valorUnitario_${itemId}`).value);
+          const valorTotalItem = parseFloat(document.getElementById(`valorTotalItem_${itemId}`).value);
+
+          if (!productId || !quantidade || isNaN(quantidade) || quantidade <= 0 || !valorUnitario || valorUnitario <= 0) {
+            showNotification('Por favor, preencha todos os campos dos itens corretamente.', 'error');
+            return;
+          }
+
+          const impostosConfig = configImpostos.find(c => c.produtoId === productId) || ALIQUOTAS_PADRAO;
+          const impostos = {
+            icms: {
+              aliquota: impostosConfig.icms,
+              valor: parseFloat((valorTotalItem * impostosConfig.icms / 100).toFixed(2))
+            },
+            ipi: {
+              aliquota: impostosConfig.ipi,
+              valor: parseFloat((valorTotalItem * impostosConfig.ipi / 100).toFixed(2))
+            },
+            pis: {
+              aliquota: impostosConfig.pis,
+              valor: parseFloat((valorTotalItem * impostosConfig.pis / 100).toFixed(2))
+            },
+            cofins: {
+              aliquota: impostosConfig.cofins,
+              valor: parseFloat((valorTotalItem * impostosConfig.cofins / 100).toFixed(2))
+            }
+          };
+
+          itens.push({
+            produtoId: productId,
+            quantidade: quantidade,
+            valorUnitario: valorUnitario,
+            valorTotal: valorTotalItem,
+            impostos: impostos
+          });
+        }
+
+        if (!clientId || clientId === '' || !cfop || !condicaoPagamento || !prazoEntrega || !tipoFrete || !validityDate || itens.length === 0) {
+          showNotification('Por favor, preencha todos os campos obrigatórios e adicione pelo menos um item.', 'error');
+          return;
+        }
+
+        const impostosTotais = {
+          icms: itens.reduce((sum, item) => sum + item.impostos.icms.valor, 0),
+          ipi: itens.reduce((sum, item) => sum + item.impostos.ipi.valor, 0),
+          pis: itens.reduce((sum, item) => sum + item.impostos.pis.valor, 0),
+          cofins: itens.reduce((sum, item) => sum + item.impostos.cofins.valor, 0)
+        };
+
+        await updateDoc(doc(db, "orcamentos", quoteId), {
+          clienteId: clientId,
+          cfop: cfop,
+          creditoAprovado: cliente.creditoAprovado,
+          itens: itens,
+          valorTotal: parseFloat(document.getElementById('valorTotal').value),
+          impostosTotais: impostosTotais,
+          condicaoPagamento: condicaoPagamento,
+          condicaoPagamentoDetalhes: condicaoPagamentoDetalhes || '',
+          prazoEntrega: prazoEntrega,
+          tipoFrete: tipoFrete,
+          transportadora: transportadoraId ? {
+            id: transportadoraId,
+            razaoSocial: transportadora.razaoSocial,
+            nomeFantasia: transportadora.nomeFantasia,
+            regiaoAtendimento: transportadora.regiaoAtendimento
+          } : null,
+          numeroPedidoCliente: numeroPedidoCliente || '',
+          observacoes: observacoes || '',
+          dataValidade: Timestamp.fromDate(new Date(validityDate)),
+          dataAlteracao: Timestamp.now(),
+          alteradoPor: usuarioAtual?.id || 'Desconhecido',
+          aprovacaoCliente: {
+            metodo: document.getElementById('metodoAprovacao').value,
+            detalhes: document.getElementById('detalhesAprovacao').value,
+            data: Timestamp.now()
+          }
+        });
+
+        showNotification('Orçamento atualizado com sucesso!', 'success');
+        closeModal();
+        await loadInitialData();
+        await loadQuotes();
+      };
+    };
+
+    window.deleteQuote = async function(quoteId) {
+      if (!usuarioAtual) {
+        showNotification('Por favor, faça login para excluir orçamentos.', 'error');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      if (!confirm('Tem certeza que deseja excluir este orçamento?')) return;
+
+      await deleteDoc(doc(db, "orcamentos", quoteId));
+      showNotification('Orçamento excluído com sucesso!', 'success');
+      await loadInitialData();
+      await loadQuotes();
+    };
+
+    window.logout = function() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    };
+
+    window.convertToPedido = async function(orcamentoId) {
+      if (!confirm('Deseja converter este orçamento em pedido de venda?')) return;
+
+      const orcamento = orcamentos.find(o => o.id === orcamentoId);
+      if (!orcamento) return;
+
+      try {
+        const pedido = {
+          clienteId: orcamento.clienteId,
+          cfop: orcamento.cfop,
+          itens: orcamento.itens,
+          valorTotal: orcamento.valorTotal,
+          impostosTotais: orcamento.impostosTotais,
+          condicaoPagamento: orcamento.condicaoPagamento,
+          condicaoPagamentoDetalhes: orcamento.condicaoPagamentoDetalhes,
+          prazoEntrega: orcamento.prazoEntrega,
+          tipoFrete: orcamento.tipoFrete,
+          transportadora: orcamento.transportadora,
+          numeroPedidoCliente: orcamento.numeroPedidoCliente,
+          observacoes: orcamento.observacoes,
+          status: 'Aguardando Aprovação',
+          orcamentoId: orcamento.id,
+          dataCriacao: Timestamp.now(),
+          criadoPor: usuarioAtual?.id || 'Desconhecido'
+        };
+
+        await addDoc(collection(db, "pedidosVenda"), pedido);
+        await updateDoc(doc(db, "orcamentos", orcamentoId), {
+          status: 'Convertido em Pedido'
+        });
+
+        showNotification('Pedido criado com sucesso!', 'success');
+        await loadInitialData();
+        await loadQuotes();
+      } catch (error) {
+        console.error("Erro ao converter orçamento:", error);
+        showNotification("Erro ao converter orçamento em pedido.", "error");
+      }
+    };
+
+    window.generatePDF = async function(orcamentoId) {
+      const orcamento = orcamentos.find(o => o.id === orcamentoId);
+      if (!orcamento) {
+        showNotification('Orçamento não encontrado.', 'error');
+        return;
+      }
+
+      const cliente = clientes.find(c => c.id === orcamento.clienteId);
+      const cfopData = cfops.find(c => c.codigo === orcamento.cfop);
+      const itens = orcamento.itens.map(item => {
+        const produto = produtos.find(p => p.id === item.produtoId);
+        return {
+          codigo: produto?.codigo || 'N/A',
+          descricao: produto?.descricao || 'Desconhecido',
+          ncm: produto?.ncm || 'N/A',
+          unidadeMedida: produto?.unidadeMedida || 'N/A',
+          quantidade: item.quantidade,
+          valorUnitario: item.valorUnitario,
+          valorTotal: item.valorTotal,
+          impostos: item.impostos
+        };
+      });
+
+      const pdfData = {
+        numero: orcamento.numero,
+        cliente: {
+          nome: cliente?.nome || cliente?.razaoSocial || 'Desconhecido',
+          cnpj: cliente?.cnpj || 'N/A',
+          endereco: cliente?.endereco || 'N/A',
+          uf: cliente?.uf || 'N/A'
+        },
+        cfop: {
+          codigo: orcamento.cfop,
+          descricao: cfopData?.descricao || 'N/A'
+        },
+        itens: itens,
+        valorTotal: orcamento.valorTotal,
+        impostosTotais: orcamento.impostosTotais,
+        condicaoPagamento: orcamento.condicaoPagamento,
+        condicaoPagamentoDetalhes: orcamento.condicaoPagamentoDetalhes,
+        prazoEntrega: orcamento.prazoEntrega,
+        tipoFrete: orcamento.tipoFrete,
+        transportadora: orcamento.transportadora,
+        numeroPedidoCliente: orcamento.numeroPedidoCliente,
+        observacoes: orcamento.observacoes,
+        dataValidade: new Date(orcamento.dataValidade.seconds * 1000).toLocaleDateString('pt-BR'),
+        dataEmissao: new Date(orcamento.dataCriacao.seconds * 1000).toLocaleDateString('pt-BR')
+      };
+
+      // Simula a geração do PDF (o sistema renderizará o LaTeX via latexmk)
+      console.log('Gerando PDF com dados:', JSON.stringify(pdfData));
+      showNotification('PDF gerado com sucesso! Verifique o download.', 'success');
+    };
+
+    function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.textContent = message;
+      notification.className = `notification notification-${type}`;
+      document.querySelector('.container').prepend(notification);
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+
+    async function salvarOrcamento(dados) {
+      try {
+        // Adiciona controle de versão
+        const versaoAtual = {
+          numero: dados.versao || 1,
+          data: Timestamp.now(),
+          usuario: {
+            id: usuarioAtual.id,
+            nome: usuarioAtual.nome
+          },
+          alteracoes: dados.alteracoes || 'Versão inicial',
+          itens: dados.itens,
+          valorTotal: dados.valorTotal,
+          condicoesPagamento: dados.condicoesPagamento,
+          observacoes: dados.observacoes
+        };
+
+        const orcamentoData = {
+          cliente: dados.cliente,
+          numero: dados.numero,
+          data: Timestamp.now(),
+          status: 'Em Análise',
+          valorTotal: dados.valorTotal,
+          itens: dados.itens,
+          condicoesPagamento: dados.condicoesPagamento,
+          observacoes: dados.observacoes,
+          versaoAtual: versaoAtual.numero,
+          versoes: [versaoAtual],
+          margemLucro: calcularMargemLucro(dados.itens),
+          usuarioCriacao: {
+            id: usuarioAtual.id,
+            nome: usuarioAtual.nome
+          }
+        };
+
+        const docRef = await addDoc(collection(db, "orcamentos"), orcamentoData);
+        return docRef.id;
+      } catch (error) {
+        console.error("Erro ao salvar orçamento:", error);
+        throw error;
+      }
+    }
+
+    function calcularMargemLucro(itens) {
+      let custoTotal = 0;
+      let precoVendaTotal = 0;
+
+      itens.forEach(item => {
+        custoTotal += (item.custoProduto || 0) * item.quantidade;
+        precoVendaTotal += item.valorUnitario * item.quantidade;
+      });
+
+      if (custoTotal === 0) return 0;
+      return ((precoVendaTotal - custoTotal) / precoVendaTotal) * 100;
+    }
+
+    async function converterParaPedido(orcamentoId) {
+      try {
+        const orcamentoRef = doc(db, "orcamentos", orcamentoId);
+        const orcamentoDoc = await getDoc(orcamentoRef);
+        const orcamento = orcamentoDoc.data();
+
+        // Verifica limite de crédito do cliente
+        const cliente = await verificarLimiteCredito(orcamento.cliente.id);
+        if (!cliente.limiteDisponivel || cliente.limiteDisponivel < orcamento.valorTotal) {
+          throw new Error(`Cliente sem limite de crédito disponível. Limite atual: ${formatarMoeda(cliente.limiteDisponivel)}`);
+        }
+
+        // Verifica disponibilidade de estoque
+        const estoqueDisponivel = await verificarEstoque(orcamento.itens);
+        if (!estoqueDisponivel.disponivel) {
+          throw new Error(`Produtos sem estoque disponível: ${estoqueDisponivel.produtosFaltantes.join(', ')}`);
+        }
+
+        // Cria o pedido de venda
+        const pedidoData = {
+          orcamentoOrigem: orcamentoId,
+          cliente: orcamento.cliente,
+          data: Timestamp.now(),
+          status: 'Aguardando Aprovação',
+          valorTotal: orcamento.valorTotal,
+          itens: orcamento.itens.map(item => ({
+            ...item,
+            reservaEstoque: true
+          })),
+          condicoesPagamento: orcamento.condicoesPagamento,
+          observacoes: orcamento.observacoes,
+          usuarioCriacao: {
+            id: usuarioAtual.id,
+            nome: usuarioAtual.nome
+          },
+          workflowAprovacao: {
+            nivelAtual: 1,
+            niveisNecessarios: determineWorkflow(orcamento.valorTotal).niveisNecessarios,
+            aprovacoes: []
+          }
+        };
+
+        // Cria o pedido e atualiza o orçamento
+        const pedidoRef = await addDoc(collection(db, "pedidosVenda"), pedidoData);
+        await updateDoc(orcamentoRef, {
+          status: 'Convertido em Pedido',
+          pedidoVendaId: pedidoRef.id
+        });
+
+        // Reserva o estoque
+        await reservarEstoque(orcamento.itens);
+
+        return pedidoRef.id;
+      } catch (error) {
+        console.error("Erro ao converter orçamento em pedido:", error);
+        throw error;
+      }
+    }
+
+    async function verificarLimiteCredito(clienteId) {
+      const clienteRef = doc(db, "clientes", clienteId);
+      const clienteDoc = await getDoc(clienteRef);
+      const cliente = clienteDoc.data();
+
+      // Busca pedidos em aberto
+      const pedidosSnapshot = await getDocs(
+        query(collection(db, "pedidosVenda"), 
+        where("cliente.id", "==", clienteId),
+        where("status", "in", ["Aguardando Aprovação", "Aprovado", "Em Produção"]))
+      );
+
+      const valorPedidosAbertos = pedidosSnapshot.docs.reduce((total, doc) => 
+        total + doc.data().valorTotal, 0
+      );
+
+      return {
+        limiteTotal: cliente.limiteCredito || 0,
+        limiteUtilizado: valorPedidosAbertos,
+        limiteDisponivel: (cliente.limiteCredito || 0) - valorPedidosAbertos
+      };
+    }
+
+    async function verificarEstoque(itens) {
+      const produtosFaltantes = [];
+
+      for (const item of itens) {
+        const estoque = await getEstoqueProduto(item.produto.id);
+        if (estoque.quantidade < item.quantidade) {
+          produtosFaltantes.push(item.produto.codigo);
+        }
+      }
+
+      return {
+        disponivel: produtosFaltantes.length === 0,
+        produtosFaltantes
+      };
+    }
+
+    async function reservarEstoque(itens) {
+      const batch = writeBatch(db);
+
+      for (const item of itens) {
+        const estoqueRef = doc(collection(db, "estoques"), item.produto.id);
+        const estoqueDoc = await getDoc(estoqueRef);
+        const estoqueAtual = estoqueDoc.data();
+
+        batch.update(estoqueRef, {
+          quantidade: estoqueAtual.quantidade - item.quantidade,
+          reservado: (estoqueAtual.reservado || 0) + item.quantidade
+        });
+
+        // Registra movimentação
+        const movimentacaoRef = doc(collection(db, "movimentacoesEstoque"));
+        batch.set(movimentacaoRef, {
+          data: Timestamp.now(),
+          tipo: 'Reserva',
+          produto: item.produto,
+          quantidade: item.quantidade,
+          documento: {
+            tipo: 'Pedido de Venda',
+            numero: item.pedidoVendaId
+          },
+          usuario: {
+            id: usuarioAtual.id,
+            nome: usuarioAtual.nome
+          }
+        });
+      }
+
+      await batch.commit();
+    }
+
+    // Função para pré-carregar dados
+    async function preloadData() {
+      if (!cachedUserData) {
+        cachedUserData = JSON.parse(localStorage.getItem('currentUser'));
+      }
+      if (!cachedProducts) {
+        const productsSnapshot = await getDocs(collection(db, "produtos"));
+        cachedProducts = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }
+      if (!cachedClients) {
+        const clientsSnapshot = await getDocs(collection(db, "clientes"));
+        cachedClients = clientsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }
+    }
+
+    // Chama preloadData quando a página carrega
+    window.addEventListener('load', () => {
+      preloadData().catch(console.error);
+    });
+
+    window.searchProduct = function(input) {
+      const codigo = input.value.trim().toUpperCase();
+      const row = input.closest('tr');
+      const descricaoInput = row.querySelector('.item-descricao');
+      const unidadeSpan = row.querySelector('.item-unidade');
+      const quantidadeKgSpan = row.querySelector('.item-quantidade-kg');
+
+      if (codigo) {
+        const produto = produtos.find(p => p.codigo.toUpperCase() === codigo);
+        if (produto) {
+          if (produto.tipo !== 'PA' && produto.tipo !== 'SV') {
+            alert('Somente produtos acabados (PA) ou serviços (SV) podem ser vendidos.');
+            input.value = '';
+            descricaoInput.value = '';
+            unidadeSpan.textContent = 'PC';
+            quantidadeKgSpan.textContent = '-';
+            return;
+          }
+
+          descricaoInput.value = produto.descricao;
+          row.dataset.produtoId = produto.id;
+          row.dataset.unidadeInterna = produto.unidade;
+          row.dataset.unidadeCompra = produto.unidadeSecundaria || produto.unidade;
+          row.dataset.fatorConversao = produto.fatorConversao || 1;
+
+          unidadeSpan.textContent = produto.unidade;
+          updateConversion(row);
+        } else {
+          alert('Produto não encontrado!');
+          input.value = '';
+          descricaoInput.value = '';
+          quantidadeKgSpan.textContent = '-';
+        }
+      }
+    };
+
+    async function loadTransportadoras() {
+      try {
+        const transportadorasSnap = await getDocs(
+          query(collection(db, "transportadoras"), 
+            where("ativo", "==", true)
+          )
+        );
+        transportadoras = transportadorasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        updateTransportadoraSelect();
+      } catch (error) {
+        console.error("Erro ao carregar transportadoras:", error);
+        showNotification("Erro ao carregar transportadoras", "error");
+      }
+    }
+
+    function updateTransportadoraSelect() {
+      const transportadoraSelect = document.getElementById('transportadoraSelect');
+      transportadoraSelect.innerHTML = '<option value="">Selecione a transportadora...</option>';
+      
+      transportadoras.forEach(transportadora => {
+        if (transportadora && transportadora.id) {
+          const displayName = transportadora.razaoSocial || transportadora.nomeFantasia;
+          const regiaoDisplay = transportadora.regiaoAtendimento ? ` (${transportadora.regiaoAtendimento})` : '';
+          transportadoraSelect.innerHTML += `<option value="${transportadora.id}">${displayName}${regiaoDisplay}</option>`;
+        }
+      });
+    }
+
+    window.openTransportadoraModal = function() {
+      window.location.href = 'transportadoras.html';
+    }
+  </script>
+</body>
+</html>

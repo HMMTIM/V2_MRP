@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Necessidade de Materiais</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0854a0;
+            --primary-hover: #0a4d8c;
+            --secondary-color: #f0f3f6;
+            --border-color: #d4d4d4;
+            --text-color: #333;
+            --text-secondary: #666;
+            --success-color: #107e3e;
+            --danger-color: #bb0000;
+            --warning-color: #e9730c;
+            --header-bg: #354a5f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f7f7;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .search-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e1e5ea;
+        }
+
+        .results-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--secondary-color);
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pendente {
+            background-color: #fff3e5;
+            color: var(--warning-color);
+        }
+
+        .total-row {
+            font-weight: bold;
+            background-color: var(--secondary-color);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 4px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+        }
+
+        .notification-success {
+            background-color: var(--success-color);
+        }
+
+        .notification-error {
+            background-color: var(--danger-color);
+        }
+
+        @media print {
+            .no-print {
+                display: none;
+            }
+
+            .container {
+                margin: 0;
+                padding: 0;
+            }
+
+            .results-section {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Relatório de Necessidade de Materiais</h1>
+            <button class="btn btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+        </div>
+
+        <div id="notification" class="notification"></div>
+
+        <div class="search-section no-print">
+            <div class="search-grid">
+                <div class="form-group">
+                    <label>Tipo de Material</label>
+                    <select id="tipoMaterial" onchange="carregarMateriais()">
+                        <option value="">Selecione o tipo</option>
+                        <option value="SP">SP - Sub-Produto</option>
+                        <option value="MP">MP - Matéria Prima</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Material</label>
+                    <select id="material" disabled>
+                        <option value="">Primeiro selecione o tipo</option>
+                    </select>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <button class="btn btn-primary" onclick="gerarRelatorio()">Gerar Relatório</button>
+                <button class="btn btn-secondary" onclick="exportarExcel()">Exportar Excel</button>
+                <button class="btn btn-secondary" onclick="window.print()">Imprimir</button>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div id="resultados"></div>
+        </div>
+    </div>
+
+    <!-- Biblioteca SheetJS para Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { 
+            collection, 
+            query, 
+            where, 
+            getDocs 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let ordensProducao = [];
+        let produtos = [];
+
+        // Carregar dados iniciais
+        window.onload = async function() {
+            try {
+                // Verificar autenticação
+                const userSession = localStorage.getItem('currentUser');
+                if (!userSession) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Carregar produtos e ordens de produção
+                await carregarDados();
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+                showNotification("Erro ao carregar dados iniciais", "error");
+            }
+        };
+
+        async function carregarDados() {
+            try {
+                // Carregar produtos
+                const produtosSnapshot = await getDocs(collection(db, "produtos"));
+                produtos = produtosSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                console.log("Produtos carregados:", produtos.length);
+
+                // Carregar ordens de produção pendentes
+                const ordensQuery = query(
+                    collection(db, "ordensProducao"),
+                    where("status", "in", ["pendente", "Pendente"]) // Adicionado status com P maiúsculo
+                );
+                const ordensSnapshot = await getDocs(ordensQuery);
+                ordensProducao = ordensSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                console.log("OPs pendentes encontradas:", ordensProducao.length);
+
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+                throw error;
+            }
+        }
+
+        // Função para carregar materiais no select baseado no tipo selecionado
+        window.carregarMateriais = async function() {
+            const tipoMaterial = document.getElementById('tipoMaterial').value;
+            const materialSelect = document.getElementById('material');
+
+            materialSelect.innerHTML = '<option value="">Selecione o material</option>';
+            materialSelect.disabled = !tipoMaterial;
+
+            if (tipoMaterial) {
+                const materiaisFiltrados = produtos
+                    .filter(p => p.tipo === tipoMaterial)
+                    .sort((a, b) => a.codigo.localeCompare(b.codigo));
+
+                materiaisFiltrados.forEach(material => {
+                    materialSelect.innerHTML += `
+                        <option value="${material.id}">
+                            ${material.codigo} - ${material.descricao}
+                        </option>
+                    `;
+                });
+            }
+        };
+
+        // Função para gerar o relatório
+        window.gerarRelatorio = async function() {
+            const materialId = document.getElementById('material').value;
+            if (!materialId) {
+                showNotification("Selecione um material para gerar o relatório", "error");
+                return;
+            }
+
+            try {
+                const material = produtos.find(p => p.id === materialId);
+                if (!material) throw new Error("Material não encontrado");
+
+                console.log("Material selecionado:", material);
+                console.log("Total de OPs pendentes:", ordensProducao.length);
+
+                let necessidadeTotal = 0;
+                const detalhesOPs = [];
+
+                // Analisar cada ordem de produção
+                for (const op of ordensProducao) {
+                    console.log(`\n=== Analisando OP ${op.numero} ===`);
+                    console.log("Status da OP:", op.status);
+                    console.log("Material buscado:", {
+                        codigo: material.codigo,
+                        id: materialId,
+                        descricao: material.descricao
+                    });
+
+                    // Para matérias-primas (MP), verificar no array materiaisNecessarios
+                    if (material.tipo === 'MP' && op.materiaisNecessarios && Array.isArray(op.materiaisNecessarios)) {
+                        console.log(`OP ${op.numero} - Verificando materiaisNecessarios:`, op.materiaisNecessarios);
+                        const materialNecessario = op.materiaisNecessarios.find(item => {
+                            console.log("Comparando com item necessário:", item);
+                            const encontrado = item.produtoId === materialId;
+                            if (encontrado) {
+                                console.log("MATCH ENCONTRADO em materiaisNecessarios!");
+                            }
+                            return encontrado;
+                        });
+
+                        if (materialNecessario) {
+                            console.log(`Material encontrado em materiaisNecessarios da OP ${op.numero}:`, materialNecessario);
+                            const quantidade = materialNecessario.quantidade;
+                            console.log(`Quantidade necessária: ${quantidade}`);
+                            necessidadeTotal += quantidade;
+
+                            detalhesOPs.push({
+                                numeroOP: op.numero,
+                                produto: produtos.find(p => p.id === op.produtoId)?.codigo || 'N/A',
+                                descricaoProduto: produtos.find(p => p.id === op.produtoId)?.descricao || 'N/A',
+                                quantidade: quantidade,
+                                previsaoProducao: op.dataEntrega ? new Date(op.dataEntrega.seconds * 1000).toLocaleDateString('pt-BR') : 'N/A'
+                            });
+                            continue;
+                        }
+                    }
+
+                    // Para sub-produtos (SP), manter a lógica existente de verificar materiais e estrutura
+                    if (material.tipo === 'SP') {
+                        if (op.materiais && Array.isArray(op.materiais)) {
+                            console.log(`OP ${op.numero} - Lista de materiais:`, op.materiais);
+                            const materialNaLista = op.materiais.find(item => {
+                                console.log("Comparando com item:", item);
+                                const encontrado = item.codigo === material.codigo || item.materialId === materialId;
+                                if (encontrado) {
+                                    console.log("MATCH ENCONTRADO em materiais!");
+                                }
+                                return encontrado;
+                            });
+
+                            if (materialNaLista) {
+                                console.log(`Material encontrado na lista de materiais da OP ${op.numero}:`, materialNaLista);
+                                const quantidade = parseFloat(materialNaLista.quantidade) * parseFloat(op.quantidade || 1);
+                                console.log(`Quantidade calculada: ${quantidade} (${materialNaLista.quantidade} * ${op.quantidade || 1})`);
+                                necessidadeTotal += quantidade;
+
+                                detalhesOPs.push({
+                                    numeroOP: op.numero,
+                                    produto: produtos.find(p => p.id === op.produtoId)?.codigo || 'N/A',
+                                    descricaoProduto: produtos.find(p => p.id === op.produtoId)?.descricao || 'N/A',
+                                    quantidade: quantidade,
+                                    previsaoProducao: op.dataEntrega ? new Date(op.dataEntrega.seconds * 1000).toLocaleDateString('pt-BR') : 'N/A'
+                                });
+                                continue;
+                            }
+                        }
+
+                        if (op.estrutura && Array.isArray(op.estrutura)) {
+                            console.log(`OP ${op.numero} - Estrutura:`, op.estrutura);
+                            const materialNaEstrutura = op.estrutura.find(item => {
+                                console.log("Comparando com item da estrutura:", item);
+                                const encontrado = item.codigo === material.codigo || item.materialId === materialId;
+                                if (encontrado) {
+                                    console.log("MATCH ENCONTRADO na estrutura!");
+                                }
+                                return encontrado;
+                            });
+
+                            if (materialNaEstrutura) {
+                                console.log(`Material encontrado na estrutura da OP ${op.numero}:`, materialNaEstrutura);
+                                const quantidade = parseFloat(materialNaEstrutura.quantidade) * parseFloat(op.quantidade || 1);
+                                console.log(`Quantidade calculada: ${quantidade} (${materialNaEstrutura.quantidade} * ${op.quantidade || 1})`);
+                                necessidadeTotal += quantidade;
+
+                                detalhesOPs.push({
+                                    numeroOP: op.numero,
+                                    produto: produtos.find(p => p.id === op.produtoId)?.codigo || 'N/A',
+                                    descricaoProduto: produtos.find(p => p.id === op.produtoId)?.descricao || 'N/A',
+                                    quantidade: quantidade,
+                                    previsaoProducao: op.dataEntrega ? new Date(op.dataEntrega.seconds * 1000).toLocaleDateString('pt-BR') : 'N/A'
+                                });
+                            }
+                        }
+                    }
+                }
+
+                console.log("OPs encontradas com o material:", detalhesOPs.length);
+
+                // Gerar HTML do relatório
+                const resultadosDiv = document.getElementById('resultados');
+                resultadosDiv.innerHTML = `
+                    <h2 style="margin-bottom: 20px;">Necessidade de Material: ${material.codigo} - ${material.descricao}</h2>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Número OP</th>
+                                    <th>Produto</th>
+                                    <th>Descrição do Produto</th>
+                                    <th>Quantidade Necessária</th>
+                                    <th>Previsão de Produção</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${detalhesOPs.map(op => `
+                                    <tr>
+                                        <td>${op.numeroOP}</td>
+                                        <td>${op.produto}</td>
+                                        <td>${op.descricaoProduto}</td>
+                                        <td>${op.quantidade.toFixed(2)} ${material.unidade}</td>
+                                        <td>${op.previsaoProducao}</td>
+                                    </tr>
+                                `).join('')}
+                                <tr class="total-row">
+                                    <td colspan="3">Total Necessário:</td>
+                                    <td>${necessidadeTotal.toFixed(2)} ${material.unidade}</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                if (detalhesOPs.length === 0) {
+                    resultadosDiv.innerHTML += `
+                        <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                            <p>Não foram encontradas ordens de produção pendentes que utilizem este material.</p>
+                            <p style="margin-top: 10px; font-size: 0.9em;">
+                                Verifique se:
+                                <br>- O status da OP está como "pendente"
+                                <br>- O material está corretamente vinculado à OP
+                                <br>- O código do material está correto
+                            </p>
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Erro ao gerar relatório:", error);
+                showNotification("Erro ao gerar relatório", "error");
+            }
+        };
+
+        // Função para exportar para Excel
+        window.exportarExcel = function() {
+            const materialSelect = document.getElementById('material');
+            const material = produtos.find(p => p.id === materialSelect.value);
+
+            if (!material) {
+                showNotification("Selecione um material para exportar", "error");
+                return;
+            }
+
+            try {
+                const table = document.querySelector('.table-responsive table');
+                if (!table) {
+                    showNotification("Gere o relatório antes de exportar", "error");
+                    return;
+                }
+
+                const ws = XLSX.utils.table_to_sheet(table);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Necessidade de Material");
+
+                // Configurar larguras das colunas
+                ws['!cols'] = [
+                    { wch: 15 }, // Número OP
+                    { wch: 15 }, // Produto
+                    { wch: 40 }, // Descrição do Produto
+                    { wch: 20 }, // Quantidade Necessária
+                    { wch: 20 }  // Previsão de Produção
+                ];
+
+                const fileName = `Necessidade_${material.codigo}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                showNotification("Relatório exportado com sucesso!", "success");
+            } catch (error) {
+                console.error("Erro ao exportar para Excel:", error);
+                showNotification("Erro ao exportar para Excel", "error");
+            }
+        };
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification notification-${type}`;
+            notification.style.display = 'block';
+
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // Expor funções necessárias globalmente
+        window.carregarMateriais = carregarMateriais;
+        window.gerarRelatorio = gerarRelatorio;
+        window.exportarExcel = exportarExcel;
+    </script>
+</body>
+</html> 

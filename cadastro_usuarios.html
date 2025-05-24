@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Usuários</title>
+  <style>
+    /* Mantendo todos os estilos existentes */
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+    
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+    
+    .search-container {
+      margin-bottom: 20px;
+    }
+    
+    .search-container input {
+      width: 100%;
+      padding: 10px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>');
+      background-repeat: no-repeat;
+      background-position: 10px center;
+      padding-left: 35px;
+    }
+    
+    .form-container {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+    
+    .form-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .form-col {
+      flex: 1;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+    
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+    }
+    
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    
+    .users-table th,
+    .users-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+    
+    .users-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    
+    .users-table tr:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .edit-btn, .delete-btn, .permissions-btn {
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    
+    .edit-btn {
+      background-color: #ffc107;
+      color: #000;
+    }
+    
+    .delete-btn {
+      background-color: var(--danger-color);
+      color: white;
+    }
+    
+    .permissions-btn {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .status-active {
+      background-color: #e5f2e5;
+      color: var(--success-color);
+    }
+    
+    .status-inactive {
+      background-color: #ffeaea;
+      color: var(--danger-color);
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .required::after {
+      content: "*";
+      color: var(--danger-color);
+      margin-left: 4px;
+    }
+    
+    .info-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    
+    .admin-warning {
+      background-color: #fff3cd;
+      border-left: 4px solid var(--warning-color);
+      padding: 10px 15px;
+      margin-bottom: 20px;
+      color: #856404;
+      font-size: 14px;
+    }
+
+    .level-info {
+      background-color: var(--secondary-color);
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+
+    .level-info h3 {
+      color: var(--primary-color);
+      margin-bottom: 10px;
+    }
+
+    .level-info ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .level-info li {
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .level-info li strong {
+      color: var(--text-color);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Cadastro de Usuários</h1>
+      <div>
+        <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+      </div>
+    </div>
+
+    <div class="level-info">
+      <h3>Níveis de Acesso</h3>
+      <ul>
+        <li><strong>Nível 1 - Básico:</strong> Apenas visualização de dados e relatórios básicos</li>
+        <li><strong>Nível 2 - Operador:</strong> Visualização + operações básicas do dia a dia</li>
+        <li><strong>Nível 3 - Supervisor:</strong> Operações + aprovações e gestão de equipe</li>
+        <li><strong>Nível 4 - Analista:</strong> Supervisor + análise de dados e relatórios avançados</li>
+        <li><strong>Nível 5 - Coordenador:</strong> Analista + gestão departamental</li>
+        <li><strong>Nível 6 - Gerente:</strong> Coordenador + gestão estratégica</li>
+        <li><strong>Nível 7 - Diretor:</strong> Gerente + decisões executivas</li>
+        <li><strong>Nível 8 - Presidente:</strong> Diretor + gestão corporativa</li>
+        <li><strong>Nível 9 - Administrador:</strong> Acesso total ao sistema</li>
+      </ul>
+    </div>
+    
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Buscar usuários..." oninput="filterUsers()">
+    </div>
+    
+    <div class="form-container">
+      <h2 class="form-title">Cadastrar Novo Usuário</h2>
+      <div id="adminWarning" class="admin-warning" style="display: none;">
+        Atenção: Você está criando um usuário com nível de administrador. Este usuário terá acesso completo ao sistema.
+      </div>
+      
+      <form id="userForm">
+        <input type="hidden" id="editingId">
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="nome" class="required">Nome de Usuário</label>
+            <input type="text" id="nome" required>
+            <div class="info-text">Nome único para login no sistema</div>
+          </div>
+          <div class="form-col">
+            <label for="senha" class="required">Senha</label>
+            <input type="password" id="senha" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="nomeCompleto" class="required">Nome Completo</label>
+            <input type="text" id="nomeCompleto" required>
+          </div>
+          <div class="form-col">
+            <label for="email" class="required">Email</label>
+            <input type="email" id="email" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="departamento">Departamento</label>
+            <select id="departamento">
+              <option value="">Selecione...</option>
+              <option value="ADMINISTRATIVO">Administrativo</option>
+              <option value="COMERCIAL">Comercial</option>
+              <option value="COMPRAS">Compras</option>
+              <option value="ENGENHARIA">Engenharia</option>
+              <option value="FINANCEIRO">Financeiro</option>
+              <option value="PRODUCAO">Produção</option>
+              <option value="TI">TI</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="nivel" class="required">Nível de Acesso</label>
+            <select id="nivel" required onchange="checkAdminLevel()">
+              <option value="1">1 - Básico (Visualização)</option>
+              <option value="2">2 - Operador</option>
+              <option value="3">3 - Supervisor</option>
+              <option value="4">4 - Analista</option>
+              <option value="5">5 - Coordenador</option>
+              <option value="6">6 - Gerente</option>
+              <option value="7">7 - Diretor</option>
+              <option value="8">8 - Presidente</option>
+              <option value="9">9 - Administrador (Acesso Total)</option>
+            </select>
+            <div class="info-text">Define o nível de acesso do usuário no sistema</div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="ativo">Status</label>
+            <select id="ativo">
+              <option value="true">Ativo</option>
+              <option value="false">Inativo</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="telefone">Telefone</label>
+            <input type="tel" id="telefone">
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="cancelEdit()">Cancelar</button>
+          <button type="submit" class="btn-success" id="submitButton">Cadastrar Usuário</button>
+        </div>
+      </form>
+    </div>
+    
+    <div class="table-container">
+      <h2 class="form-title">Usuários Cadastrados</h2>
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Nome de Usuário</th>
+            <th>Nome Completo</th>
+            <th>Email</th>
+            <th>Departamento</th>
+            <th>Nível</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+        </tbody>
+      </table>
+    </div>
+    
+    <button onclick="window.location.href='index.html'" class="back-button">Voltar para o Menu</button>
+  </div>
+  
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs, 
+      doc, 
+      getDoc,
+      updateDoc, 
+      deleteDoc,
+      query,
+      where 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let usuarios = [];
+    let currentUser = null;
+
+    window.onload = async function() {
+      // Verificar se o usuário atual é administrador
+      const userSession = localStorage.getItem('currentUser');
+      if (!userSession) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      currentUser = JSON.parse(userSession);
+      if (currentUser.nivel < 9) {
+        alert('Acesso restrito. Apenas administradores podem acessar esta página.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      await loadUsers();
+      displayUsers();
+    };
+
+    async function loadUsers() {
+      try {
+        const snapshot = await getDocs(collection(db, "usuarios"));
+        usuarios = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar usuários:", error);
+        alert("Erro ao carregar usuários. Por favor, recarregue a página.");
+      }
+    }
+
+    function displayUsers() {
+      const tableBody = document.getElementById('usersTableBody');
+      tableBody.innerHTML = '';
+
+      usuarios.forEach(usuario => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${usuario.nome}</td>
+          <td>${usuario.nomeCompleto || '-'}</td>
+          <td>${usuario.email || '-'}</td>
+          <td>${usuario.departamento || '-'}</td>
+          <td>${getNivelDescricao(usuario.nivel)}</td>
+          <td><span class="status-badge ${usuario.ativo ? 'status-active' : 'status-inactive'}">${usuario.ativo ? 'Ativo' : 'Inativo'}</span></td>
+          <td class="action-buttons">
+            <button class="edit-btn" onclick="editUser('${usuario.id}')">Editar</button>
+            <button class="permissions-btn" onclick="window.location.href='permissoes_usuario.html?id=${usuario.id}'">Permissões</button>
+            <button class="delete-btn" onclick="deleteUser('${usuario.id}')">Excluir</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function getNivelDescricao(nivel) {
+      switch (parseInt(nivel)) {
+        case 1: return "1 - Básico";
+        case 2: return "2 - Operador";
+        case 3: return "3 - Supervisor";
+        case 4: return "4 - Analista";
+        case 5: return "5 - Coordenador";
+        case 6: return "6 - Gerente";
+        case 7: return "7 - Diretor";
+        case 8: return "8 - Presidente";
+        case 9: return "9 - Administrador";
+        default: return nivel;
+      }
+    }
+
+    window.checkAdminLevel = function() {
+      const nivelSelect = document.getElementById('nivel');
+      const adminWarning = document.getElementById('adminWarning');
+      
+      if (nivelSelect.value === '9') {
+        adminWarning.style.display = 'block';
+      } else {
+        adminWarning.style.display = 'none';
+      }
+    };
+
+    window.editUser = function(userId) {
+      const usuario = usuarios.find(u => u.id === userId);
+      if (usuario) {
+        document.getElementById('editingId').value = userId;
+        document.getElementById('nome').value = usuario.nome;
+        document.getElementById('senha').value = ''; // Não exibir a senha atual
+        document.getElementById('nomeCompleto').value = usuario.nomeCompleto || '';
+        document.getElementById('email').value = usuario.email || '';
+        document.getElementById('departamento').value = usuario.departamento || '';
+        document.getElementById('nivel').value = usuario.nivel;
+        document.getElementById('ativo').value = usuario.ativo.toString();
+        document.getElementById('telefone').value = usuario.telefone || '';
+        
+        checkAdminLevel();
+        
+        document.getElementById('submitButton').textContent = 'Atualizar Usuário';
+      }
+    };
+
+    window.deleteUser = async function(userId) {
+      // Verificar se é o usuário admin padrão
+      const usuario = usuarios.find(u => u.id === userId);
+      if (usuario && usuario.nome === 'admin') {
+        alert('O usuário administrador padrão não pode ser excluído.');
+        return;
+      }
+      
+      // Verificar se é o usuário atual
+      if (userId === currentUser.id) {
+        alert('Você não pode excluir seu próprio usuário.');
+        return;
+      }
+      
+      if (confirm('Tem certeza que deseja excluir este usuário?')) {
+        try {
+          await deleteDoc(doc(db, "usuarios", userId));
+          await loadUsers();
+          displayUsers();
+          alert('Usuário excluído com sucesso!');
+        } catch (error) {
+          console.error("Erro ao excluir usuário:", error);
+          alert("Erro ao excluir usuário. Por favor, tente novamente.");
+        }
+      }
+    };
+
+    window.cancelEdit = function() {
+      document.getElementById('userForm').reset();
+      document.getElementById('editingId').value = '';
+      document.getElementById('adminWarning').style.display = 'none';
+      document.getElementById('submitButton').textContent = 'Cadastrar Usuário';
+    };
+
+    window.filterUsers = function() {
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+      const filteredUsers = usuarios.filter(usuario => 
+        usuario.nome.toLowerCase().includes(searchText) ||
+        (usuario.nomeCompleto && usuario.nomeCompleto.toLowerCase().includes(searchText)) ||
+        (usuario.email && usuario.email.toLowerCase().includes(searchText)) ||
+        (usuario.departamento && usuario.departamento.toLowerCase().includes(searchText))
+      );
+      
+      const tableBody = document.getElementById('usersTableBody');
+      tableBody.innerHTML = '';
+
+      filteredUsers.forEach(usuario => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${usuario.nome}</td>
+          <td>${usuario.nomeCompleto || '-'}</td>
+          <td>${usuario.email || '-'}</td>
+          <td>${usuario.departamento || '-'}</td>
+          <td>${getNivelDescricao(usuario.nivel)}</td>
+          <td><span class="status-badge ${usuario.ativo ? 'status-active' : 'status-inactive'}">${usuario.ativo ? 'Ativo' : 'Inativo'}</span></td>
+          <td class="action-buttons">
+            <button class="edit-btn" onclick="editUser('${usuario.id}')">Editar</button>
+            <button class="permissions-btn" onclick="window.location.href='permissoes_usuario.html?id=${usuario.id}'">Permissões</button>
+            <button class="delete-btn" onclick="deleteUser('${usuario.id}')">Excluir</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    };
+
+    document.getElementById('userForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      
+      const editingId = document.getElementById('editingId').value;
+      const nome = document.getElementById('nome').value;
+      const senha = document.getElementById('senha').value;
+      
+      // Verificar se já existe um usuário com o mesmo nome
+      if (!editingId) {
+        const existingUser = usuarios.find(u => u.nome.toLowerCase() === nome.toLowerCase());
+        if (existingUser) {
+          alert('Já existe um usuário com este nome. Por favor, escolha outro nome de usuário.');
+          return;
+        }
+      }
+      
+      // Se estiver editando e a senha estiver vazia, manter a senha atual
+      let senhaFinal = senha;
+      if (editingId && !senha) {
+        const usuarioAtual = usuarios.find(u => u.id === editingId);
+        if (usuarioAtual) {
+          senhaFinal = usuarioAtual.senha;
+        }
+      }
+      
+      const userData = {
+        nome: nome,
+        senha: senhaFinal,
+        nomeCompleto: document.getElementById('nomeCompleto').value,
+        email: document.getElementById('email').value,
+        departamento: document.getElementById('departamento').value,
+        nivel: parseInt(document.getElementById('nivel').value),
+        ativo: document.getElementById('ativo').value === 'true',
+        telefone: document.getElementById('telefone').value,
+        dataCadastro: new Date()
+      };
+
+      try {
+        if (editingId) {
+          // Atualizar usuário existente
+          await updateDoc(doc(db, "usuarios", editingId), userData);
+          alert('Usuário atualizado com sucesso!');
+        } else {
+          // Criar novo usuário
+          await addDoc(collection(db, "usuarios"), userData);
+          alert('Usuário cadastrado com sucesso!');
+        }
+        
+        await loadUsers();
+        displayUsers();
+        cancelEdit();
+      } catch (error) {
+        console.error("Erro ao salvar usuário:", error);
+        alert("Erro ao salvar usuário. Por favor, tente novamente.");
+      }
+    });
+  </script>
+</body>
+</html>

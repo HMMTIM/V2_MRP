@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PLAZHA - SISTEMAS - Análise de Crédito</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --success-color: #107e3e;
+      --danger-color: #bb0000;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      font-size: 13px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .table th, .table td {
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .table th {
+      background-color: var(--secondary-color);
+    }
+
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-aprovado {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .status-reprovado {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .status-pendente {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Análise de Crédito</h1>
+      <div>
+        <button class="btn btn-primary" onclick="window.location.href='home.html'">Voltar</button>
+      </div>
+    </div>
+
+    <form id="creditoForm" onsubmit="handleAnalise(event)">
+      <div class="form-group">
+        <label>Cliente</label>
+        <select id="clienteSelect" required>
+          <option value="">Selecione o cliente...</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Limite de Crédito (R$)</label>
+        <input type="number" id="limiteCredito" required min="0" step="0.01">
+      </div>
+
+      <div class="form-group">
+        <label>Status</label>
+        <select id="statusCredito" required>
+          <option value="APROVADO">Aprovado</option>
+          <option value="REPROVADO">Reprovado</option>
+          <option value="PENDENTE">Pendente</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Observações</label>
+        <textarea id="observacoes" rows="3"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Salvar</button>
+    </form>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Limite de Crédito</th>
+          <th>Status</th>
+          <th>Data Análise</th>
+          <th>Analista</th>
+          <th>Observações</th>
+        </tr>
+      </thead>
+      <tbody id="analiseTableBody"></tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc,
+      getDocs,
+      query,
+      where,
+      Timestamp,
+      doc,
+      updateDoc 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let clientes = [];
+    let usuarioAtual = null;
+
+    window.onload = async function() {
+      usuarioAtual = JSON.parse(localStorage.getItem('currentUser'));
+      if (!usuarioAtual) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      await loadClientes();
+      await loadAnalises();
+    };
+
+    async function loadClientes() {
+      const clientesSnap = await getDocs(query(
+        collection(db, "fornecedores"),
+        where("tipo", "in", ["Cliente", "Ambos"])
+      ));
+
+      clientes = clientesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      const select = document.getElementById('clienteSelect');
+      select.innerHTML = '<option value="">Selecione o cliente...</option>';
+      clientes.forEach(cliente => {
+        select.innerHTML += `<option value="${cliente.id}">${cliente.nome || cliente.razaoSocial}</option>`;
+      });
+    }
+
+    async function loadAnalises() {
+      const analisesSnap = await getDocs(collection(db, "analiseCredito"));
+      const analises = analisesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      const tableBody = document.getElementById('analiseTableBody');
+      tableBody.innerHTML = '';
+
+      for (const analise of analises) {
+        const cliente = clientes.find(c => c.id === analise.clienteId);
+        if (!cliente) continue;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${cliente.nome || cliente.razaoSocial}</td>
+          <td>R$ ${analise.limiteCredito.toFixed(2)}</td>
+          <td><span class="status-badge status-${analise.status.toLowerCase()}">${analise.status}</span></td>
+          <td>${new Date(analise.dataAnalise.seconds * 1000).toLocaleDateString()}</td>
+          <td>${analise.analistaNome}</td>
+          <td>${analise.observacoes || '-'}</td>
+        `;
+        tableBody.appendChild(row);
+      }
+    }
+
+    window.handleAnalise = async function(event) {
+      event.preventDefault();
+
+      const clienteId = document.getElementById('clienteSelect').value;
+      const limiteCredito = parseFloat(document.getElementById('limiteCredito').value);
+      const status = document.getElementById('statusCredito').value;
+      const observacoes = document.getElementById('observacoes').value;
+
+      try {
+        // Salvar análise
+        await addDoc(collection(db, "analiseCredito"), {
+          clienteId,
+          limiteCredito,
+          status,
+          observacoes,
+          dataAnalise: Timestamp.now(),
+          analistaId: usuarioAtual.id,
+          analistaNome: usuarioAtual.nome
+        });
+
+        // Atualizar cliente
+        await updateDoc(doc(db, "fornecedores", clienteId), {
+          creditoAprovado: status === 'APROVADO',
+          limite: limiteCredito,
+          statusCreditoAt: Timestamp.now()
+        });
+
+        alert('Análise de crédito salva com sucesso!');
+        document.getElementById('creditoForm').reset();
+        await loadAnalises();
+      } catch (error) {
+        console.error("Erro ao salvar análise:", error);
+        alert("Erro ao salvar análise de crédito.");
+      }
+    };
+  </script>
+</body>
+</html>

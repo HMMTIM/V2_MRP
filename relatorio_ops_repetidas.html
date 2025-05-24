@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de OPs Repetidas</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .warning-badge {
+      background-color: var(--warning-color);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+
+    .consolidate-btn {
+      background-color: #28a745;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Relatório de OPs Repetidas</h1>
+      <div>
+        <button onclick="window.location.href='relatorio_op_produto.html'" class="btn-secondary">Voltar</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+      <p>Esta tela mostra produtos com múltiplas Ordens de Produção ativas simultaneamente.</p>
+    </div>
+
+    <div id="loading" style="text-align: center; padding: 20px;">
+      Carregando dados...
+    </div>
+
+    <div id="content" style="display: none;">
+      <table id="opsTable">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Código</th>
+            <th>OPs Ativas</th>
+            <th>Total Solicitado</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="opsTableBody">
+          <!-- Os dados serão inseridos aqui via JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let produtos = [];
+    let ordensProducao = [];
+
+    window.onload = async function() {
+      await loadData();
+      analyzeRepeatedOps();
+    };
+
+    async function loadData() {
+      try {
+        const [produtosSnap, ordensSnap] = await Promise.all([
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "ordensProducao"))
+        ]);
+
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        ordensProducao = ordensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        document.getElementById('loading').innerHTML = 
+          '<p style="color: red;">Erro ao carregar dados. Por favor, tente novamente.</p>';
+      }
+    }
+
+    function analyzeRepeatedOps() {
+      const opsPorProduto = {};
+      
+      // Agrupar OPs por produto (considerando apenas ativas)
+      ordensProducao.filter(op => 
+        op.status === 'Pendente' || op.status === 'Em Produção'
+      ).forEach(op => {
+        if (!opsPorProduto[op.produtoId]) {
+          opsPorProduto[op.produtoId] = [];
+        }
+        opsPorProduto[op.produtoId].push(op);
+      });
+
+      // Filtrar apenas produtos com mais de 1 OP
+      const produtosComOpsRepetidas = Object.keys(opsPorProduto)
+        .filter(produtoId => opsPorProduto[produtoId].length > 1)
+        .map(produtoId => {
+          const produto = produtos.find(p => p.id === produtoId);
+          return {
+            produto,
+            ops: opsPorProduto[produtoId],
+            totalSolicitado: opsPorProduto[produtoId].reduce((sum, op) => sum + op.quantidade, 0)
+          };
+        });
+
+      displayResults(produtosComOpsRepetidas);
+    }
+
+    function displayResults(produtosComOpsRepetidas) {
+      const tableBody = document.getElementById('opsTableBody');
+      tableBody.innerHTML = '';
+
+      if (produtosComOpsRepetidas.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center;">
+              Nenhum produto com múltiplas OPs ativas encontrado.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      produtosComOpsRepetidas.forEach(item => {
+        const row = document.createElement('tr');
+        
+        // Contar OPs por status
+        const statusCount = {};
+        item.ops.forEach(op => {
+          statusCount[op.status] = (statusCount[op.status] || 0) + 1;
+        });
+        
+        const statusText = Object.keys(statusCount)
+          .map(status => `${statusCount[status]} ${status}`)
+          .join(', ');
+
+        row.innerHTML = `
+          <td>${item.produto.descricao}</td>
+          <td>${item.produto.codigo}</td>
+          <td><span class="warning-badge">${item.ops.length} OPs</span></td>
+          <td>${item.totalSolicitado.toFixed(3)} ${item.produto.unidade}</td>
+          <td>${statusText}</td>
+          <td class="action-buttons">
+            <button class="consolidate-btn" onclick="showOpsDetails('${item.produto.id}')">
+              Ver Detalhes
+            </button>
+          </td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+    }
+
+    window.showOpsDetails = function(produtoId) {
+      const produto = produtos.find(p => p.id === produtoId);
+      const opsDoProduto = ordensProducao.filter(op => 
+        op.produtoId === produtoId && 
+        (op.status === 'Pendente' || op.status === 'Em Produção')
+      );
+
+      let detailsHtml = `
+        <h3>${produto.codigo} - ${produto.descricao}</h3>
+        <p><strong>Total solicitado em todas as OPs:</strong> 
+           ${opsDoProduto.reduce((sum, op) => sum + op.quantidade, 0).toFixed(3)} ${produto.unidade}</p>
+        <table style="width: 100%; margin-top: 15px;">
+          <thead>
+            <tr>
+              <th>Número OP</th>
+              <th>Quantidade</th>
+              <th>Status</th>
+              <th>Data Entrega</th>
+              <th>Pedido</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      opsDoProduto.forEach(op => {
+        detailsHtml += `
+          <tr>
+            <td>${op.numero}</td>
+            <td>${op.quantidade} ${produto.unidade}</td>
+            <td>${op.status}</td>
+            <td>${new Date(op.dataEntrega.seconds * 1000).toLocaleDateString()}</td>
+            <td>${op.pedidoId || '-'}</td>
+          </tr>
+        `;
+      });
+
+      detailsHtml += `
+          </tbody>
+        </table>
+        <div style="margin-top: 20px; text-align: center;">
+          <button class="btn-primary" onclick="suggestConsolidation('${produtoId}')">
+            Sugerir Consolidação
+          </button>
+        </div>
+      `;
+
+      alertCustom(detailsHtml);
+    };
+
+    function alertCustom(content) {
+      const overlay = document.createElement('div');
+      overlay.style.position = 'fixed';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+      overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+      overlay.style.zIndex = '1000';
+      overlay.style.display = 'flex';
+      overlay.style.justifyContent = 'center';
+      overlay.style.alignItems = 'center';
+
+      const modal = document.createElement('div');
+      modal.style.backgroundColor = 'white';
+      modal.style.padding = '20px';
+      modal.style.borderRadius = '8px';
+      modal.style.maxWidth = '800px';
+      modal.style.maxHeight = '80vh';
+      modal.style.overflowY = 'auto';
+      modal.style.width = '90%';
+
+      modal.innerHTML = `
+        <div style="text-align: right;">
+          <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                  style="background: none; border: none; font-size: 20px; cursor: pointer;">
+            ×
+          </button>
+        </div>
+        ${content}
+      `;
+
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+    }
+
+    window.suggestConsolidation = function(produtoId) {
+      // Implemente a lógica de sugestão de consolidação aqui
+      alert('Funcionalidade de consolidação será implementada aqui.');
+    };
+  </script>
+</body>
+</html>

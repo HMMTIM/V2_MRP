@@ -1,0 +1,2958 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PLAZHA - SISTEMAS - Pedidos de Venda</title>
+  <style>
+  :root {
+    --primary-color: #0854a0;
+    --primary-hover: #0a4d8c;
+    --secondary-color: #f0f3f6;
+    --border-color: #d4d4d4;
+    --text-color: #333;
+    --text-secondary: #666;
+    --success-color: #107e3e;
+    --success-hover: #0d6e36;
+    --danger-color: #bb0000;
+    --danger-hover: #a30000;
+    --header-bg: #354a5f;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f7f7;
+    color: var(--text-color);
+  }
+
+  .sap-header {
+    background-color: var(--header-bg);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .sap-logo {
+    font-weight: 500;
+    font-size: 24px;
+    color: white;
+    display: flex;
+    align-items: center;
+  }
+
+  #authContainer {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 14px;
+  }
+
+  .user-info, .company-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+
+  .user-info:hover, .company-info:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+  }
+
+  .user-info i, .company-info i {
+    font-size: 14px;
+  }
+
+  @media (max-width: 768px) {
+    .sap-header {
+      flex-direction: column;
+      gap: 10px;
+      text-align: center;
+      padding: 10px;
+    }
+
+    #authContainer {
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .user-info, .company-info {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .sap-menu {
+    background-color: var(--secondary-color);
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .sap-menu span {
+    margin-right: 20px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  .sap-menu span:hover {
+    color: var(--primary-color);
+  }
+
+  .sap-container {
+    padding: 20px;
+    background-color: white;
+    margin: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .sap-title {
+    background-color: var(--secondary-color);
+    padding: 10px;
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--primary-color);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .sap-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 15px;
+  }
+
+  .sap-form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+  }
+
+  label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 5px;
+  }
+
+  input, select {
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+  }
+
+  .sap-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  .sap-table th {
+    background-color: var(--secondary-color);
+    padding: 12px 15px;
+    text-align: left;
+    border: 1px solid var(--border-color);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .sap-table td {
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    font-size: 14px;
+  }
+
+  .sap-table tr:hover {
+    background-color: #f8f9fa;
+  }
+
+  .status-section, .cliente-section, .itens-section, .parcelas-section, .workflow-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+  }
+
+  .status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .status-em-analise { background-color: #ffd700; color: #000; }
+  .status-aguardando-aprovacao { background-color: #87ceeb; color: #000; }
+  .status-aprovado { background-color: #90ee90; color: #000; }
+  .status-em-producao { background-color: #dda0dd; color: #000; }
+  .status-separacao { background-color: #f0e68c; color: #000; }
+  .status-faturado { background-color: #98fb98; color: #000; }
+  .status-entregue { background-color: #3cb371; color: #fff; }
+  .status-cancelado { background-color: #ff6961; color: #fff; }
+
+  .status-history {
+    margin-top: 10px;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  .workflow-steps {
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+  }
+
+  .workflow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .workflow-step::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -50%;
+    width: 100%;
+    height: 2px;
+    background-color: var(--border-color);
+  }
+
+  .workflow-step:last-child::after {
+    display: none;
+  }
+
+  .workflow-step.active {
+    color: var(--primary-color);
+  }
+
+  .workflow-step.completed {
+    color: var(--success-color);
+  }
+
+  .limite-credito {
+    background-color: var(--secondary-color);
+    padding: 10px;
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+  }
+
+  .acoes-section {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  .btn-totvs.danger {
+    background-color: var(--danger-color);
+    color: white;
+  }
+
+  .btn-totvs.danger:hover {
+    background-color: var(--danger-hover);
+  }
+
+  .sap-buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .sap-button {
+    padding: 8px 16px;
+    background-color: var(--success-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+  }
+
+  .sap-button:hover {
+    background-color: var(--success-hover);
+  }
+
+  .sap-button[onclick="window.location.href='home.html'"] {
+    background-color: #6c757d;
+  }
+
+  .sap-button[onclick="window.location.href='home.html'"]:hover {
+    background-color: #5a6268;
+  }
+
+  .sap-button[id="logoutButton"] {
+    background-color: var(--danger-color);
+  }
+
+  .sap-button[id="logoutButton"]:hover {
+    background-color: var(--danger-hover);
+  }
+
+  .sap-table td .sap-button {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .sap-table td .sap-button:first-child {
+    background-color: #ffc107;
+    color: #000;
+  }
+
+  .sap-table td .sap-button:last-child {
+    background-color: var(--danger-color);
+  }
+
+  .sap-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--secondary-color);
+    padding: 10px;
+    font-size: 12px;
+    margin-top: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-secondary);
+  }
+
+  .sap-tabs {
+    display: flex;
+    margin-top: 20px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .sap-tab {
+    padding: 8px 16px;
+    background-color: var(--secondary-color);
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+    margin-right: 2px;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .sap-tab.active {
+    background-color: white;
+    border-bottom: 1px solid white;
+    margin-bottom: -1px;
+    color: var(--primary-color);
+  }
+
+  .sap-tab:hover:not(.active) {
+    background-color: #e0e0e0;
+  }
+
+  .field-with-button {
+    display: flex;
+    gap: 5px;
+  }
+
+  .field-with-button input, .field-with-button select {
+    flex-grow: 1;
+  }
+
+  .field-with-button button {
+    background-color: #f0f0f0;
+    border: 1px solid var(--border-color);
+    padding: 0 10px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .field-with-button button:hover {
+    background-color: #e0e0e0;
+  }
+
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+
+  .modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 900px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .close-button {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-secondary);
+  }
+
+  .close-button:hover {
+    color: var(--danger-color);
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+    color: var(--primary-color);
+  }
+
+  .btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--primary-hover);
+  }
+
+  .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .btn-secondary:hover {
+    background-color: #5a6268;
+  }
+
+  .btn-success {
+    background-color: var(--success-color);
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .btn-success:hover {
+    background-color: var(--success-hover);
+  }
+
+  .btn-danger {
+    background-color: var(--danger-color);
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .btn-danger:hover {
+    background-color: var(--danger-hover);
+  }
+
+  #notification {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px;
+    border-radius: 4px;
+    z-index: 1000;
+  }
+  .cost-info {
+    margin-top: 10px;
+  }
+  .cost-info p {
+    margin-bottom: 2px;
+  }
+  .form-group {
+    margin-bottom: 15px;
+  }
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  /* History Items */
+  .history-item {
+    padding: 8px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+
+  .history-status {
+    font-weight: 500;
+    color: var(--primary-color);
+  }
+
+  .history-date {
+    color: var(--text-secondary);
+  }
+
+  .history-user {
+    font-style: italic;
+  }
+
+  /* Estoque Badges */
+  .estoque-badge {
+    padding: 3px 6px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .estoque-badge.disponivel {
+    background-color: #90ee90;
+    color: #000;
+  }
+
+  .estoque-badge.indisponivel {
+    background-color: #ff6961;
+    color: #fff;
+  }
+
+  /* Workflow Steps */
+  .step-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--border-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+  }
+
+  .workflow-step.active .step-number {
+    background-color: var(--primary-color);
+  }
+
+  .workflow-step.completed .step-number {
+    background-color: var(--success-color);
+  }
+
+  .step-name {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .step-approval {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+
+  /* Cliente Info */
+  .cliente-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .workflow-steps {
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .workflow-step::after {
+      display: none;
+    }
+
+    .limite-credito {
+      grid-template-columns: 1fr;
+    }
+
+    .acoes-section {
+      flex-direction: column;
+    }
+
+    .btn-totvs {
+      width: 100%;
+    }
+  }
+
+  /* Status Colors */
+  .status-pendente { background-color: #ffd700; color: #000; }
+  .status-pago { background-color: #90ee90; color: #000; }
+  .status-vencido { background-color: #ff6961; color: #fff; }
+  .status-parcialmente-pago { background-color: #87ceeb; color: #000; }
+
+  /* Tables */
+  .sap-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+  }
+
+  .sap-table th,
+  .sap-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .sap-table th {
+    background-color: var(--secondary-color);
+    font-weight: 500;
+  }
+
+  .sap-table tr:hover {
+    background-color: var(--hover-color);
+  }
+
+  /* Buttons */
+  .btn-totvs {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+  }
+
+  .btn-totvs:hover {
+    opacity: 0.9;
+  }
+
+  .btn-totvs:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Modal Styles */
+  .swal2-popup {
+    font-family: var(--font-family);
+  }
+
+  .swal2-title {
+    color: var(--text-primary);
+  }
+
+  .swal2-html-container {
+    color: var(--text-secondary);
+  }
+
+  .swal2-input,
+  .swal2-select {
+    border: 1px solid var(--border-color) !important;
+    border-radius: 4px !important;
+  }
+
+  .swal2-confirm {
+    background-color: var(--primary-color) !important;
+  }
+
+  .swal2-cancel {
+    background-color: var(--danger-color) !important;
+  }
+
+  /* Loading States */
+  .loading {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+  }
+
+  .loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    margin: -12px 0 0 -12px;
+    border: 2px solid var(--primary-color);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Print Styles */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+
+    .sap-table {
+      page-break-inside: avoid;
+    }
+
+    .status-badge {
+      border: 1px solid #000;
+    }
+  }
+
+  .tab-content {
+    display: none;
+    padding: 20px 0;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  .btn-converter {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .btn-converter:hover {
+    background-color: #218838;
+  }
+
+  .btn-converter:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+  }
+
+  /* Estilos para campos obrigatórios e validação */
+  .required::after {
+    content: '*';
+    color: #dc3545;
+    margin-left: 4px;
+  }
+
+  .field-feedback {
+    font-size: 12px;
+    margin-top: 4px;
+    display: none;
+  }
+
+  .field-feedback.invalid {
+    display: block;
+    color: #dc3545;
+  }
+
+  .field-feedback.valid {
+    display: block;
+    color: #28a745;
+  }
+
+  .form-control.invalid {
+    border-color: #dc3545;
+  }
+
+  .form-control.valid {
+    border-color: #28a745;
+  }
+
+  /* Tooltips personalizados */
+  .tooltip-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-color: #6c757d;
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 16px;
+    font-size: 12px;
+    margin-left: 8px;
+    cursor: help;
+  }
+
+  /* Responsividade */
+  @media (max-width: 768px) {
+    .sap-form {
+      grid-template-columns: 1fr;
+    }
+
+    .sap-container {
+      margin: 10px;
+      padding: 10px;
+    }
+
+    .sap-table {
+      display: block;
+      overflow-x: auto;
+    }
+
+    .sap-buttons {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sap-buttons button {
+      width: 100%;
+    }
+
+    .modal-content {
+      width: 95%;
+      margin: 10px auto;
+    }
+  }
+
+  /* Loading spinner para CEP */
+  .loading-cep {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  </style>
+
+  <!-- Adicionar Font Awesome para os ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+  <div class="sap-header">
+    <div class="sap-logo">PLAZHA - SISTEMAS</div>
+    <div id="authContainer">
+      <div class="user-info">
+        <i class="fas fa-user"></i>
+        <span id="userStatus">Não logado</span>
+      </div>
+      <div class="company-info">
+        <i class="fas fa-building"></i>
+        <span id="companyCode">1000</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sap-container">
+    <div class="page-header">
+      <h1>Pedidos de Venda</h1>
+      <div>
+        <button class="btn-secondary" onclick="window.location.href='home.html'">Voltar</button>
+      </div>
+    </div>
+
+    <div class="sap-form">
+        <div class="form-row">
+          <div class="sap-form-group">
+            <label>Buscar Pedido</label>
+            <input type="text" id="searchInput" placeholder="Número, cliente ou produto..." oninput="filterOrders()">
+          </div>
+          <div class="sap-form-group">
+            <label>Filtrar por Status</label>
+            <select id="statusFilter" onchange="filterOrders()">
+              <option value="">Todos os status</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Aguardando Aprovação">Aguardando Aprovação</option>
+              <option value="Aprovado">Aprovado</option>
+              <option value="Análise">Em Análise Financeira</option>
+              <option value="Produção">Em Produção</option>
+              <option value="Faturado">Faturado</option>
+              <option value="Concluído">Concluído</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="sap-form-group">
+            <label>Data Inicial</label>
+            <input type="date" id="dataInicial" onchange="filterOrders()">
+          </div>
+          <div class="sap-form-group">
+            <label>Data Final</label>
+            <input type="date" id="dataFinal" onchange="filterOrders()">
+          </div>
+          <div class="sap-form-group">
+            <label>Ordenar por</label>
+            <select id="sortOrder" onchange="filterOrders()">
+              <option value="numero">Número do Pedido</option>
+              <option value="data">Data</option>
+              <option value="cliente">Cliente</option>
+              <option value="valor">Valor</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    <div class="sap-tabs">
+      <div class="sap-tab active">Lista de Pedidos</div>
+      <div class="sap-tab">Orçamentos Aprovados</div>
+      <div class="sap-tab">Relatórios</div>
+    </div>
+
+    <div id="pedidosTab" class="tab-content active">
+      <table class="sap-table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Data</th>
+            <th>Cliente</th>
+            <th>Produto</th>
+            <th>Quantidade</th>
+            <th>Valor Total (R$)</th>
+            <th>Data Entrega</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="orderTableBody"></tbody>
+      </table>
+    </div>
+
+    <div id="orcamentosTab" class="tab-content">
+      <table class="sap-table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Data</th>
+            <th>Cliente</th>
+            <th>Valor Total (R$)</th>
+            <th>Validade</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="orcamentosTableBody"></tbody>
+      </table>
+    </div>
+
+    <style>
+      .tab-content {
+        display: none;
+        padding: 20px 0;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .btn-converter {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .btn-converter:hover {
+        background-color: #218838;
+      }
+
+      .btn-converter:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+      }
+    </style>
+
+    <script>
+      // ... existing code ...
+
+      // Função para carregar orçamentos aprovados
+      async function loadOrcamentosAprovados() {
+        try {
+          const orcamentosTableBody = document.getElementById('orcamentosTableBody');
+          orcamentosTableBody.innerHTML = '';
+
+          const orcamentosSnap = await getDocs(
+            query(collection(db, "orcamentos"), 
+                  where("status", "==", "Aprovado"))
+          );
+
+          const orcamentos = orcamentosSnap.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+
+          orcamentos.forEach(orcamento => {
+            const fornecedor = fornecedores.find(f => f.id === orcamento.clienteId);
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${orcamento.numero}</td>
+              <td>${new Date(orcamento.dataCriacao.seconds * 1000).toLocaleDateString()}</td>
+              <td>${fornecedor ? fornecedor.nome : 'Cliente não encontrado'}</td>
+              <td>${orcamento.valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+              <td>${new Date(orcamento.dataValidade.seconds * 1000).toLocaleDateString()}</td>
+              <td><span class="status-badge status-aprovado">Aprovado</span></td>
+              <td>
+                <button class="btn-converter" onclick="converterOrcamento('${orcamento.id}')">
+                  Converter em Pedido
+                </button>
+              </td>
+            `;
+            orcamentosTableBody.appendChild(row);
+          });
+        } catch (error) {
+          console.error("Erro ao carregar orçamentos:", error);
+          Swal.fire({
+            title: 'Erro',
+            text: 'Erro ao carregar orçamentos: ' + error.message,
+            icon: 'error'
+          });
+        }
+      }
+
+      // Função para converter orçamento
+      async function converterOrcamento(orcamentoId) {
+        try {
+          Swal.fire({
+            title: 'Convertendo orçamento...',
+            text: 'Realizando validações e criando pedido',
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+
+          const pedidoId = await convertOrcamentoToPedido(orcamentoId);
+
+          await Swal.fire({
+            title: 'Sucesso!',
+            text: `Orçamento convertido em pedido com sucesso! Número do pedido: ${pedidoId}`,
+            icon: 'success'
+          });
+
+          // Recarregar dados
+          await loadInitialData();
+          await loadOrcamentosAprovados();
+        } catch (error) {
+          console.error("Erro ao converter orçamento:", error);
+          Swal.fire({
+            title: 'Erro',
+            text: error.message,
+            icon: 'error'
+          });
+        }
+      }
+
+      // Adicionar event listeners para as tabs
+      document.querySelectorAll('.sap-tab').forEach((tab, index) => {
+        tab.addEventListener('click', () => {
+          // Remover classe active de todas as tabs
+          document.querySelectorAll('.sap-tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+          // Adicionar classe active na tab clicada
+          tab.classList.add('active');
+
+          // Mostrar conteúdo correspondente
+          if (index === 0) {
+            document.getElementById('pedidosTab').classList.add('active');
+          } else if (index === 1) {
+            document.getElementById('orcamentosTab').classList.add('active');
+            loadOrcamentosAprovados();
+          }
+        });
+      });
+
+      // Tornar funções globalmente acessíveis
+      window.converterOrcamento = converterOrcamento;
+      window.loadOrcamentosAprovados = loadOrcamentosAprovados;
+    </script>
+
+    <!-- Detalhes do pedido em modal -->
+    <div id="orderDetailsModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button" onclick="closeModal('orderDetailsModal')">&times;</span>
+        <div class="modal-header">
+          <h2>Detalhes do Pedido</h2>
+        </div>
+        <div class="modal-body" id="orderDetailsContent">
+          <div class="status-section">
+            <h3>Status do Pedido</h3>
+            <div class="status-badge" id="statusPedido"></div>
+            <div class="status-history" id="statusHistory"></div>
+          </div>
+          <div class="cliente-section">
+            <h3>Cliente</h3>
+            <div class="cliente-info" id="clienteInfo"></div>
+            <div class="limite-credito">
+              <span>Limite de Crédito:</span>
+              <div id="limiteInfo"></div>
+            </div>
+          </div>
+          <div class="itens-section">
+            <h3>Itens do Pedido</h3>
+            <table class="sap-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Descrição</th>
+                  <th>Quantidade</th>
+                  <th>Unidade</th>
+                  <th>Valor Unit.</th>
+                  <th>Valor Total</th>
+                  <th>Status Estoque</th>
+                </tr>
+              </thead>
+              <tbody id="itensPedido"></tbody>
+            </table>
+          </div>
+          <div class="parcelas-section">
+            <h3>Parcelas</h3>
+            <table class="sap-table">
+              <thead>
+                <tr>
+                  <th>Nº</th>
+                  <th>Vencimento</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                  <th>Data Pagto</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="parcelasPedido"></tbody>
+            </table>
+          </div>
+          <div class="workflow-section">
+            <h3>Workflow de Aprovação</h3>
+            <div class="workflow-steps" id="workflowSteps"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sap-buttons">
+      <div id="custoInfo"></div>
+      <button class="sap-button" onclick="openOrderModal()">Novo Pedido</button>
+      <button class="sap-button" onclick="window.location.href='home.html'">Voltar</button>
+      <button class="sap-button" id="logoutButton" style="display: none;" onclick="logout()">Sair</button>
+    </div>
+  </div>
+
+  <div id="orderModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal()">×</span>
+      <div class="sap-title" id="modalTitle">Criar Pedido de Venda</div>
+      <form id="orderForm" onsubmit="handleOrder(event)" novalidate>
+        <div class="sap-form">
+          <!-- Cliente -->
+          <div class="sap-form-group">
+            <label class="required">Cliente</label>
+            <div class="field-with-button">
+              <select id="clientSelect" class="form-control" required>
+                <option value="">Selecione o cliente...</option>
+              </select>
+              <button type="button" onclick="verificarStatusCliente()" class="btn-status">
+                Status do Cliente
+              </button>
+            </div>
+            <div class="field-feedback"></div>
+          </div>
+
+          <!-- Produto -->
+          <div class="sap-form-group">
+            <label class="required">Produto</label>
+            <div class="field-with-button">
+              <select id="productSelect" class="form-control" required onchange="updateUnitPrice()">
+                <option value="">Selecione o produto...</option>
+              </select>
+              <button type="button" onclick="showProductDetails()" class="btn-info">
+                <i class="fas fa-info-circle"></i>
+              </button>
+            </div>
+            <div class="field-feedback"></div>
+          </div>
+
+          <!-- Quantidade -->
+          <div class="sap-form-group">
+            <label class="required">Quantidade</label>
+            <input type="number" id="quantity" class="form-control" min="0.001" step="0.001" required 
+                   oninput="validateQuantity(this); calculateTotal()">
+            <div class="field-feedback"></div>
+          </div>
+
+          <!-- Valor Unitário -->
+          <div class="sap-form-group">
+            <label>Valor Unitário (R$)</label>
+            <input type="number" id="valorUnitario" class="form-control" min="0" step="0.01" readonly>
+            <div class="field-feedback"></div>
+          </div>
+
+          <!-- Valor Total -->
+          <div class="sap-form-group">
+            <label>Valor Total (R$)</label>
+            <input type="number" id="valorTotal" class="form-control" step="0.01" readonly>
+          </div>
+
+          <!-- Condição de Pagamento -->
+          <div class="sap-form-group">
+            <label class="required">Condição de Pagamento
+              <span class="tooltip-icon" data-tooltip="Selecione a forma de pagamento. Impacta diretamente no fluxo de caixa e pode afetar descontos.">?</span>
+            </label>
+            <select id="condicaoPagamento" class="form-control" required>
+              <option value="">Selecione a condição...</option>
+              <option value="A_VISTA">À Vista</option>
+              <option value="30_DIAS">30 Dias</option>
+              <option value="60_DIAS">60 Dias</option>
+              <option value="PARCELADO_3X">Parcelado 3x</option>
+            </select>
+            <div class="field-feedback"></div>
+          </div>
+
+          <!-- Prioridade de Entrega -->
+          <div class="sap-form-group">
+            <label class="required">Prioridade de Entrega
+              <span class="tooltip-icon" data-tooltip="Define a urgência do pedido. Prioridade alta pode implicar em custos adicionais.">?</span>
+            </label>
+            <select id="prioridadeEntrega" class="form-control" required>
+              <option value="NORMAL">Normal</option>
+              <option value="ALTA">Alta</option>
+              <option value="URGENTE">Urgente</option>
+            </select>
+            <div class="field-feedback"></div>
+          </div>
+
+          <!-- Tipo de Frete -->
+          <div class="sap-form-group">
+            <label class="required">Tipo de Frete
+              <span class="tooltip-icon" data-tooltip="CIF: Frete por conta do vendedor. FOB: Frete por conta do comprador.">?</span>
+            </label>
+            <select id="freteTipo" class="form-control" required>
+              <option value="">Selecione o tipo de frete...</option>
+              <option value="CIF">CIF</option>
+              <option value="FOB">FOB</option>
+            </select>
+            <div class="field-feedback"></div>
+          </div>
+
+          <!-- Incoterm -->
+          <div class="sap-form-group">
+            <label class="required">Incoterm
+              <span class="tooltip-icon" data-tooltip="EXW: Na origem. FCA: Livre transportador. CPT: Transporte pago até. CIP: Transporte e seguro pagos até. DAP: Entregue no local. DDP: Entregue com direitos pagos.">?</span>
+            </label>
+            <select id="incoterm" class="form-control" required>
+              <option value="">Selecione o Incoterm...</option>
+              <option value="EXW">EXW</option>
+              <option value="FCA">FCA</option>
+              <option value="CPT">CPT</option>
+              <option value="CIP">CIP</option>
+              <option value="DAP">DAP</option>
+              <option value="DDP">DDP</option>
+            </select>
+            <div class="field-feedback"></div>
+          </div>
+
+          <!-- Transportadora -->
+          <div class="sap-form-group">
+            <label class="required">Transportadora</label>
+            <input type="text" id="transportadora" class="form-control" placeholder="Nome da transportadora" required>
+            <div class="field-feedback"></div>
+          </div>
+
+          <!-- Valor do Frete -->
+          <div class="sap-form-group">
+            <label class="required">Valor do Frete (R$)</label>
+            <input type="number" id="valorFrete" class="form-control" min="0" step="0.01" value="0" required>
+            <div class="field-feedback"></div>
+          </div>
+
+          <!-- Prazo de Entrega -->
+          <div class="sap-form-group">
+            <label class="required">Prazo de Entrega (dias)</label>
+            <input type="number" id="prazoFrete" class="form-control" min="0" step="1" value="0" required>
+            <div class="field-feedback"></div>
+          </div>
+
+          <!-- Data de Entrega -->
+          <div class="sap-form-group">
+            <label class="required">Data de Entrega</label>
+            <input type="date" id="dueDate" class="form-control" required 
+                   min="${new Date().toISOString().split('T')[0]}">
+            <div class="field-feedback"></div>
+          </div>
+        </div>
+
+        <div class="sap-buttons">
+          <button type="submit" class="sap-button">Salvar</button>
+          <button type="button" class="sap-button" onclick="closeModal()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+    <div class="sap-status">
+      <div>Transação: PV01 - Pedidos de Venda</div>
+      <div>Sistema: PRD | Cliente: 800</div>
+    </div>
+
+  <div id="notification"></div>
+
+  <script>
+    // Check user authentication status immediately
+    const storedUser = localStorage.getItem('currentUser');
+    let usuarioAtual = storedUser ? JSON.parse(storedUser) : null;
+
+    // Update UI based on authentication status
+    if (usuarioAtual) {
+      document.getElementById('userStatus').textContent = usuarioAtual.nome;
+      document.getElementById('logoutButton').style.display = 'inline';
+    } else {
+      window.location.href = 'login.html';
+    }
+
+    function openOrderModal() {
+      if (!usuarioAtual) {
+        alert('Por favor, faça login para criar pedidos.');
+        window.location.href = 'login.html';
+        return;
+      }
+      document.getElementById('modalTitle').textContent = 'Criar Pedido de Venda';
+      document.getElementById('orderModal').style.display = 'block';
+      document.getElementById('orderForm').onsubmit = handleOrder;
+    }
+
+    // Make functions accessible globally
+    window.openOrderModal = openOrderModal;
+    window.logout = function() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    };
+
+    // Define handleOrder function
+    window.handleOrder = async function(event) {
+      event.preventDefault();
+
+      if (!usuarioAtual) {
+        alert('Por favor, faça login para criar pedidos.');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const orcamentoId = document.getElementById('orcamentoSelect').value;
+      if (orcamentoId) {
+        const orcamentoDoc = await getDoc(doc(db, "orcamentos", orcamentoId));
+        const orcamento = orcamentoDoc.data();
+
+        if (orcamento.status !== 'Aprovado pelo Cliente') {
+          alert('Só é possível criar pedidos a partir de orçamentos aprovados pelo cliente.');
+          return;
+        }
+      }
+
+      const clientId = document.getElementById('clientSelect').value;
+      const productId = document.getElementById('productSelect').value;
+      const quantidade = parseFloat(document.getElementById('quantity').value);
+      const valorUnitario = parseFloat(document.getElementById('valorUnitario').value);
+      const valorTotal = parseFloat(document.getElementById('valorTotal').value);
+      const condicaoPagamento = document.getElementById('condicaoPagamento').value;
+      const prioridadeEntrega = document.getElementById('prioridadeEntrega').value;
+      const freteTipo = document.getElementById('freteTipo').value;
+      const incoterm = document.getElementById('incoterm').value;
+      const transportadora = document.getElementById('transportadora').value;
+      const valorFrete = parseFloat(document.getElementById('valorFrete').value);
+      const prazoFrete = parseInt(document.getElementById('prazoFrete').value);
+      const dueDate = document.getElementById('dueDate').value;
+
+      // Verificar status financeiro do cliente
+      const statusCliente = await checkClienteStatus(clientId, valorTotal);
+      if (!statusCliente.aprovado) {
+        alert(`Pedido não pode ser processado: ${statusCliente.motivo}. Entre em contato com o setor financeiro.`);
+        return;
+      }
+
+      if (!clientId || !productId || !quantidade || !condicaoPagamento || !freteTipo || !incoterm || !transportadora || !dueDate) {
+        alert('Por favor, preencha todos os campos obrigatórios.');
+        return;
+      }
+
+      const produto = produtos.find(p => p.id === productId);
+      const estoque = await getDocs(collection(db, "estoques"));
+      const estoqueProduto = estoque.docs.find(e => e.data().produtoId === productId);
+      const saldoAtual = estoqueProduto ? estoqueProduto.data().saldo : 0;
+
+      if (quantidade > saldoAtual) {
+        alert(`Quantidade solicitada (${quantidade} ${produto.unidade}) excede o estoque disponível (${saldoAtual} ${produto.unidade}).`);
+        return;
+      }
+
+      const workflowAprovacao = determineWorkflow(valorTotal);
+
+      try {
+        const numeroSequencial = (pedidos.length + 1).toString().padStart(6, '0');
+        const pedido = {
+          numero: numeroSequencial,
+          clienteId,
+          produtoId,
+          quantidade,
+          valorUnitario,
+          valorTotal,
+          condicaoPagamento,
+          prioridadeEntrega,
+          freteTipo,
+          incoterm,
+          transportadora,
+          valorFrete,
+          prazoFrete,
+          dataEntrega: Timestamp.fromDate(new Date(dueDate)),
+          status: 'Aguardando Aprovação',
+          dataCriacao: Timestamp.now(),
+          criadoPor: usuarioAtual?.id || 'Desconhecido',
+          workflowAprovacao: {
+            nivelAtual: 1,
+            niveisNecessarios: workflowAprovacao.niveisNecessarios,
+            aprovacoes: [],
+            limiteValor: workflowAprovacao.limiteValor
+          },
+          historicoAprovacoes: []
+        };
+
+        await addDoc(collection(db, "pedidosVenda"), pedido);
+
+        if (estoqueProduto) {
+          await updateDoc(doc(db, "estoques", estoqueProduto.id), {
+            saldo: saldoAtual - quantidade,
+            ultimaMovimentacao: Timestamp.now()
+          });
+          await addDoc(collection(db, "movimentacoesEstoque"), {
+            produtoId,
+            tipo: 'SAIDA',
+            quantidade,
+            valorUnitario,
+            valorTotal: quantidade * valorUnitario,
+            tipoDocumento: 'VENDA',
+            numeroDocumento: numeroSequencial,
+            observacoes: `Saída para pedido ${numeroSequencial}`,
+            dataHora: Timestamp.now(),
+            criadoPor: usuarioAtual?.id || 'Desconhecido'
+          });
+        }
+
+        alert(`Pedido ${numeroSequencial} criado com sucesso!`);
+        closeModal();
+        await loadInitialData();
+        await loadOrders();
+      } catch (error) {
+        console.error("Erro ao criar pedido:", error);
+        alert("Erro ao criar pedido.");
+      }
+    };
+  </script>
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs,
+      query,
+      where,
+      orderBy,
+      limit,
+      Timestamp,
+      doc,
+      updateDoc,
+      deleteDoc,
+      getDoc,
+      writeBatch,
+      arrayUnion
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import * as Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm';
+
+    // Variáveis globais
+    const state = {
+      usuarioAtual: null,
+      clientes: [],
+      produtos: [],
+      pedidos: [],
+      estruturas: [],
+      faturas: []
+    };
+
+    window.onload = async function() {
+      state.usuarioAtual = JSON.parse(localStorage.getItem('currentUser'));
+      if (!state.usuarioAtual) {
+        window.location.href = 'login.html';
+        return;
+      }
+      document.getElementById('userStatus').textContent = state.usuarioAtual.nome;
+      await loadInitialData();
+      updateSelects();
+      await loadOrders();
+    };
+
+    async function loadInitialData() {
+      try {
+        // Limit initial load to 50 most recent orders
+        const [fornecedoresSnap, produtosSnap, pedidosSnap, precosSnap] = await Promise.all([
+          getDocs(query(collection(db, "fornecedores"), 
+            where("tipo", "in", ["Cliente", "Ambos"]))),
+          getDocs(query(collection(db, "produtos"),
+            where("status", "==", "ativo"),
+            where("tipo", "in", ["PA", "SV"]),
+            limit(50))),
+          getDocs(query(collection(db, "pedidosVenda"),
+            orderBy("dataCriacao", "desc"),
+            limit(50))),
+          getDocs(query(collection(db, "tabelaPrecos"),
+            limit(50)))
+        ]);
+
+        state.clientes = fornecedoresSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        state.produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        state.pedidos = pedidosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const precos = precosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Atualizar select de clientes
+        const clientSelect = document.getElementById('clientSelect');
+        clientSelect.innerHTML = '<option value="">Selecione o cliente...</option>';
+        state.clientes.forEach(cliente => {
+          let statusInfo = '';
+          if (!cliente.ativo) statusInfo = '(Inativo)';
+          else if (cliente.statusHomologacao !== 'Homologado') statusInfo = '(Não Homologado)';
+          else if (cliente.tipo !== 'Cliente' && cliente.tipo !== 'Ambos') statusInfo = '(Não é Cliente)';
+
+          clientSelect.innerHTML += `
+            <option value="${cliente.id}" ${statusInfo ? 'disabled' : ''} 
+                   onclick="showClienteStatus('${cliente.id}')"
+                   onmouseover="this.style.cursor='pointer'"
+                   title="Clique para ver detalhes do status">
+              ${cliente.nome} - ${cliente.nomeFantasia || ''} ${statusInfo}
+            </option>`;
+        });
+
+        // Atualizar select de produtos
+        const productSelect = document.getElementById('productSelect');
+        productSelect.innerHTML = '<option value="">Selecione o produto...</option>';
+        state.produtos
+          .filter(p => p.status === 'ativo' && (p.tipo === 'PA' || p.tipo === 'SV'))
+          .forEach(produto => {
+            const preco = precos.find(p => p.produtoId === produto.id);
+            if (preco) {
+              produto.precoVenda = preco.precoVenda;
+              produto.custoMedio = preco.custoMedio;
+              produto.margemLucro = preco.margemLucro;
+            }
+            productSelect.innerHTML += `
+              <option value="${produto.id}" 
+                      data-preco="${produto.precoVenda || 0}"
+                      data-custo="${state.usuarioAtual?.perfil === 'ADMIN' ? (produto.custoMedio || 0) : '0'}"
+                      data-margem="${state.usuarioAtual?.perfil === 'ADMIN' ? (produto.margemLucro || 0) : '0'}">
+                ${produto.codigo} - ${produto.descricao} (${produto.tipo})
+              </option>`;
+          });
+
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados.");
+      }
+    }
+
+    function updateSelects() {
+      const clientSelect = document.getElementById('clientSelect');
+      const productSelect = document.getElementById('productSelect');
+
+      clientSelect.innerHTML = '<option value="">Selecione o cliente...</option>';
+      state.clientes.forEach(cliente => {
+        let statusInfo = '';
+        if (!cliente.ativo) statusInfo = '(Inativo)';
+        else if (cliente.statusHomologacao !== 'Homologado') statusInfo = '(Não Homologado)';
+        else if (cliente.tipo !== 'Cliente' && cliente.tipo !== 'Ambos') statusInfo = '(Não é Cliente)';
+
+        clientSelect.innerHTML += `
+          <option value="${cliente.id}" ${statusInfo ? 'disabled' : ''} 
+                 onclick="showClienteStatus('${cliente.id}')"
+                 onmouseover="this.style.cursor='pointer'"
+                 title="Clique para ver detalhes do status">
+            ${cliente.nome} - ${cliente.nomeFantasia || ''} ${statusInfo}
+          </option>`;
+      });
+
+      // Adicionar evento de change no select
+      clientSelect.addEventListener('change', function(e) {
+        if (this.value) {
+          showClienteStatus(this.value);
+        }
+      });
+
+      productSelect.innerHTML = '<option value="">Selecione o produto...</option>';
+      state.produtos
+        .filter(p => p.status === 'ativo' && (p.tipo === 'PA' || p.tipo === 'SV'))
+        .forEach(produto => {
+          productSelect.innerHTML += `
+            <option value="${produto.id}">
+              ${produto.codigo} - ${produto.descricao} (${produto.tipo})
+            </option>`;
+        });
+    }
+
+    async function loadOrders() {
+      const tableBody = document.getElementById('orderTableBody');
+      tableBody.innerHTML = '';
+
+      const faturasSnap = await getDocs(collection(db, "faturas"));
+      state.faturas = faturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      for (const pedido of state.pedidos) {
+        const cliente = state.clientes.find(c => c.id === pedido.clienteId);
+        const produto = state.produtos.find(p => p.id === pedido.produtoId);
+        const faturado = state.faturas.some(f => f.pedidoId === pedido.id);
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${pedido.numero}</td>
+          <td>${new Date(pedido.dataCriacao.seconds * 1000).toLocaleDateString()}</td>
+          <td>${cliente ? cliente.nome : 'Desconhecido'}</td>
+          <td>${produto ? `${produto.codigo} - ${produto.descricao}` : 'Desconhecido'}</td>
+          <td>${pedido.quantidade} ${produto?.unidade || ''}</td>
+          <td>R$${(pedido.valorTotal + (pedido.valorFrete || 0)).toFixed(2)}</td>
+          <td>${pedido.freteTipo || '-'}</td>
+          <td>${pedido.transportadora || '-'}</td>
+          <td>${pedido.incoterm || '-'}</td>
+          <td>${new Date(pedido.dataEntrega.seconds * 1000).toLocaleDateString()}</td>
+          <td>${pedido.status}</td>
+          <td>
+            <button class="btn-primary" onclick="editOrder('${pedido.id}')">Editar</button>
+            ${pedido.status === 'Aguardando Aprovação' && state.usuarioAtual.nivel >= 6 ? 
+              `<button class="btn-success" onclick="approveOrder('${pedido.id}')">Aprovar</button>` : ''}
+            ${pedido.status === 'Concluído' && !faturado ? 
+              `<button class="btn-success" onclick="gerarFatura('${pedido.id}')">Faturar</button>` : ''}
+            <button class="btn-danger" onclick="deleteOrder('${pedido.id}')">Excluir</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      }
+    }
+
+    window.filterOrders = function() {
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+
+      const rows = document.getElementById('orderTableBody').getElementsByTagName('tr');
+
+      for (const row of rows) {
+        const numero = row.cells[0].textContent.toLowerCase();
+        const cliente = row.cells[1].textContent.toLowerCase();
+        const produto = row.cells[2].textContent.toLowerCase();
+        const status = row.cells[9].textContent;
+
+        const matchesSearch = numero.includes(searchText) || cliente.includes(searchText) || produto.includes(searchText);
+        const matchesStatus = !statusFilter || status === statusFilter;
+
+        row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+      }
+    };
+
+    window.openOrderModal = function() {
+      if (!state.usuarioAtual) {
+        alert('Por favor, faça login para criar pedidos.');
+        window.location.href = 'login.html';
+        return;
+      }
+      document.getElementById('modalTitle').textContent = 'Criar Pedido de Venda';
+      document.getElementById('orderModal').style.display = 'block';
+      document.getElementById('orderForm').onsubmit = handleOrder;
+    };
+
+    window.closeModal = function(modalId = 'orderModal') {
+      document.getElementById(modalId).style.display = 'none';
+      document.getElementById('orderForm').reset();
+    };
+
+    window.updateUnitPrice = async function() {
+      const productSelect = document.getElementById('productSelect');
+      const option = productSelect.options[productSelect.selectedIndex];
+      const valorUnitarioInput = document.getElementById('valorUnitario');
+      const custoInfo = document.getElementById('custoInfo');
+
+      if (option) {
+        try {
+          // Buscar parâmetros de vendas
+          const parametrosDoc = await getDoc(doc(db, "parametros", "sistema"));
+          const parametrosVendas = parametrosDoc.data()?.parametrosVendas || {};
+          const precosObrigatoriosTabela = parametrosVendas.precosObrigatoriosTabela || false;
+          const permitirLiberacaoPrecos = parametrosVendas.permitirLiberacaoPrecos || false;
+          const nivelLiberacaoPrecos = parametrosVendas.nivelLiberacaoPrecos || 3;
+          const toleranciaDesconto = parametrosVendas.toleranciaDesconto || 10;
+
+          // Mostrar configuração atual de preços
+          if (precosObrigatoriosTabela) {
+            showNotification('Preços são obrigatoriamente da tabela de preços', 'info');
+          } else if (permitirLiberacaoPrecos) {
+            showNotification(`Preços podem ser liberados por usuários de nível ${nivelLiberacaoPrecos} ou superior (Tolerância de desconto: ${toleranciaDesconto}%)`, 'info');
+          }
+
+          // Buscar preço da tabela
+          const precosQuery = await getDocs(query(
+            collection(db, "tabelaPrecos"),
+            where("produtoId", "==", option.value),
+            where("status", "==", "ativo")
+          ));
+
+          let precoTabela = null;
+          const now = Timestamp.now();
+
+          for (const doc of precosQuery.docs) {
+            const data = doc.data();
+            if (data.dataInicio <= now && data.dataFim >= now) {
+              if (!precoTabela || data.dataInicio.toMillis() > precoTabela.dataInicio.toMillis()) {
+                precoTabela = data;
+              }
+            }
+          }
+
+          if (precoTabela) {
+            valorUnitarioInput.value = precoTabela.precoVenda;
+            valorUnitarioInput.dataset.precoTabela = precoTabela.precoVenda;
+            valorUnitarioInput.readOnly = precosObrigatoriosTabela && (!permitirLiberacaoPrecos || state.usuarioAtual?.nivel < nivelLiberacaoPrecos);
+          } else if (precosObrigatoriosTabela) {
+            showNotification('Não há preço válido cadastrado para este produto na tabela de preços!', 'warning');
+            valorUnitarioInput.value = 0;
+            valorUnitarioInput.readOnly = true;
+            return;
+          } else {
+            valorUnitarioInput.value = option.dataset.preco || 0;
+            valorUnitarioInput.readOnly = false;
+          }
+
+          // Mostrar informações de custo e margem apenas para usuários autorizados
+          if (state.usuarioAtual?.nivel >= nivelLiberacaoPrecos) {
+            const custo = parseFloat(option.dataset.custo);
+            const margem = parseFloat(option.dataset.margem);
+            custoInfo.innerHTML = `
+              <div class="cost-info">
+                <p>Custo Médio: R$ ${custo.toFixed(2)}</p>
+                <p>Margem: ${margem.toFixed(2)}%</p>
+                ${precoTabela ? `<p>Preço Tabela: R$ ${precoTabela.precoVenda.toFixed(2)}</p>` : ''}
+                ${permitirLiberacaoPrecos ? `<p>Tolerância de Desconto: ${toleranciaDesconto}%</p>` : ''}
+              </div>`;
+          } else {
+            custoInfo.innerHTML = '';
+          }
+
+          // Adicionar evento para validar alterações de preço
+          if (permitirLiberacaoPrecos && state.usuarioAtual?.nivel >= nivelLiberacaoPrecos) {
+            valorUnitarioInput.addEventListener('change', function() {
+              const precoAtual = parseFloat(this.value);
+              const precoTabela = parseFloat(this.dataset.precoTabela);
+              const desconto = ((precoTabela - precoAtual) / precoTabela) * 100;
+
+              if (desconto > toleranciaDesconto) {
+                showNotification(`Desconto máximo permitido é de ${toleranciaDesconto}%`, 'warning');
+                this.value = precoTabela * (1 - (toleranciaDesconto / 100));
+              }
+            });
+          }
+
+        } catch (error) {
+          console.error('Erro ao carregar preços:', error);
+          showNotification('Erro ao carregar preços do produto', 'error');
+          valorUnitarioInput.value = 0;
+          custoInfo.innerHTML = '';
+        }
+      } else {
+        valorUnitarioInput.value = 0;
+        custoInfo.innerHTML = '';
+      }
+      calculateTotal();
+    };
+
+    window.calculateTotal = function() {
+      const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+      const valorUnitario = parseFloat(document.getElementById('valorUnitario').value) || 0;
+      const valorFrete = parseFloat(document.getElementById('valorFrete').value) || 0;
+      const valorTotal = (quantity * valorUnitario) + valorFrete;
+      document.getElementById('valorTotal').value = valorTotal.toFixed(2);
+    };
+
+    async function checkClienteStatus(clienteId, valorTotal) {
+      try {
+        const fornecedorDoc = await getDoc(doc(db, "fornecedores", clienteId));
+        if (!fornecedorDoc.exists()) {
+          throw new Error("Cliente não encontrado");
+        }
+        const cliente = fornecedorDoc.data();
+
+        // Verificar se é um cliente ou ambos
+        if (cliente.tipo !== 'Cliente' && cliente.tipo !== 'Ambos') {
+          return { aprovado: false, motivo: "Parceiro não está configurado como cliente" };
+        }
+
+        // Verificar limite de crédito
+        const limiteCredito = cliente.limite || 0;
+        const creditoUtilizado = cliente.creditoUtilizado || 0;
+
+        // Buscar faturas em atraso
+        const faturasSnap = await getDocs(
+          query(collection(db, "contasAReceber"),
+            where("clienteId", "==", clienteId),
+            where("status", "==", "VENCIDO")
+          )
+        );
+
+        const temFaturasVencidas = !faturasSnap.empty;
+        const temLimiteDisponivel = (limiteCredito - creditoUtilizado) >= valorTotal;
+
+        if (temFaturasVencidas) {
+          return { aprovado: false, motivo: "Cliente possui faturas vencidas. Entre em contato com o setor financeiro." };
+        }
+
+        if (!temLimiteDisponivel) {
+          return { aprovado: false, motivo: `Limite de crédito excedido. Limite disponível: R$ ${(limiteCredito - creditoUtilizado).toFixed(2)}` };
+        }
+
+        // Verificar status de homologação
+        if (cliente.statusHomologacao !== 'Homologado') {
+          return { aprovado: false, motivo: "Cliente ainda não foi homologado pelo setor financeiro" };
+        }
+
+        return { aprovado: true, motivo: "OK" };
+      } catch (error) {
+        console.error("Erro ao verificar status do cliente:", error);
+        return { aprovado: false, motivo: "Erro ao verificar status do cliente: " + error.message };
+      }
+    }
+
+    async function checkIfRequiresApproval(clienteId, valorTotal) {
+      // Implement your logic here to determine if approval is required.
+      // This could be based on the client's credit limit, order value, or other factors.
+      // For this example, we'll simply return true if the order value is above 1000.
+      return valorTotal > 1000;
+    }
+
+    window.editOrder = async function(orderId) {
+      if (!state.usuarioAtual) {
+        alert('Por favor, faça login para editar pedidos.');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const pedido = state.pedidos.find(p => p.id === orderId);
+      if (!pedido) return;
+
+      document.getElementById('modalTitle').textContent = `Editar Pedido ${pedido.numero}`;
+      document.getElementById('clientSelect').value = pedido.clienteId;
+      document.getElementById('productSelect').value = pedido.produtoId;
+      document.getElementById('quantity').value = pedido.quantidade;
+      document.getElementById('valorUnitario').value = pedido.valorUnitario;
+      document.getElementById('valorTotal').value = pedido.valorTotal;
+      document.getElementById('condicaoPagamento').value = pedido.condicaoPagamento;
+      document.getElementById('prioridadeEntrega').value = pedido.prioridadeEntrega;
+      document.getElementById('freteTipo').value = pedido.freteTipo;
+      document.getElementById('incoterm').value = pedido.incoterm;
+      document.getElementById('transportadora').value = pedido.transportadora;
+      document.getElementById('valorFrete').value = pedido.valorFrete;
+      document.getElementById('prazoFrete').value = pedido.prazoFrete;
+      document.getElementById('dueDate').value = new Date(pedido.dataEntrega.seconds * 1000).toISOString().slice(0, 10);
+      document.getElementById('orderModal').style.display = 'block';
+    };
+
+    async function deleteOrder(orderId) {
+      if (!state.usuarioAtual) {
+        alert('Por favor, faça login para excluir pedidos.');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      if (!confirm("Tem certeza que deseja excluir este pedido?")) {
+        return;
+      }
+
+      try {
+        await deleteDoc(doc(db, "pedidosVenda", orderId));
+        alert('Pedido excluído com sucesso!');
+        await loadOrders();
+      } catch (error) {
+        console.error("Erro ao excluir pedido:", error);
+        alert("Erro ao excluir pedido.");
+      }
+    }
+
+    async function gerarFatura(pedidoId) {
+      if (!state.usuarioAtual) {
+        alert('Por favor, faça login para gerar faturas.');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const pedido = state.pedidos.find(p => p.id === pedidoId);
+      if (!pedido) return;
+
+      try {
+        const numeroSequencial = (state.faturas.length + 1).toString().padStart(6, '0');
+        const fatura = {
+          numero: numeroSequencial,
+          pedidoId,
+          clienteId: pedido.clienteId,
+          valorTotal: pedido.valorTotal,
+          status: "Em Aberto",
+          dataEmissao: Timestamp.now(),
+          dataVencimento: Timestamp.fromDate(new Date(pedido.dataEntrega.seconds * 1000))
+        };
+
+        await addDoc(collection(db, "faturas"), fatura);
+        await updateDoc(doc(db, "pedidosVenda", pedidoId), { status: "Faturado" });
+        alert(`Fatura ${numeroSequencial} gerada com sucesso!`);
+        await loadOrders();
+      } catch (error) {
+        console.error("Erro ao gerar fatura:", error);
+        alert("Erro ao gerar fatura.");
+      }
+    }
+
+    // Funções para gestão de preços
+    async function openPriceManagement() {
+      if (!state.usuarioAtual || (state.usuarioAtual.nivel < 6)) {
+        alert('Acesso restrito à gerência e diretoria.');
+        return;
+      }
+
+      document.getElementById('priceManagementModal').style.display = 'block';
+      loadProductsForPricing();
+    }
+
+    async function loadProductsForPricing() {
+      const select = document.getElementById('priceProductSelect');
+      select.innerHTML = '<option value="">Selecione o produto...</option>';
+      state.produtos.forEach(produto => {
+        select.innerHTML += `<option value="${produto.id}">${produto.codigo} - ${produto.descricao}</option>`;
+      });
+    }
+
+    async function savePriceTable() {
+      const produtoId = document.getElementById('priceProductSelect').value;
+      const precoVenda = parseFloat(document.getElementById('precoVenda').value);
+      const custoMedio = parseFloat(document.getElementById('custoMedio').value);
+      const margemLucro = parseFloat(document.getElementById('margemLucro').value);
+
+      if (!produtoId || isNaN(precoVenda) || isNaN(custoMedio) || isNaN(margemLucro)) {
+        alert('Preencha todos os campos corretamente.');
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "tabelaPrecos"), {
+          produtoId,
+          precoVenda,
+          custoMedio,
+          margemLucro,
+          atualizadoPor: state.usuarioAtual.id,
+          dataAtualizacao: Timestamp.now()
+        });
+
+        alert('Preços atualizados com sucesso!');
+        closeModal('priceManagementModal');
+        await loadInitialData();
+      } catch (error) {
+        console.error("Erro ao salvar preços:", error);
+        alert("Erro ao salvar preços.");
+      }
+    }
+
+    // Função para aprovar pedido
+    async function approveOrder(orderId) {
+      if (!state.usuarioAtual || state.usuarioAtual.nivel < 6) {
+        alert('Apenas gerência e diretoria podem aprovar pedidos.');
+        return;
+      }
+
+      try {
+        await updateDoc(doc(db, "pedidosVenda", orderId), {
+          status: 'Aprovado',
+          aprovadoPor: state.usuarioAtual.id,
+          dataAprovacao: Timestamp.now()
+        });
+
+        alert('Pedido aprovado com sucesso!');
+        await loadOrders();
+      } catch (error) {
+        console.error("Erro ao aprovar pedido:", error);
+        alert("Erro ao aprovar pedido.");
+      }
+    }
+
+    async function salvarPedido(dados) {
+      try {
+        // Verifica limite de crédito
+        const limiteCredito = await verificarLimiteCredito(dados.cliente.id);
+        if (limiteCredito.limiteDisponivel < dados.valorTotal) {
+          throw new Error(`Cliente sem limite de crédito disponível. Limite atual: ${formatarMoeda(limiteCredito.limiteDisponivel)}`);
+        }
+
+        // Calcula parcelas
+        const parcelas = calcularParcelas(dados.valorTotal, dados.condicoesPagamento);
+
+        const pedidoData = {
+          ...dados,
+          status: 'Aguardando Aprovação',
+          data: Timestamp.now(),
+          parcelas,
+          statusPagamento: 'Pendente',
+          workflowAprovacao: {
+            nivelAtual: 1,
+            niveisNecessarios: determineWorkflow(dados.valorTotal).niveisNecessarios,
+            aprovacoes: []
+          },
+          statusPedido: {
+            atual: 'Em Análise',
+            historico: [{
+              status: 'Em Análise',
+              data: Timestamp.now(),
+              usuario: {
+                id: state.usuarioAtual.id,
+                nome: state.usuarioAtual.nome
+              }
+            }]
+          },
+          usuarioCriacao: {
+            id: state.usuarioAtual.id,
+            nome: state.usuarioAtual.nome
+          }
+        };
+
+        // Verifica e reserva estoque
+        await verificarEReservarEstoque(dados.itens);
+
+        const docRef = await addDoc(collection(db, "pedidosVenda"), pedidoData);
+        return docRef.id;
+      } catch (error) {
+        console.error("Erro ao salvar pedido:", error);
+        throw error;
+      }
+    }
+
+    function calcularParcelas(valorTotal, condicoesPagamento) {
+      const parcelas = [];
+      const numeroParcelas = condicoesPagamento.numeroParcelas || 1;
+      const valorParcela = valorTotal / numeroParcelas;
+      let dataVencimento = new Date();
+
+      for (let i = 1; i <= numeroParcelas; i++) {
+        dataVencimento = new Date(dataVencimento);
+        dataVencimento.setDate(dataVencimento.getDate() + (condicoesPagamento.diasEntreParcelas || 30));
+
+        parcelas.push({
+          numero: i,
+          valor: valorParcela,
+          dataVencimento: Timestamp.fromDate(dataVencimento),
+          status: 'Pendente'
+        });
+      }
+
+      return parcelas;
+    }
+
+    async function verificarEReservarEstoque(itens) {
+      const batch = writeBatch(db);
+      const produtosFaltantes = [];
+
+      // Verifica disponibilidade
+      for (const item of itens) {
+        const estoqueRef = doc(collection(db, "estoques"), item.produto.id);
+        const estoqueDoc = await getDoc(estoqueRef);
+        const estoqueAtual = estoqueDoc.data();
+
+        if (estoqueAtual.quantidade < item.quantidade) {
+          produtosFaltantes.push(item.produto.codigo);
+        }
+      }
+
+      if (produtosFaltantes.length > 0) {
+        throw new Error(`Produtos sem estoque disponível: ${produtosFaltantes.join(', ')}`);
+      }
+
+      // Reserva o estoque
+      for (const item of itens) {
+        const estoqueRef = doc(collection(db, "estoques"), item.produto.id);
+        const estoqueDoc = await getDoc(estoqueRef);
+        const estoqueAtual = estoqueDoc.data();
+
+        batch.update(estoqueRef, {
+          quantidade: estoqueAtual.quantidade - item.quantidade,
+          reservado: (estoqueAtual.reservado || 0) + item.quantidade
+        });
+
+        // Registra movimentação
+        const movimentacaoRef = doc(collection(db, "movimentacoesEstoque"));
+        batch.set(movimentacaoRef, {
+          data: Timestamp.now(),
+          tipo: 'Reserva',
+          produto: item.produto,
+          quantidade: item.quantidade,
+          documento: {
+            tipo: 'Pedido de Venda',
+            numero: item.pedidoVendaId
+          },
+          usuario: {
+            id: state.usuarioAtual.id,
+            nome: state.usuarioAtual.nome
+          }
+        });
+      }
+
+      await batch.commit();
+    }
+
+    async function atualizarStatusPedido(pedidoId, novoStatus) {
+      const pedidoRef = doc(db, "pedidosVenda", pedidoId);
+
+      await updateDoc(pedidoRef, {
+        "statusPedido.atual": novoStatus,
+        "statusPedido.historico": arrayUnion({
+          status: novoStatus,
+          data: Timestamp.now(),
+          usuario: {
+            id: state.usuarioAtual.id,
+            nome: state.usuarioAtual.nome
+          }
+        })
+      });
+    }
+
+    async function registrarPagamentoParcela(pedidoId, numeroParcela, valorPago) {
+      const pedidoRef = doc(db, "pedidosVenda", pedidoId);
+      const pedidoDoc = await getDoc(pedidoRef);
+      const pedido = pedidoDoc.data();
+
+      const parcelas = [...pedido.parcelas];
+      const parcelaIndex = parcelas.findIndex(p => p.numero === numeroParcela);
+
+      if (parcelaIndex === -1) {
+        throw new Error('Parcela não encontrada');
+      }
+
+      parcelas[parcelaIndex] = {
+        ...parcelas[parcelaIndex],
+        valorPago: valorPago,
+        dataPagamento: Timestamp.now(),
+        status: 'Pago'
+      };
+
+      // Verifica se todas as parcelas foram pagas
+      const todasPagas = parcelas.every(p => p.status === 'Pago');
+
+      await updateDoc(pedidoRef, {
+        parcelas,
+        statusPagamento: todasPagas ? 'Pago' : 'Parcialmente Pago'
+      });
+    }
+
+    async function carregarDetalhesPedido(pedidoId) {
+      try {
+        const pedidoRef = doc(db, "pedidosVenda", pedidoId);
+        const pedidoDoc = await getDoc(pedidoRef);
+        const pedido = pedidoDoc.data();
+
+        // Atualiza status do pedido
+        const statusBadge = document.getElementById('statusPedido');
+        statusBadge.textContent = pedido.statusPedido.atual;
+        statusBadge.className = `status-badge status-${pedido.statusPedido.atual.toLowerCase().replace(/\s+/g, '-')}`;
+
+        // Atualiza histórico de status
+        const statusHistory = document.getElementById('statusHistory');
+        statusHistory.innerHTML = pedido.statusPedido.historico
+          .map(h => `
+            <div class="history-item">
+              <span class="history-status">${h.status}</span>
+              <span class="history-date">${h.data.toDate().toLocaleString()}</span>
+              <span class="history-user">${h.usuario.nome}</span>
+            </div>
+          `).join('');
+
+        // Atualiza informações do cliente
+        const clienteInfo = document.getElementById('clienteInfo');
+        const limiteCredito = await verificarLimiteCredito(pedido.cliente.id);
+        clienteInfo.innerHTML = `
+          <div><strong>Nome:</strong> ${pedido.cliente.nome}</div>
+          <div><strong>Código:</strong> ${pedido.cliente.codigo}</div>
+          <div><strong>CNPJ:</strong> ${pedido.cliente.cnpj}</div>
+        `;
+
+        const limiteInfo = document.getElementById('limiteInfo');
+        limiteInfo.innerHTML = `
+          <div><strong>Total:</strong> ${formatarMoeda(limiteCredito.limiteTotal)}</div>
+          <div><strong>Utilizado:</strong> ${formatarMoeda(limiteCredito.limiteUtilizado)}</div>
+          <div><strong>Disponível:</strong> ${formatarMoeda(limiteCredito.limiteDisponivel)}</div>
+        `;
+
+        // Atualiza itens do pedido
+        const itensPedido = document.getElementById('itensPedido');
+        itensPedido.innerHTML = await Promise.all(pedido.itens.map(async item => {
+          const estoque = await getEstoqueProduto(item.produto.id);
+          return `
+            <tr>
+              <td>${item.produto.codigo}</td>
+              <td>${item.produto.descricao}</td>
+              <td>${item.quantidade}</td>
+              <td>${item.produto.unidade}</td>
+              <td>${formatarMoeda(item.valorUnitario)}</td>
+              <td>${formatarMoeda(item.valorUnitario * item.quantidade)}</td>
+              <td>
+                <span class="estoque-badge ${estoque.quantidade >= item.quantidade ? 'disponivel' : 'indisponivel'}">
+                  ${estoque.quantidade >= item.quantidade ? 'Disponível' : 'Indisponível'}
+                </span>
+              </td>
+            </tr>
+          `;
+        }));
+
+        // Atualiza parcelas
+        const parcelasPedido = document.getElementById('parcelasPedido');
+        parcelasPedido.innerHTML = pedido.parcelas.map(parcela => `
+          <tr>
+            <td>${parcela.numero}</td>
+            <td>${parcela.dataVencimento.toDate().toLocaleDateString()}</td>
+            <td>${formatarMoeda(parcela.valor)}</td>
+            <td>
+              <span class="status-badge status-${parcela.status.toLowerCase()}">
+                ${parcela.status}
+              </span>
+            </td>
+            <td>${parcela.dataPagamento ? parcela.dataPagamento.toDate().toLocaleDateString() : '-'}</td>
+            <td>
+              ${parcela.status === 'Pendente' ? 
+                `<button class="btn-totvs" onclick="registrarPagamentoParcela('${pedidoId}', ${parcela.numero})">
+                  Registrar Pagamento
+                </button>` : 
+                '-'
+              }
+            </td>
+          </tr>
+        `).join('');
+
+        // Atualiza workflow de aprovação
+        const workflowSteps = document.getElementById('workflowSteps');
+        const workflow = pedido.workflowAprovacao;
+        const steps = ['Supervisor', 'Gerente', 'Diretor', 'Presidência'];
+        workflowSteps.innerHTML = steps.map((step, index) => `
+          <div class="workflow-step ${
+            index + 1 < workflow.nivelAtual ? 'completed' :
+            index + 1 === workflow.nivelAtual ? 'active' : ''
+          }">
+            <div class="step-number">${index + 1}</div>
+            <div class="step-name">${step}</div>
+            ${workflow.aprovacoes.find(a => a.nivel === index + 1) ? 
+              `<div class="step-approval">
+                Aprovado por ${workflow.aprovacoes.find(a => a.nivel === index + 1).aprovadorNome}
+              </div>` : 
+              ''
+            }
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error("Erro ao carregar detalhes do pedido:", error);
+        alert("Erro ao carregar detalhes do pedido: " + error.message);
+      }
+    }
+
+    async function atualizarStatus() {
+      const pedidoId = document.querySelector('[data-pedido-id]').dataset.pedidoId;
+      const novoStatus = await Swal.fire({
+        title: 'Atualizar Status',
+        input: 'select',
+        inputOptions: {
+          'Em Análise': 'Em Análise',
+          'Em Produção': 'Em Produção',
+          'Separação': 'Separação',
+          'Faturado': 'Faturado',
+          'Entregue': 'Entregue',
+          'Cancelado': 'Cancelado'
+        },
+        inputPlaceholder: 'Selecione o novo status',
+        showCancelButton: true,
+        inputValidator: (value) => {
+          if (!value) {
+            return 'Você precisa selecionar um status!';
+          }
+        }
+      });
+
+      if (novoStatus.isConfirmed) {
+        try {
+          await atualizarStatusPedido(pedidoId, novoStatus.value);
+          await carregarDetalhesPedido(pedidoId);
+          Swal.fire('Sucesso!', 'Status atualizado com sucesso!', 'success');
+        } catch (error) {
+          console.error("Erro ao atualizar status:", error);
+          Swal.fire('Erro!', 'Erro ao atualizar status: ' + error.message, 'error');
+        }
+      }
+    }
+
+    async function registrarPagamento(pedidoId, numeroParcela) {
+      const { value: valorPago } = await Swal.fire({
+        title: 'Registrar Pagamento',
+        input: 'number',
+        inputLabel: 'Valor Pago',
+        inputPlaceholder: 'Digite o valor pago',
+        showCancelButton: true,
+        inputValidator: (value) => {
+          if (!value || value <= 0) {
+            return 'Por favor, digite um valor válido!';
+          }
+        }
+      });
+
+      if (valorPago) {
+        try {
+          await registrarPagamentoParcela(pedidoId, numeroParcela, parseFloat(valorPago));
+          await carregarDetalhesPedido(pedidoId);
+          Swal.fire('Sucesso!', 'Pagamento registrado com sucesso!', 'success');
+        } catch (error) {
+          console.error("Erro ao registrar pagamento:", error);
+          Swal.fire('Erro!', 'Erro ao registrar pagamento: ' + error.message, 'error');
+        }
+      }
+    }
+
+    function formatarMoeda(valor) {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(valor);
+    }
+
+    async function showClienteStatus(clienteId) {
+      try {
+        const fornecedorDoc = await getDoc(doc(db, "fornecedores", clienteId));
+        if (!fornecedorDoc.exists()) {
+          Swal.fire({
+            title: 'Cliente não encontrado',
+            text: 'Este cliente não está mais cadastrado no sistema.',
+            icon: 'error'
+          });
+          return;
+        }
+
+        const cliente = fornecedorDoc.data();
+        let problemas = [];
+        let solucoes = [];
+
+        // Verificar status do cliente
+        if (!cliente.ativo) {
+          problemas.push("Cliente está INATIVO no sistema");
+          solucoes.push("Entre em contato com o setor comercial para reativar o cadastro");
+        }
+
+        if (cliente.tipo !== 'Cliente' && cliente.tipo !== 'Ambos') {
+          problemas.push("Cadastro não está configurado como Cliente");
+          solucoes.push("Solicite ao setor comercial para atualizar o tipo de cadastro para 'Cliente' ou 'Ambos'");
+        }
+
+        if (cliente.statusHomologacao !== 'Homologado') {
+          problemas.push("Cliente não está homologado");
+          solucoes.push("Aguarde a homologação pelo setor financeiro ou entre em contato para agilizar o processo");
+        }
+
+        // Verificar faturas vencidas
+        const faturasSnap = await getDocs(
+          query(collection(db, "contasAReceber"),
+            where("clienteId", "==", clienteId),
+            where("status", "==", "VENCIDO")
+          )
+        );
+
+        if (!faturasSnap.empty) {
+          const totalVencido = faturasSnap.docs.reduce((total, doc) => total + doc.data().valor, 0);
+          problemas.push(`Existem faturas vencidas (Total: R$ ${totalVencido.toFixed(2)})`);
+          solucoes.push("Entre em contato com o setor financeiro para regularizar as pendências");
+        }
+
+        // Verificar limite de crédito
+        const limiteCredito = cliente.limite || 0;
+        const creditoUtilizado = cliente.creditoUtilizado || 0;
+        const limiteDisponivel = limiteCredito - creditoUtilizado;
+
+        if (limiteDisponivel <= 0) {
+          problemas.push(`Limite de crédito excedido (Limite: R$ ${limiteCredito.toFixed(2)}, Utilizado: R$ ${creditoUtilizado.toFixed(2)})`);
+          solucoes.push("Solicite análise de crédito ao setor financeiro para aumentar o limite");
+        }
+
+        // Mostrar mensagem com os problemas e soluções
+        if (problemas.length > 0) {
+          let mensagem = '<div style="text-align: left;">';
+          mensagem += '<strong>Problemas encontrados:</strong><br>';
+          mensagem += problemas.map(p => `• ${p}`).join('<br>');
+          mensagem += '<br><br><strong>Soluções sugeridas:</strong><br>';
+          mensagem += solucoes.map(s => `• ${s}`).join('<br>');
+          mensagem += '</div>';
+
+          Swal.fire({
+            title: 'Status do Cliente',
+            html: mensagem,
+            icon: 'warning',
+            confirmButtonText: 'Entendi'
+          });
+        } else {
+          Swal.fire({
+            title: 'Cliente Liberado',
+            text: 'Este cliente está apto para realizar pedidos.',
+            icon: 'success'
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao verificar status do cliente:", error);
+        Swal.fire({
+          title: 'Erro',
+          text: 'Erro ao verificar status do cliente: ' + error.message,
+          icon: 'error'
+        });
+      }
+    }
+  </script>
+  <script type="module">
+    // ... existing code ...
+
+    // Função para converter orçamento em pedido
+    async function convertOrcamentoToPedido(orcamentoId) {
+      try {
+        const orcamentoDoc = await getDoc(doc(db, "orcamentos", orcamentoId));
+        if (!orcamentoDoc.exists()) {
+          throw new Error("Orçamento não encontrado");
+        }
+
+        const orcamento = orcamentoDoc.data();
+
+        // Verificar se o orçamento está aprovado
+        if (orcamento.status !== 'Aprovado') {
+          throw new Error("Orçamento precisa estar aprovado para ser convertido em pedido");
+        }
+
+        // Realizar validações automáticas
+        const validacoes = await realizarValidacoesAutomaticas(orcamento);
+        if (!validacoes.success) {
+          throw new Error(validacoes.message);
+        }
+
+        // Criar pedido com dados do orçamento
+        const pedidoData = {
+          clienteId: orcamento.clienteId,
+          itens: orcamento.itens,
+          valorTotal: orcamento.valorTotal,
+          condicaoPagamento: orcamento.condicaoPagamento,
+          dataEntrega: orcamento.dataEntrega,
+          status: 'Aguardando Aprovação',
+          dataCriacao: Timestamp.now(),
+          criadoPor: usuarioAtual?.id || 'Sistema',
+          orcamentoOrigem: orcamentoId,
+          observacoes: orcamento.observacoes,
+          cfop: orcamento.cfop,
+          impostos: orcamento.impostos
+        };
+
+        // Criar pedido e atualizar orçamento
+        const pedidoRef = await addDoc(collection(db, "pedidosVenda"), pedidoData);
+        await updateDoc(doc(db, "orcamentos", orcamentoId), {
+          status: 'Convertido em Pedido',
+          pedidoId: pedidoRef.id,
+          dataConversao: Timestamp.now()
+        });
+
+        // Enviar notificações
+        await enviarNotificacoes({
+          tipo: 'conversao_orcamento',
+          orcamentoId,
+          pedidoId: pedidoRef.id,
+          clienteId: orcamento.clienteId
+        });
+
+        return pedidoRef.id;
+      } catch (error) {
+        console.error("Erro na conversão:", error);
+        throw error;
+      }
+    }
+
+    // Função para realizar validações automáticas
+    async function realizarValidacoesAutomaticas(orcamento) {
+      try {
+        // Validar limite de crédito
+        const limiteCredito = await validarLimiteCredito(orcamento.clienteId, orcamento.valorTotal);
+        if (!limiteCredito.aprovado) {
+          return {
+            success: false,
+            message: `Limite de crédito excedido: ${limiteCredito.mensagem}`
+          };
+        }
+
+        // Validar estoque
+        const estoqueValido = await validarEstoque(orcamento.itens);
+        if (!estoqueValido.aprovado) {
+          return {
+            success: false,
+            message: `Problema com estoque: ${estoqueValido.mensagem}`
+          };
+        }
+
+        // Validar CFOP
+        const cfopValido = await validarCFOP(orcamento.cfop, orcamento.clienteId);
+        if (!cfopValido.aprovado) {
+          return {
+            success: false,
+            message: `CFOP inválido: ${cfopValido.mensagem}`
+          };
+        }
+
+        return { success: true };
+      } catch (error) {
+        console.error("Erro nas validações:", error);
+        return {
+          success: false,
+          message: `Erro ao realizar validações: ${error.message}`
+        };
+      }
+    }
+
+    // Função para validar limite de crédito
+    async function validarLimiteCredito(clienteId, valorTotal) {
+      try {
+        const clienteDoc = await getDoc(doc(db, "fornecedores", clienteId));
+        if (!clienteDoc.exists()) {
+          return { aprovado: false, mensagem: "Cliente não encontrado" };
+        }
+
+        const cliente = clienteDoc.data();
+        const limiteDisponivel = cliente.limiteCredito - (cliente.creditoUtilizado || 0);
+
+        if (valorTotal > limiteDisponivel) {
+          return {
+            aprovado: false,
+            mensagem: `Limite disponível (${limiteDisponivel.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}) insuficiente para o valor total (${valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})`
+          };
+        }
+
+        return { aprovado: true };
+      } catch (error) {
+        console.error("Erro ao validar limite de crédito:", error);
+        return { aprovado: false, mensagem: error.message };
+      }
+    }
+
+    // Função para validar estoque
+    async function validarEstoque(itens) {
+      try {
+        const estoquePromises = itens.map(async (item) => {
+          const estoqueDoc = await getDoc(doc(db, "estoques", item.produtoId));
+          if (!estoqueDoc.exists()) {
+            return { 
+              aprovado: false, 
+              produtoId: item.produtoId,
+              mensagem: "Produto não encontrado no estoque" 
+            };
+          }
+
+          const estoque = estoqueDoc.data();
+          if (estoque.quantidade < item.quantidade) {
+            return {
+              aprovado: false,
+              produtoId: item.produtoId,
+              mensagem: `Estoque insuficiente (Disponível: ${estoque.quantidade}, Necessário: ${item.quantidade})`
+            };
+          }
+
+          return { aprovado: true, produtoId: item.produtoId };
+        });
+
+        const resultados = await Promise.all(estoquePromises);
+        const problemasEstoque = resultados.filter(r => !r.aprovado);
+
+        if (problemasEstoque.length > 0) {
+          return {
+            aprovado: false,
+            mensagem: problemasEstoque.map(p => p.mensagem).join("; ")
+          };
+        }
+
+        return { aprovado: true };
+      } catch (error) {
+        console.error("Erro ao validar estoque:", error);
+        return { aprovado: false, mensagem: error.message };
+      }
+    }
+
+    // Função para validar CFOP
+    async function validarCFOP(cfop, clienteId) {
+      try {
+        const clienteDoc = await getDoc(doc(db, "fornecedores", clienteId));
+        if (!clienteDoc.exists()) {
+          return { aprovado: false, mensagem: "Cliente não encontrado" };
+        }
+
+        const cliente = clienteDoc.data();
+        const cfopDoc = await getDoc(doc(db, "cfops", cfop));
+
+        if (!cfopDoc.exists()) {
+          return { aprovado: false, mensagem: "CFOP não cadastrado" };
+        }
+
+        const cfopData = cfopDoc.data();
+
+        // Validar CFOP para operação estadual/interestadual usando dados da empresa
+        const mesmoEstado = cliente.uf === (dadosEmpresa?.uf || 'SP');
+        if (mesmoEstado && !cfopData.estadual) {
+          return { aprovado: false, mensagem: "CFOP inválido para operação estadual" };
+        }
+        if (!mesmoEstado && !cfopData.interestadual) {
+          return { aprovado: false, mensagem: "CFOP inválido para operação interestadual" };
+        }
+
+        return { aprovado: true };
+      } catch (error) {
+        console.error("Erro ao validar CFOP:", error);
+        return { aprovado: false, mensagem: error.message };
+      }
+    }
+
+    // Função para enviar notificações
+    async function enviarNotificacoes(dados) {
+      try {
+        const { tipo, orcamentoId, pedidoId, clienteId } = dados;
+
+        // Buscar dados do cliente
+        const clienteDoc = await getDoc(doc(db, "fornecedores", clienteId));
+        const cliente = clienteDoc.data();
+
+        // Criar notificação no sistema
+        await addDoc(collection(db, "notificacoes"), {
+          tipo,
+          orcamentoId,
+          pedidoId,
+          clienteId,
+          dataHora: Timestamp.now(),
+          status: 'Pendente'
+        });
+
+        // Enviar e-mail
+        if (cliente.email) {
+          await addDoc(collection(db, "filaEmails"), {
+            para: cliente.email,
+            assunto: `Orçamento ${orcamentoId} convertido em Pedido`,
+            corpo: `Seu orçamento foi convertido no pedido ${pedidoId}`,
+            dataHora: Timestamp.now(),
+            status: 'Pendente'
+          });
+        }
+
+        // Enviar SMS
+        if (cliente.celular) {
+          await addDoc(collection(db, "filaSMS"), {
+            numero: cliente.celular,
+            mensagem: `Seu orçamento foi convertido no pedido ${pedidoId}`,
+            dataHora: Timestamp.now(),
+            status: 'Pendente'
+          });
+        }
+
+      } catch (error) {
+        console.error("Erro ao enviar notificações:", error);
+        // Não lançar erro para não interromper o fluxo principal
+      }
+    }
+
+    // Tornar funções globalmente acessíveis
+    window.convertOrcamentoToPedido = convertOrcamentoToPedido;
+    window.realizarValidacoesAutomaticas = realizarValidacoesAutomaticas;
+  </script>
+  <script>
+    // Função para visualizar dados da empresa
+    async function viewEmpresaInfo() {
+      try {
+        if (!dadosEmpresa) {
+          const empresaDoc = await getDoc(doc(db, "empresa", "config"));
+          if (empresaDoc.exists()) {
+            dadosEmpresa = empresaDoc.data();
+          } else {
+            throw new Error("Dados da empresa não encontrados");
+          }
+        }
+
+        const dadosFormatados = `
+          <div style="text-align: left;">
+            <h3 style="color: #0854a0; margin-bottom: 15px;">Dados da Empresa</h3>
+
+            <div style="margin-bottom: 10px;">
+              <strong>Código:</strong> ${dadosEmpresa.codigo || '1000'}
+            </div>
+
+            <div style="margin-bottom: 10px;">
+              <strong>Razão Social:</strong> ${dadosEmpresa.razaoSocial || 'N/A'}
+            </div>
+
+            <div style="margin-bottom: 10px;">
+              <strong>Nome Fantasia:</strong> ${dadosEmpresa.nome || 'N/A'}
+            </div>
+
+            <div style="margin-bottom: 10px;">
+              <strong>CNPJ:</strong> ${dadosEmpresa.cnpj || 'N/A'}
+            </div>
+
+            <div style="margin-bottom: 10px;">
+              <strong>Inscrição Estadual:</strong> ${dadosEmpresa.ie || 'N/A'}
+            </div>
+
+            <div style="margin-bottom: 10px;">
+              <strong>Endereço:</strong><br>
+              ${dadosEmpresa.endereco || 'N/A'}<br>
+              ${dadosEmpresa.cidade || 'N/A'} - ${dadosEmpresa.uf || 'N/A'}<br>
+              CEP: ${dadosEmpresa.cep || 'N/A'}
+            </div>
+
+            <div style="margin-bottom: 10px;">
+              <strong>Contato:</strong><br>
+              Tel: ${dadosEmpresa.telefone || 'N/A'}<br>
+              Email: ${dadosEmpresa.email || 'N/A'}
+            </div>
+
+            <div style="margin-bottom: 10px;">
+              <strong>Ambiente:</strong> ${dadosEmpresa.ambiente || 'PRD'}
+            </div>
+          </div>
+        `;
+
+        await Swal.fire({
+          title: 'Informações da Empresa',
+          html: dadosFormatados,
+          icon: 'info',
+          confirmButtonText: 'Fechar'
+        });
+
+      } catch (error) {
+        console.error("Erro ao carregar dados da empresa:", error);
+        Swal.fire({
+          title: 'Erro',
+          text: 'Erro ao carregar dados da empresa: ' + error.message,
+          icon: 'error'
+        });
+      }
+    }
+
+    // Adicionar evento de clique no código da empresa
+    document.getElementById('authContainer').addEventListener('click', (e) => {
+      if (e.target.textContent.includes('Empresa:')) {
+        viewEmpresaInfo();
+      }
+    });
+
+    // Tornar função globalmente acessível
+    window.viewEmpresaInfo = viewEmpresaInfo;
+  </script>
+
+  <script>
+    // Função para validar campos em tempo real
+    function validateField(field) {
+      const feedback = field.parentElement.querySelector('.field-feedback');
+
+      if (field.required && !field.value) {
+        field.classList.add('invalid');
+        field.classList.remove('valid');
+        feedback.textContent = 'Este campo é obrigatório';
+        feedback.classList.add('invalid');
+        feedback.classList.remove('valid');
+        return false;
+      }
+
+      if (field.type === 'number') {
+        const min = parseFloat(field.min);
+        const value = parseFloat(field.value);
+
+        if (!isNaN(min) && value < min) {
+          field.classList.add('invalid');
+          field.classList.remove('valid');
+          feedback.textContent = `Valor mínimo: ${min}`;
+          feedback.classList.add('invalid');
+          feedback.classList.remove('valid');
+          return false;
+        }
+      }
+
+      if (field.type === 'date') {
+        const minDate = new Date(field.min);
+        const selectedDate = new Date(field.value);
+
+        if (selectedDate < minDate) {
+          field.classList.add('invalid');
+          field.classList.remove('valid');
+          feedback.textContent = 'Data não pode ser anterior a hoje';
+          feedback.classList.add('invalid');
+          feedback.classList.remove('valid');
+          return false;
+        }
+      }
+
+      field.classList.remove('invalid');
+      field.classList.add('valid');
+      feedback.textContent = 'Campo válido';
+      feedback.classList.remove('invalid');
+      feedback.classList.add('valid');
+      return true;
+    }
+
+    // Validar quantidade
+    function validateQuantity(field) {
+      const feedback = field.parentElement.querySelector('.field-feedback');
+      const value = parseFloat(field.value);
+      const produto = produtos.find(p => p.id === document.getElementById('productSelect').value);
+
+      if (produto) {
+        const estoque = estoques.find(e => e.produtoId === produto.id);
+        if (estoque && value > estoque.quantidade) {
+          field.classList.add('invalid');
+          field.classList.remove('valid');
+          feedback.textContent = `Quantidade excede o estoque disponível (${estoque.quantidade})`;
+          feedback.classList.add('invalid');
+          feedback.classList.remove('valid');
+          return false;
+        }
+      }
+
+      return validateField(field);
+    }
+
+    // Mostrar detalhes do produto
+    async function showProductDetails() {
+      const productId = document.getElementById('productSelect').value;
+      if (!productId) {
+        Swal.fire({
+          title: 'Atenção',
+          text: 'Selecione um produto primeiro',
+          icon: 'warning'
+        });
+        return;
+      }
+
+      const produto = produtos.find(p => p.id === productId);
+      const estoque = estoques.find(e => e.produtoId === productId);
+
+      const detalhes = `
+        <div style="text-align: left;">
+          <h3 style="color: #0854a0; margin-bottom: 15px;">Detalhes do Produto</h3>
+
+          <div style="margin-bottom: 10px;">
+            <strong>Código:</strong> ${produto.codigo}
+          </div>
+
+          <div style="margin-bottom: 10px;">
+            <strong>Descrição:</strong> ${produto.descricao}
+          </div>
+
+          <div style="margin-bottom: 10px;">
+            <strong>Unidade:</strong> ${produto.unidade}
+          </div>
+
+          <div style="margin-bottom: 10px;">
+            <strong>Estoque Atual:</strong> ${estoque ? estoque.quantidade : 0} ${produto.unidade}
+          </div>
+
+          <div style="margin-bottom: 10px;">
+            <strong>Preço Base:</strong> ${produto.precoBase?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'N/A'}
+          </div>
+        </div>
+      `;
+
+      await Swal.fire({
+        title: 'Informações do Produto',
+        html: detalhes,
+        icon: 'info',
+        confirmButtonText: 'Fechar'
+      });
+    }
+
+    // Inicializar tooltips
+    document.querySelectorAll('.tooltip-icon').forEach(icon => {
+      tippy(icon, {
+        content: icon.getAttribute('data-tooltip'),
+        placement: 'right',
+        arrow: true,
+        theme: 'light-border'
+      });
+    });
+
+    // Adicionar validação em tempo real para todos os campos
+    document.querySelectorAll('.form-control').forEach(field => {
+      field.addEventListener('input', () => validateField(field));
+      field.addEventListener('blur', () => validateField(field));
+    });
+
+    // Validar formulário antes de enviar
+    document.getElementById('orderForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      let isValid = true;
+      event.target.querySelectorAll('.form-control').forEach(field => {
+        if (!validateField(field)) {
+          isValid = false;
+        }
+      });
+
+      if (!isValid) {
+        Swal.fire({
+          title: 'Atenção',
+          text: 'Por favor, corrija os campos inválidos antes de continuar',
+          icon: 'warning'
+        });
+        return;
+      }
+
+      handleOrder(event);
+    });
+  </script>
+
+  <!-- Incluir bibliotecas necessárias -->
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
+  <script src="https://unpkg.com/tippy.js@6"></script>
+  <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light-border.css" />
+</body>
+</html>

@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Parceiros</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --header-bg: #354a5f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 { font-size: 24px; font-weight: 500; margin: 0; }
+
+    .form-container {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .form-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-success { background-color: var(--success-color); color: white; }
+    .btn-success:hover { background-color: var(--success-hover); }
+    .btn-success:disabled { background-color: #cccccc; cursor: not-allowed; }
+
+    .btn-danger { background-color: var(--danger-color); color: white; }
+    .btn-danger:hover { background-color: var(--danger-hover); }
+
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .btn-secondary:hover { background-color: #5a6268; }
+
+    .suppliers-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .suppliers-table th, .suppliers-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .suppliers-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .suppliers-table th:hover { background-color: #e0e0e0; }
+    .suppliers-table tr:hover { background-color: #f8f9fa; }
+
+    .action-buttons { display: flex; gap: 5px; }
+
+    .edit-btn, .delete-btn {
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .edit-btn { background-color: #ffc107; color: #000; }
+    .delete-btn { background-color: var(--danger-color); color: white; }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .required::after {
+      content: "*";
+      color: var(--danger-color);
+      margin-left: 4px;
+    }
+
+    .table-container {
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .search-container {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+    }
+
+    .search-container input, .search-container select {
+      width: 300px;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .sort-indicator { margin-left: 5px; font-size: 12px; }
+
+    .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
+    .form-col { flex: 1; }
+
+    .categories-container { margin-bottom: 15px; }
+
+    .category-item {
+      display: inline-block;
+      padding: 5px 10px;
+      margin: 5px;
+      background-color: var(--secondary-color);
+      border-radius: 15px;
+      font-size: 14px;
+    }
+
+    .category-item button {
+      background: none;
+      border: none;
+      color: var(--danger-color);
+      margin-left: 5px;
+      padding: 0 5px;
+      cursor: pointer;
+      width: auto;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin: 20px 0 10px;
+      color: var(--primary-color);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Cadastro de Parceiros</h1>
+      <div>
+        <button class="btn-secondary" onclick="exportSuppliers()">Exportar Excel</button>
+        <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Importar Excel</button>
+        <input type="file" id="importFile" style="display: none;" accept=".xlsx" onchange="importSuppliers(event)">
+        <button class="btn-secondary" onclick="navigateBack()">Voltar</button>
+      </div>
+    </div>
+
+    <div class="form-container">
+      <h2 class="form-title">Cadastrar Novo Parceiro</h2>
+      <form id="supplierForm">
+        <input type="hidden" id="editingId">
+
+        <div class="section-title">Informações Básicas</div>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="tipo" class="required">Tipo</label>
+            <select id="tipo" name="tipo" required>
+              <option value="Fornecedor">Fornecedor</option>
+              <option value="Cliente">Cliente</option>
+              <option value="Ambos">Ambos</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="codigo" class="required">Código</label>
+            <input type="text" id="codigo" name="codigo" required>
+          </div>
+          <div class="form-col">
+            <label for="codigoClassificacao">Código Classificação</label>
+            <input type="text" id="codigoClassificacao" name="codigoClassificacao">
+          </div>
+          <div class="form-col">
+            <label for="codigoPais">Código País</label>
+            <input type="text" id="codigoPais" name="codigoPais">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="tipoPessoa" class="required">Tipo Pessoa</label>
+            <select id="tipoPessoa" name="tipoPessoa" required onchange="updateCpfCnpjMask()">
+              <option value="Juridica">Jurídica</option>
+              <option value="Fisica">Física</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="cnpjCpf" class="required">CNPJ/CPF</label>
+            <input type="text" id="cnpjCpf" name="cnpjCpf" required>
+          </div>
+        </div>
+
+        <label for="razaoSocial" class="required">Razão Social</label>
+        <input type="text" id="razaoSocial" name="razaoSocial" required>
+
+        <label for="nomeFantasia" class="required">Nome Fantasia</label>
+        <input type="text" id="nomeFantasia" name="nomeFantasia" required>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="inscricaoEstadual">Inscrição Estadual</label>
+            <input type="text" id="inscricaoEstadual" name="inscricaoEstadual">
+          </div>
+          <div class="form-col">
+            <label for="inscricaoMunicipal">Inscrição Municipal</label>
+            <input type="text" id="inscricaoMunicipal" name="inscricaoMunicipal">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="nascimento">Nascimento</label>
+            <input type="date" id="nascimento" name="nascimento">
+          </div>
+        </div>
+
+        <div class="section-title">Endereço</div>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="cep" class="required">CEP</label>
+            <input type="text" id="cep" name="cep" required>
+          </div>
+          <div class="form-col">
+            <label for="endereco" class="required">Endereço</label>
+            <input type="text" id="endereco" name="endereco" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="numero">Número</label>
+            <input type="text" id="numero" name="numero">
+          </div>
+          <div class="form-col">
+            <label for="complemento">Complemento</label>
+            <input type="text" id="complemento" name="complemento">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="bairro" class="required">Bairro</label>
+            <input type="text" id="bairro" name="bairro" required>
+          </div>
+          <div class="form-col">
+            <label for="cidade" class="required">Cidade</label>
+            <input type="text" id="cidade" name="cidade" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="estado" class="required">Estado</label>
+            <input type="text" id="estado" name="estado" required>
+          </div>
+          <div class="form-col">
+              <label for="pais" class="required">País</label>
+              <select id="pais" name="pais" required>
+                <option value="Brasil">Brasil</option>
+                <option value="Argentina">Argentina</option>
+                <option value="Paraguai">Paraguai</option>
+                <option value="Uruguai">Uruguai</option>
+                <option value="Chile">Chile</option>
+                <option value="Bolívia">Bolívia</option>
+                <option value="Peru">Peru</option>
+                <option value="Colômbia">Colômbia</option>
+                <option value="Venezuela">Venezuela</option>
+                <option value="Equador">Equador</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+        </div>
+
+        <div class="section-title">Contato Principal</div>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="email" class="required">Email</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+          <div class="form-col">
+            <label for="emailNfe">Email NFe</label>
+            <input type="email" id="emailNfe" name="emailNfe">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="telefone1" class="required">Telefone 1</label>
+            <input type="tel" id="telefone1" name="telefone1" required>
+          </div>
+          <div class="form-col">
+            <label for="telefone2">Telefone 2</label>
+            <input type="tel" id="telefone2" name="telefone2">
+          </div>
+          <div class="form-col">
+            <label for="celular1">Celular 1</label>
+            <input type="tel" id="celular1" name="celular1">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="fax">Fax</label>
+            <input type="tel" id="fax" name="fax">
+          </div>
+          <div class="form-col">
+            <label for="homePage">Home Page</label>
+            <input type="url" id="homePage" name="homePage">
+          </div>
+        </div>
+
+        <div class="section-title">Contato 1</div>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="contato1">Contato 1</label>
+            <input type="text" id="contato1" name="contato1">
+          </div>
+          <div class="form-col">
+            <label for="cargo1">Cargo 1</label>
+            <input type="text" id="cargo1" name="cargo1">
+          </div>
+          <div class="form-col">
+            <label for="departamento1">Departamento 1</label>
+            <input type="text" id="departamento1" name="departamento1">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="telefone3">Telefone 3</label>
+            <input type="tel" id="telefone3" name="telefone3">
+          </div>
+          <div class="form-col">
+            <label for="celular2">Celular 2</label>
+            <input type="tel" id="celular2" name="celular2">
+          </div>
+          <div class="form-col">
+            <label for="email1">Email 1</label>
+            <input type="email" id="email1" name="email1">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="autorizaXml1">Autoriza XML 1</label>
+            <select id="autorizaXml1" name="autorizaXml1">
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-title">Contato 2</div>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="contato2">Contato 2</label>
+            <input type="text" id="contato2" name="contato2">
+          </div>
+          <div class="form-col">
+            <label for="cargo2">Cargo 2</label>
+            <input type="text" id="cargo2" name="cargo2">
+          </div>
+          <div class="form-col">
+            <label for="departamento2">Departamento 2</label>
+            <input type="text" id="departamento2" name="departamento2">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="telefone4">Telefone 4</label>
+            <input type="tel" id="telefone4" name="telefone4">
+          </div>
+          <div class="form-col">
+            <label for="celular3">Celular 3</label>
+            <input type="tel" id="celular3" name="celular3">
+          </div>
+          <div class="form-col">
+            <label for="email2">Email 2</label>
+            <input type="email" id="email2" name="email2">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="autorizaXml2">Autoriza XML 2</label>
+            <select id="autorizaXml2" name="autorizaXml2">
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-title">Outros Dados</div>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="cnpjCpf2">CNPJ/CPF 2</label>
+            <input type="text" id="cnpjCpf2" name="cnpjCpf2">
+          </div>
+          <div class="form-col">
+            <label for="cnpjCpf3">CNPJ/CPF 3</label>
+            <input type="text" id="cnpjCpf3" name="cnpjCpf3">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="codigoVendedor">Código Vendedor</label>
+            <input type="text" id="codigoVendedor" name="codigoVendedor">
+          </div>
+          <div class="form-col">
+            <label for="codigoRegiao">Código Região</label>
+            <input type="text" id="codigoRegiao" name="codigoRegiao">
+          </div>
+          <div class="form-col">
+            <label for="codigoArea">Código Área</label>
+            <input type="text" id="codigoArea" name="codigoArea">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="limite">Limite</label>
+            <input type="number" id="limite" name="limite" step="0.01">
+          </div>
+          <div class="form-col">
+            <label for="indicacao">Indicação</label>
+            <input type="text" id="indicacao" name="indicacao">
+          </div>
+          <div class="form-col">
+            <label for="suframa">SUFRAMA</label>
+            <input type="text" id="suframa" name="suframa">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="im">IM</label>
+            <input type="text" id="im" name="im">
+          </div>
+          <div class="form-col">
+            <label for="latitudeCLI">Latitude CLI</label>
+            <input type="text" id="latitudeCLI" name="latitudeCLI">
+          </div>
+          <div class="form-col">
+            <label for="longitudeCLI">Longitude CLI</label>
+            <input type="text" id="longitudeCLI" name="longitudeCLI">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="intervista">Intervista</label>
+            <input type="text" id="intervista" name="intervista">
+          </div>
+          <div class="form-col">
+            <label for="acrescimoCLI">Acréscimo CLI</label>
+            <input type="number" id="acrescimoCLI" name="acrescimoCLI" step="0.01">
+          </div>
+          <div class="form-col">
+            <label for="codCusto">Código Custo</label>
+            <input type="text" id="codCusto" name="codCusto">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="cotacao">Cotação</label>
+            <input type="text" id="cotacao" name="cotacao">
+          </div>
+          <div class="form-col">
+            <label for="reducao">Redução</label>
+            <input type="number" id="reducao" name="reducao" step="0.01">
+          </div>
+          <div class="form-col">
+            <label for="contaContabil">Conta Contábil</label>
+            <input type="text" id="contaContabil" name="contaContabil">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="simplesNacional">Simples Nacional?</label>
+            <select id="simplesNacional" name="simplesNacional">
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="temSubstituicao">Têm Substituição?</label>
+            <select id="temSubstituicao" name="temSubstituicao">
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="categorias" class="required">Categorias de Fornecimento</label>
+        <div class="form-row">
+          <div class="form-col">
+            <select id="categoriaSelect">
+              <option value="">Selecione uma categoria...</option>
+              <option value="METALURGICA">Metalúrgica</option>
+              <option value="ELETRICA">Elétrica</option>
+              <option value="HIDRAULICA">Hidráulica</option>
+              <option value="PNEUMATICA">Pneumática</option>
+              <option value="FERRAMENTAS">Ferramentas</option>
+              <option value="CONSUMIVEIS">Consumíveis</option>
+              <option value="SERVICOS">Serviços</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <button type="button" class="btn-secondary" onclick="addCategory()">Adicionar</button>
+          </div>
+        </div>
+        <div id="categoriasContainer" class="categories-container"></div>
+        <input type="hidden" id="categorias" name="categorias">
+
+        <label for="observacoes">Observações</label>
+        <textarea id="observacoes" name="observacoes" rows="3"></textarea>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="statusHomologacao" class="required">Status de Homologação</label>
+            <select id="statusHomologacao" name="statusHomologacao" required>
+              <option value="Pendente">Pendente</option>
+              <option value="Homologado">Homologado</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="ativo">Ativo</label>
+            <select id="ativo" name="ativo">
+              <option value="true">Sim</option>
+              <option value="false">Não</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="dataAtualizacao">Data de Atualização</label>
+            <input type="text" id="dataAtualizacao" name="dataAtualizacao" readonly>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="cancelEdit()">Cancelar</button>
+          <button type="submit" class="btn-success" id="submitButton">Cadastrar Fornecedor</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-container" id="tableContainer">
+      <h2 class="form-title">Parceiros Cadastrados</h2>
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Pesquisar por código, razão social, CNPJ/CPF, cidade..." style="width: 300px;">
+        <select id="tipoFilter" style="width: 150px;">
+          <option value="">Todos os tipos</option>
+          <option value="Fornecedor">Fornecedor</option>
+          <option value="Cliente">Cliente</option>
+          <option value="Ambos">Ambos</option>
+        </select>
+        <select id="statusFilter" style="width: 150px;">
+          <option value="">Todos os status</option>
+          <option value="Homologado">Homologado</option>
+          <option value="Pendente">Pendente</option>
+        </select>
+        <select id="ativoFilter" style="width: 150px;">
+          <option value="">Todos</option>
+          <option value="true">Ativos</option>
+          <option value="false">Inativos</option>
+        </select>
+      </div>
+      <table class="suppliers-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('codigo')">Código <span id="sortCodigo" class="sort-indicator"></span></th>
+            <th onclick="sortTable('tipo')">Tipo</th>
+            <th onclick="sortTable('razaoSocial')">Razão Social <span id="sortRazaoSocial" class="sort-indicator"></span></th>
+            <th onclick="sortTable('cnpjCpf')">CNPJ/CPF</th>
+            <th>Cidade</th>
+            <th>Estado</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="suppliersTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs, 
+      doc, 
+      getDoc,
+      updateDoc, 
+      deleteDoc,
+      query,
+      where
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let fornecedores = [];
+    let selectedCategories = new Set();
+    let sortDirection = 'asc';
+    let currentSortColumn = '';
+
+    window.onload = async function() {
+      $(document).ready(function() {
+        updateCpfCnpjMask();
+        $('#cep').mask('00000-000');
+        $('#telefone1').mask('(00) 00000-0000');
+        $('#telefone2').mask('(00) 00000-0000');
+        $('#telefone3').mask('(00) 00000-0000');
+        $('#telefone4').mask('(00) 00000-0000');
+        $('#celular1').mask('(00) 00000-0000');
+        $('#celular2').mask('(00) 00000-0000');
+        $('#celular3').mask('(00) 00000-0000');
+        $('#fax').mask('(00) 00000-0000');
+        $('#cnpjCpf2').mask('00.000.000/0000-00');
+        $('#cnpjCpf3').mask('00.000.000/0000-00');
+      });
+
+      await loadSuppliers();
+      document.getElementById('searchInput').addEventListener('input', filterSuppliers);
+      document.getElementById('tipoFilter').addEventListener('change', filterSuppliers);
+      document.getElementById('statusFilter').addEventListener('change', filterSuppliers);
+      document.getElementById('ativoFilter').addEventListener('change', filterSuppliers);
+    };
+
+    window.navigateBack = function() {
+      try {
+        window.location.href = 'index.html';
+      } catch (error) {
+        console.warn("Navegação não suportada:", error);
+        alert("Funcionalidade de voltar não disponível no StackBlitz.");
+      }
+    };
+
+    window.updateCpfCnpjMask = function() {
+      const tipoPessoa = document.getElementById('tipoPessoa').value;
+      const $cnpjCpf = $('#cnpjCpf');
+      $cnpjCpf.unmask();
+      if (tipoPessoa === 'Juridica') {
+        $cnpjCpf.mask('00.000.000/0000-00');
+      } else {
+        $cnpjCpf.mask('000.000.000-00');
+      }
+    };
+
+    async function loadSuppliers() {
+      try {
+        const snapshot = await getDocs(collection(db, "fornecedores"));
+        fornecedores = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log("Fornecedores carregados do Firestore:", fornecedores);
+        displaySuppliers();
+      } catch (error) {
+        console.error("Erro ao carregar fornecedores:", error);
+        alert("Erro ao carregar fornecedores. Por favor, recarregue a página.");
+      }
+    }
+
+    function displaySuppliers(filteredSuppliers = fornecedores) {
+      const tableBody = document.getElementById('suppliersTableBody');
+      tableBody.innerHTML = '';
+
+      filteredSuppliers.forEach(fornecedor => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${fornecedor.codigo}</td>
+          <td>${fornecedor.tipo || 'Fornecedor'}</td>
+          <td>${fornecedor.razaoSocial}</td>
+          <td>${fornecedor.cnpjCpf}</td>
+          <td>${fornecedor.cidade || ''}</td>
+          <td>${fornecedor.estado || ''}</td>
+          <td>${fornecedor.statusHomologacao || 'Pendente'}</td>
+          <td class="action-buttons">
+            <button class="edit-btn" onclick="editSupplier('${fornecedor.id}')">Editar</button>
+            <button class="delete-btn" onclick="deleteSupplier('${fornecedor.id}')">Excluir</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function formatCategories(categories) {
+      if (!categories || !Array.isArray(categories) || categories.length === 0) return 'Nenhuma categoria';
+      return categories.join(', ');
+    }
+
+    window.sortTable = function(sortBy) {
+      if (sortBy === currentSortColumn) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSortColumn = sortBy;
+        sortDirection = 'asc';
+      }
+
+      if (sortBy === 'codigo') {
+        fornecedores.sort((a, b) => sortDirection === 'asc' 
+          ? a.codigo.localeCompare(b.codigo) 
+          : b.codigo.localeCompare(a.codigo));
+      } else if (sortBy === 'tipo') {
+        fornecedores.sort((a, b) => sortDirection === 'asc'
+          ? (a.tipo || 'Fornecedor').localeCompare(b.tipo || 'Fornecedor')
+          : (b.tipo|| 'Fornecedor').localeCompare(a.tipo || 'Fornecedor'));
+      } else if (sortBy === 'razaoSocial') {
+        fornecedores.sort((a, b) => sortDirection === 'asc' 
+          ? a.razaoSocial.localeCompare(b.razaoSocial) 
+          : b.razaoSocial.localeCompare(a.razaoSocial));
+      } else if (sortBy === 'cnpjCpf') {
+        fornecedores.sort((a, b) => sortDirection === 'asc' 
+          ? a.cnpjCpf.localeCompare(b.cnpjCpf) 
+          : b.cnpjCpf.localeCompare(a.cnpjCpf));
+      } else if (sortBy === 'telefone1') {
+        fornecedores.sort((a, b) => sortDirection === 'asc' 
+          ? a.telefone1.localeCompare(b.telefone1) 
+          : b.telefone1.localeCompare(a.telefone1));
+      } else if (sortBy === 'statusHomologacao') {
+        fornecedores.sort((a, b) => sortDirection === 'asc' 
+          ? (a.statusHomologacao || 'Pendente').localeCompare(b.statusHomologacao || 'Pendente') 
+          : (b.statusHomologacao || 'Pendente').localeCompare(a.statusHomologacao || 'Pendente'));
+      }
+
+      updateSortIndicators(sortBy, sortDirection);
+      displaySuppliers();
+    };
+
+    function updateSortIndicators(column, direction) {
+      document.getElementById('sortCodigo').innerHTML = '';
+      document.getElementById('sortRazaoSocial').innerHTML = '';
+      document.getElementById('sortCnpjCpf').innerHTML = '';
+      document.getElementById('sortTelefone1').innerHTML = '';
+      document.getElementById('sortTipo').innerHTML = '';
+      document.getElementById('sortStatus').innerHTML = '';
+
+      if (column === 'codigo') {
+        document.getElementById('sortCodigo').innerHTML = direction === 'asc' ? '▲' : '▼';
+      } else if (column === 'razaoSocial') {
+        document.getElementById('sortRazaoSocial').innerHTML = direction === 'asc' ? '▲' : '▼';
+      } else if (column === 'cnpjCpf') {
+        document.getElementById('sortCnpjCpf').innerHTML = direction === 'asc' ? '▲' : '▼';
+      } else if (column === 'telefone1') {
+        document.getElementById('sortTelefone1').innerHTML = direction === 'asc' ? '▲' : '▼';
+      } else if (column === 'tipo') {
+        document.getElementById('sortTipo').innerHTML = direction === 'asc' ? '▲' : '▼';
+      } else if (column === 'statusHomologacao') {
+        document.getElementById('sortStatus').innerHTML = direction === 'asc' ? '▲' : '▼';
+      }
+    }
+
+    window.addCategory = function() {
+      const select = document.getElementById('categoriaSelect');
+      const categoria = select.value;
+
+      if (!categoria) {
+        alert('Selecione uma categoria.');
+        return;
+      }
+
+      if (selectedCategories.has(categoria)) {
+        alert('Esta categoria já foi adicionada.');
+        return;
+      }
+
+      selectedCategories.add(categoria);
+      console.log("Categoria adicionada:", categoria, "Set atual:", Array.from(selectedCategories));
+      updateCategoriesDisplay();
+      select.value = '';
+    };
+
+    function updateCategoriesDisplay() {
+      const container = document.getElementById('categoriasContainer');
+      const categoriesInput = document.getElementById('categorias');
+
+      container.innerHTML = '';
+      const categoriesArray = Array.from(selectedCategories);
+      categoriesInput.value = categoriesArray.join(',');
+
+      categoriesArray.forEach(categoria => {
+        const item = document.createElement('span');
+        item.className = 'category-item';
+        item.innerHTML = `
+          ${categoria}
+          <button type="button" onclick="removeCategory('${categoria}')">×</button>
+        `;
+        container.appendChild(item);
+      });
+      console.log("Categorias exibidas no container:", categoriesArray);
+    }
+
+    window.removeCategory = function(categoria) {
+      selectedCategories.delete(categoria);
+      console.log("Categoria removida:", categoria, "Set atual:", Array.from(selectedCategories));
+      updateCategoriesDisplay();
+    };
+
+    window.editSupplier = function(supplierId) {
+      const fornecedor = fornecedores.find(f => f.id === supplierId);
+      if (fornecedor) {
+        console.log("Fornecedor selecionado para edição:", fornecedor);
+        document.getElementById('editingId').value = supplierId;
+        document.getElementById('tipo').value = fornecedor.tipo || 'Fornecedor';
+        document.getElementById('codigo').value = fornecedor.codigo;
+        document.getElementById('codigoClassificacao').value = fornecedor.codigoClassificacao || '';
+        document.getElementById('codigoPais').value = fornecedor.codigoPais || '';
+        document.getElementById('tipoPessoa').value = fornecedor.tipoPessoa || 'Juridica';
+        updateCpfCnpjMask();
+        document.getElementById('cnpjCpf').value = fornecedor.cnpjCpf;
+        document.getElementById('razaoSocial').value = fornecedor.razaoSocial;
+        document.getElementById('nomeFantasia').value = fornecedor.nomeFantasia;
+        document.getElementById('inscricaoEstadual').value = fornecedor.inscricaoEstadual || '';
+        document.getElementById('inscricaoMunicipal').value = fornecedor.inscricaoMunicipal || '';
+        document.getElementById('nascimento').value = fornecedor.nascimento || '';
+        document.getElementById('cep').value = fornecedor.cep || '';
+        document.getElementById('endereco').value = fornecedor.endereco;
+        document.getElementById('numero').value = fornecedor.numero || '';
+        document.getElementById('complemento').value = fornecedor.complemento || '';
+        document.getElementById('bairro').value = fornecedor.bairro || '';
+        document.getElementById('cidade').value = fornecedor.cidade || '';
+        document.getElementById('estado').value = fornecedor.estado || '';
+        document.getElementById('pais').value = fornecedor.pais || 'Brasil';
+        document.getElementById('email').value = fornecedor.email;
+        document.getElementById('emailNfe').value = fornecedor.emailNfe || '';
+        document.getElementById('telefone1').value = fornecedor.telefone1;
+        document.getElementById('telefone2').value = fornecedor.telefone2 || '';
+        document.getElementById('celular1').value = fornecedor.celular1 || '';
+        document.getElementById('fax').value = fornecedor.fax || '';
+        document.getElementById('contato1').value = fornecedor.contato1 || '';
+        document.getElementById('cargo1').value = fornecedor.cargo1 || '';
+        document.getElementById('departamento1').value = fornecedor.departamento1 || '';
+        document.getElementById('telefone3').value = fornecedor.telefone3 || '';
+        document.getElementById('celular2').value = fornecedor.celular2 || '';
+        document.getElementById('email1').value = fornecedor.email1 || '';
+        document.getElementById('autorizaXml1').value = fornecedor.autorizaXml1 ? 'true' : 'false';
+        document.getElementById('contato2').value = fornecedor.contato2 || '';
+        document.getElementById('cargo2').value = fornecedor.cargo2 || '';
+        document.getElementById('departamento2').value = fornecedor.departamento2 || '';
+        document.getElementById('telefone4').value = fornecedor.telefone4 || '';
+        document.getElementById('celular3').value = fornecedor.celular3 || '';
+        document.getElementById('email2').value = fornecedor.email2 || '';
+        document.getElementById('autorizaXml2').value = fornecedor.autorizaXml2 ? 'true' : 'false';
+        document.getElementById('cnpjCpf2').value = fornecedor.cnpjCpf2 || '';
+        document.getElementById('cnpjCpf3').value = fornecedor.cnpjCpf3 || '';
+        document.getElementById('codigoVendedor').value = fornecedor.codigoVendedor || '';
+        document.getElementById('codigoRegiao').value = fornecedor.codigoRegiao || '';
+        document.getElementById('codigoArea').value = fornecedor.codigoArea || '';
+        document.getElementById('limite').value = fornecedor.limite || '';
+        document.getElementById('indicacao').value = fornecedor.indicacao || '';
+        document.getElementById('suframa').value = fornecedor.suframa || '';
+        document.getElementById('im').value = fornecedor.im || '';
+        document.getElementById('latitudeCLI').value = fornecedor.latitudeCLI || '';
+        document.getElementById('longitudeCLI').value = fornecedor.longitudeCLI || '';
+        document.getElementById('intervista').value = fornecedor.intervista || '';
+        document.getElementById('acrescimoCLI').value = fornecedor.acrescimoCLI || '';
+        document.getElementById('codCusto').value = fornecedor.codCusto || '';
+        document.getElementById('cotacao').value = fornecedor.cotacao || '';
+        document.getElementById('reducao').value = fornecedor.reducao || '';
+        document.getElementById('contaContabil').value = fornecedor.contaContabil || '';
+        document.getElementById('simplesNacional').value = fornecedor.simplesNacional ? 'true' : 'false';
+        document.getElementById('temSubstituicao').value = fornecedor.temSubstituicao ? 'true' : 'false';
+        document.getElementById('observacoes').value = fornecedor.observacoes || '';
+        document.getElementById('statusHomologacao').value = fornecedor.statusHomologacao || 'Pendente';
+        document.getElementById('ativo').value = fornecedor.ativo ? 'true' : 'false';
+        document.getElementById('dataAtualizacao').value = fornecedor.dataAtualizacao && fornecedor.dataAtualizacao.seconds ? 
+          new Date(fornecedor.dataAtualizacao.seconds * 1000).toLocaleDateString('pt-BR') : 
+          new Date().toLocaleDateString('pt-BR');
+
+        selectedCategories.clear();
+        if (fornecedor.categorias && Array.isArray(fornecedor.categorias)) {
+          fornecedor.categorias.forEach(categoria => selectedCategories.add(categoria));
+        }
+        updateCategoriesDisplay();
+
+        document.getElementById('submitButton').textContent = 'Atualizar Parceiro';
+      }
+    };
+
+    window.cancelEdit = function() {
+      document.getElementById('supplierForm').reset();
+      document.getElementById('editingId').value = '';
+      selectedCategories.clear();
+      updateCategoriesDisplay();
+      document.getElementById('submitButton').textContent = 'Cadastrar Parceiro';
+    };
+
+    async function hasOpenDependencies(supplierId) {
+      try {
+        const quotesQuery = query(
+          collection(db, "cotacoes"),
+          where("fornecedorId", "==", supplierId),
+          where("status", "==", "Aberta")
+        );
+        const quotesSnapshot = await getDocs(quotesQuery);
+
+        const ordersQuery = query(
+          collection(db, "pedidosCompra"),
+          where("fornecedorId", "==", supplierId),
+          where("status", "==", "Aberto")
+        );
+        const ordersSnapshot = await getDocs(ordersQuery);
+
+        const requestsQuery = query(
+          collection(db, "solicitacoesCompra"),
+          where("fornecedorId", "==", supplierId),
+          where("status", "==", "Aberta")
+        );
+        const requestsSnapshot = await getDocs(requestsQuery);
+
+        return quotesSnapshot.size > 0 || ordersSnapshot.size > 0 || requestsSnapshot.size > 0;
+      } catch (error) {
+        console.error("Erro ao verificar dependências abertas:", error);
+        throw error;
+      }
+    }
+
+    window.deleteSupplier = async function(supplierId) {
+      if (!confirm('Tem certeza que deseja excluir este parceiro?')) {
+        return;
+      }
+
+      try {
+        const hasDependencies = await hasOpenDependencies(supplierId);
+        if (hasDependencies) {
+          alert('Não é possível excluir este parceiro pois ele possui cotações, pedidos de compra ou solicitações de compra abertos.');
+          return;
+        }
+
+        await deleteDoc(doc(db, "fornecedores", supplierId));
+        await loadSuppliers();
+        alert('Parceiro excluído com sucesso!');
+      } catch (error) {
+        console.error("Erro ao excluir parceiro:", error);
+        alert("Erro ao excluir parceiro: " + error.message);
+      }
+    };
+
+    function filterSuppliers() {
+        const searchText = document.getElementById('searchInput').value.toLowerCase();
+        const tipoFilter = document.getElementById('tipoFilter').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        const ativoFilter = document.getElementById('ativoFilter').value;
+
+        document.getElementById('tableContainer').style.display = 'block';
+        let filteredSuppliers = fornecedores;
+
+        if (searchText) {
+          filteredSuppliers = filteredSuppliers.filter(fornecedor => 
+            (fornecedor.codigo?.toLowerCase() || '').includes(searchText) ||
+            (fornecedor.razaoSocial?.toLowerCase() || '').includes(searchText) ||
+            (fornecedor.cnpjCpf?.toLowerCase() || '').includes(searchText) ||
+            (fornecedor.cidade?.toLowerCase() || '').includes(searchText)
+          );
+        }
+
+        if (tipoFilter) {
+          filteredSuppliers = filteredSuppliers.filter(fornecedor => fornecedor.tipo === tipoFilter);
+        }
+
+        if (statusFilter) {
+          filteredSuppliers = filteredSuppliers.filter(fornecedor => fornecedor.statusHomologacao === statusFilter);
+        }
+
+        if (ativoFilter !== '') {
+          filteredSuppliers = filteredSuppliers.filter(fornecedor => fornecedor.ativo === (ativoFilter === 'true'));
+        }
+
+        // Limit to 10 suppliers
+        filteredSuppliers = filteredSuppliers.slice(0, 10);
+        displaySuppliers(filteredSuppliers);
+      }
+
+      // Adiciona event listeners para filtros
+      document.getElementById('searchInput').addEventListener('input', filterSuppliers);
+      document.getElementById('tipoFilter').addEventListener('change', filterSuppliers);
+      document.getElementById('statusFilter').addEventListener('change', filterSuppliers);
+      document.getElementById('ativoFilter').addEventListener('change', filterSuppliers);
+
+    window.exportSuppliers = function() {
+      const exportData = fornecedores.map(f => ({
+        "Código": f.codigo,
+        "Tipo": f.tipo,
+        "Razão Social/Nome": f.razaoSocial,
+        "Nome Fantasia": f.nomeFantasia,
+        "Código Classificação": f.codigoClassificacao || '',
+        "Código País": f.codigoPais || '',
+        "Cidade": f.cidade || '',
+        "Endereço": f.endereco,
+        "Número": f.numero || '',
+        "Complemento": f.complemento || '',
+        "Bairro": f.bairro || '',
+        "CEP": f.cep || '',
+        "Estado": f.estado || '',
+        "Telefone": f.telefone1,
+        "Telefone 2": f.telefone2 || '',
+        "Celular": f.celular1 || '',
+        "Fax": f.fax || '',
+        "Pessoa (Física/Jurídica)": f.tipoPessoa || 'Juridica',
+        "CNPJ/CPF": f.cnpjCpf,
+        "ID Inscrição Estadual": f.inscricaoEstadual || '',
+        "Inscrição Estadual": f.inscricaoEstadual || '',
+        "Nascimento": f.nascimento ? new Date(f.nascimento).toLocaleDateString('pt-BR') : '',
+        "Última Compra": f.ultimaCompra ? new Date(f.ultimaCompra).toLocaleDateString('pt-BR') : '',
+        "Código Vendedor": f.codigoVendedor || '',
+        "Código Região": f.codigoRegiao || '',
+        "Cliente Desde": f.dataCadastro ? new Date(f.dataCadastro).toLocaleDateString('pt-BR') : '',
+        "Email": f.email,
+        "Email NFe": f.emailNfe || '',
+        "Home Page": f.homePage || '',
+        "Tem Substituição": f.temSubstituicao ? 'Sim' : 'Não',
+        "Código Área": f.codigoArea || '',
+        "Simples Nacional?": f.simplesNacional ? 'Sim' : 'Não',
+        "Limite": f.limite || '',
+        "Contato 1": f.contato1 || '',
+        "Departamento 1": f.departamento1 || '',
+        "Telefone 1": f.telefone3 || '',
+        "Celular 1": f.celular2 || '',
+        "Email 1": f.email1 || '',
+        "CNPJ/CPF 1": f.cnpjCpf2 || '',
+        "Autoriza XML 1": f.autorizaXml1 ? 'Sim' : 'Não',
+        "Pessoa (Física/Jurídica) 1": f.tipoPessoa || 'Juridica',
+        "Contato 2": f.contato2 || '',
+        "Contato 3": f.contato3 || '',
+        "Cargo 2": f.cargo2 || '',
+        "Cargo 3": f.cargo3 || '',
+        "Departamento 2": f.departamento2 || '',
+        "Departamento 3": f.departamento3 || '',
+        "Telefone 2": f.telefone4 || '',
+        "Telefone 3": f.telefone4 || '',
+        "Celular 2": f.celular3 || '',
+        "Celular 3": f.celular3 || '',
+        "Email 2": f.email2 || '',
+        "Email 3": f.email3 || '',
+        "CNPJ/CPF 2": f.cnpjCpf2 || '',
+        "CNPJ/CPF 3": f.cnpjCpf3 || '',
+        "Autoriza XML 2": f.autorizaXml2 ? 'Sim' : 'Não',
+        "Código do País": f.codigoPais || '',
+        "SUFRAMA": f.suframa || '',
+        "IM": f.im || '',
+        "Indicação": f.indicacao || '',
+        "Ativo": f.ativo ? 'Sim' : 'Não',
+        "LatitudeCLI": f.latitudeCLI || '',
+        "LongitudeCLI": f.longitudeCLI || '',
+        "Intervista": f.intervista || '',
+        "AcrescimoCLI": f.acrescimoCLI || '',
+        "COD_CUSTO": f.codCusto || '',
+        "COTACAO": f.cotacao || '',
+        "COTACAO_2": f.cotacao || '',
+        "REDUCAO": f.reducao || '',
+        "CONTACONTABIL": f.contaContabil || '',
+        "Status Homologação": f.statusHomologacao || 'Pendente',
+        "Categorias": f.categorias ? f.categorias.join(',') : ''
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Parceiros");
+
+      const fileName = 'parceiros_' + new Date().toISOString().split('T')[0] + '.xlsx';
+      XLSX.writeFile(workbook, fileName);
+    };
+
+    window.importSuppliers = async function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      try {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+          const importedData = XLSX.utils.sheet_to_json(worksheet);
+
+          const mappedData = importedData.map((row, index) => {
+            let categorias = [];
+            if (row['Categorias']) {
+              const categoriasStr = row['Categorias'].toString().trim();
+              categorias = categoriasStr ? categoriasStr.split(',').map(c => c.trim()) : ['SEM_CATEGORIA'];
+            } else {
+              categorias = ['SEM_CATEGORIA'];
+            }
+
+            const mapBoolean = (value) => {
+              if (typeof value === 'string') {
+                value = value.trim().toUpperCase();
+                return value === 'SIM' || value === 'S';
+              }
+              return false;
+            };
+
+            return {
+              tipo: row['Tipo'] || 'Fornecedor',
+              codigo: row['Código']?.toString() || '',
+              razaoSocial: row['Razão Social/Nome'] || '',
+              nomeFantasia: row['Nome Fantasia'] || '',
+              codigoClassificacao: row['Código Classificação']?.toString() || '',
+              codigoPais: row['Código País']?.toString() || '',
+              cidade: row['Cidade'] || '',
+              endereco: row['Endereço'] || '',
+              numero: row['Número']?.toString() || '',
+              complemento: row['Complemento'] || '',
+              bairro: row['Bairro'] || '',
+              cep: row['CEP']?.toString() || '',
+              estado: row['Estado'] || '',
+              telefone1: row['Telefone']?.toString() || 'Não informado',
+              telefone2: row['Telefone 2']?.toString() || '',
+              celular1: row['Celular']?.toString() || '',
+              fax: row['Fax']?.toString() || '',
+              tipoPessoa: row['Pessoa (Física/Jurídica)'] || 'Juridica',
+              cnpjCpf: row['CNPJ/CPF']?.toString() || '',
+              inscricaoEstadual: row['Inscrição Estadual']?.toString() || '',
+              nascimento: row['Nascimento'] ? new Date(row['Nascimento']) : null,
+              ultimaCompra: row['Última Compra'] ? new Date(row['Última Compra']) : null,
+              codigoVendedor: row['Código Vendedor']?.toString() || '',
+              codigoRegiao: row['Código Região']?.toString() || '',
+              dataCadastro: row['Cliente Desde'] ? new Date(row['Cliente Desde']) : new Date(),
+              email: row['Email'] || 'sem-email@dominio.com',
+              emailNfe: row['Email NFe'] || '',
+              homePage: row['Home Page'] || '',
+              temSubstituicao: mapBoolean(row['Tem Substituição']),
+              codigoArea: row['Código Área']?.toString() || '',
+              simplesNacional: mapBoolean(row['Simples Nacional?']),
+              limite: row['Limite'] || 0,
+              contato1: row['Contato 1'] || '',
+              departamento1: row['Departamento 1'] || '',
+              telefone3: row['Telefone 1']?.toString() || '',
+              celular2: row['Celular 1']?.toString() || '',
+              email1: row['Email 1'] || '',
+              cnpjCpf2: row['CNPJ/CPF 1']?.toString() || '',
+              autorizaXml1: mapBoolean(row['Autoriza XML 1']),
+              contato2: row['Contato 2'] || '',
+              contato3: '',
+              cargo2: row['Cargo 2'] || '',
+              cargo3: '',
+              departamento2: row['Departamento 2'] || '',
+              departamento3: '',
+              telefone4: row['Telefone 2']?.toString() || '',
+              celular3: row['Celular 2']?.toString() || '',
+              email2: row['Email 2'] || '',
+              email3: '',
+              cnpjCpf3: row['CNPJ/CPF 3']?.toString() || '',
+              autorizaXml2: mapBoolean(row['Autoriza XML 2']),
+              suframa: row['SUFRAMA']?.toString() || '',
+              im: row['IM']?.toString() || '',
+              indicacao: row['Indicação'] || '',
+              ativo: mapBoolean(row['Ativo']),
+              latitudeCLI: row['LatitudeCLI']?.toString() || '',
+              longitudeCLI: row['LongitudeCLI']?.toString() || '',
+              intervista: row['Intervista']?.toString() || '',
+              acrescimoCLI: row['AcrescimoCLI'] || 0,
+              codCusto: row['COD_CUSTO']?.toString() || '',
+              cotacao: row['COTACAO']?.toString() || '',
+              reducao: row['REDUCAO'] || 0,
+              contaContabil: row['CONTACONTABIL']?.toString() || '',
+              categorias: categorias,
+              observacoes: row['Observações'] || '',
+              statusHomologacao: row['Status Homologação'] || 'Pendente',
+              dataAtualizacao: row['Data Atualização'] ? new Date(row['Data Atualização']) : null,
+              pais: row['País'] || 'Brasil'
+            };
+          });
+
+          const requiredFields = ['codigo', 'tipo', 'tipoPessoa', 'cnpjCpf', 'razaoSocial', 'nomeFantasia', 'cep', 'endereco', 'bairro', 'cidade', 'estado', 'categorias', 'statusHomologacao'];
+          const validationErrors = [];
+          for (const [index, supplier] of mappedData.entries()) {
+            for (const field of requiredFields) {
+              if (!supplier[field] || (Array.isArray(supplier[field]) && supplier[field].length === 0)) {
+                validationErrors.push(`Fornecedor inválido na linha ${index + 2}: campo "${field}" está vazio ou ausente`);
+              }
+            }
+          }
+
+          if (validationErrors.length > 0) {
+            throw new Error(validationErrors.join('\n'));
+          }
+
+          if (!confirm(`Deseja importar ${mappedData.length} parceiros? Isso substituirá os dados existentes.`)) {
+            return;
+          }
+
+          const fornecedoresRef = collection(db, "fornecedores");
+          const snapshot = await getDocs(fornecedoresRef);
+          const deletePromises = snapshot.docs.map(docSnapshot => deleteDoc(doc(fornecedoresRef, docSnapshot.id)));
+          await Promise.all(deletePromises);
+
+          const addPromises = mappedData.map(supplier => addDoc(fornecedoresRef, supplier));
+          await Promise.all(addPromises);
+
+          await loadSuppliers();
+          alert('Dados importados com sucesso do Excel!');
+          document.getElementById('importFile').value = '';
+        };
+        reader.readAsArrayBuffer(file);
+      } catch (error) {
+        console.error('Erro ao importar parceiros:', error);
+        alert(`Erro ao importar dados do Excel: ${error.message}`);
+      }
+    };
+
+    document.getElementById('supplierForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      const statusHomologacao = document.getElementById('statusHomologacao').value;
+      const configRef = doc(db, "parametros", "sistema");
+      const configDoc = await getDoc(configRef);
+
+      if (configDoc.exists() && configDoc.data().configuracaoSistema?.controleQualidade && statusHomologacao === 'Homologado') {
+        const confirmManual = confirm('Atenção: Definir o status como "Homologado" manualmente pode ser sobrescrito por avaliações no sistema de homologação. Deseja continuar?');
+        if (!confirmManual) {
+          return;
+        }
+      }
+
+      if (selectedCategories.size === 0) {
+        alert("Por favor, adicione pelo menos uma categoria.");
+        return;
+      }
+
+      const tipoPessoa = document.getElementById('tipoPessoa').value;
+      const cnpjCpf = document.getElementById('cnpjCpf').value.replace(/\D/g, '');
+      if (tipoPessoa === 'Juridica' && cnpjCpf.length !== 14) {
+        alert("CNPJ inválido. Deve conter 14 dígitos.");
+        return;
+      } else if (tipoPessoa === 'Fisica' && cnpjCpf.length !== 11) {
+        alert("CPF inválido. Deve conter 11 dígitos.");
+        return;
+      }
+
+      const telefone1 = document.getElementById('telefone1').value.replace(/\D/g, '');
+      if (telefone1.length < 10 || telefone1.length > 11) {
+        alert("Telefone 1 inválido. Deve conter 10 ou 11 dígitos.");
+        return;
+      }
+
+      const cep = document.getElementById('cep').value.replace(/\D/g, '');
+      if (cep.length !== 8) {
+        alert("CEP inválido. Deve conter 8 dígitos.");
+        return;
+      }
+
+      const submitButton = document.getElementById('submitButton');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Salvando...';
+
+      let formData = {
+        tipo: document.getElementById('tipo').value,
+        codigo: document.getElementById('codigo').value,
+        razaoSocial: document.getElementById('razaoSocial').value,
+        nomeFantasia: document.getElementById('nomeFantasia').value,
+        codigoClassificacao: document.getElementById('codigoClassificacao').value,
+        codigoPais: document.getElementById('codigoPais').value,
+        cidade: document.getElementById('cidade').value,
+        endereco: document.getElementById('endereco').value,
+        numero: document.getElementById('numero').value,
+        complemento: document.getElementById('complemento').value,
+        bairro: document.getElementById('bairro').value,
+        cep: document.getElementById('cep').value,
+        estado: document.getElementById('estado').value,
+        telefone1: document.getElementById('telefone1').value,
+        telefone2: document.getElementById('telefone2').value,
+        celular1: document.getElementById('celular1').value,
+        fax: document.getElementById('fax').value,
+        tipoPessoa: document.getElementById('tipoPessoa').value,
+        cnpjCpf: document.getElementById('cnpjCpf').value,
+        inscricaoEstadual: document.getElementById('inscricaoEstadual').value,
+        inscricaoMunicipal: document.getElementById('inscricaoMunicipal').value,
+        nascimento: document.getElementById('nascimento').value,
+        ultimaCompra: null,
+        codigoVendedor: document.getElementById('codigoVendedor').value,
+        codigoRegiao: document.getElementById('codigoRegiao').value,
+        email: document.getElementById('email').value,
+        emailNfe: document.getElementById('emailNfe').value,
+        homePage: document.getElementById('homePage').value,
+        temSubstituicao: document.getElementById('temSubstituicao').value === 'true',
+        codigoArea: document.getElementById('codigoArea').value,
+        simplesNacional: document.getElementById('simplesNacional').value === 'true',
+        limite: parseFloat(document.getElementById('limite').value) || 0,
+        contato1: document.getElementById('contato1').value,
+        departamento1: document.getElementById('departamento1').value,
+        telefone3: document.getElementById('telefone3').value,
+        celular2: document.getElementById('celular2').value,
+        email1: document.getElementById('email1').value,
+        cnpjCpf2: document.getElementById('cnpjCpf2').value,
+        autorizaXml1: document.getElementById('autorizaXml1').value === 'true',
+        contato2: document.getElementById('contato2').value,
+        contato3: '',
+        cargo2: document.getElementById('cargo2').value,
+        cargo3: '',
+        departamento2: document.getElementById('departamento2').value,
+        departamento3: '',
+        telefone4: document.getElementById('telefone4').value,
+        celular3: document.getElementById('celular3').value,
+        email2: document.getElementById('email2').value,
+        email3: '',
+        cnpjCpf3: document.getElementById('cnpjCpf3').value,
+        autorizaXml2: document.getElementById('autorizaXml2').value === 'true',
+        suframa: document.getElementById('suframa').value,
+        im: document.getElementById('im').value,
+        indicacao: document.getElementById('indicacao').value,
+        ativo: document.getElementById('ativo').value === 'true',
+        latitudeCLI: document.getElementById('latitudeCLI').value,
+        longitudeCLI: document.getElementById('longitudeCLI').value,
+        intervista: document.getElementById('intervista').value,
+        acrescimoCLI: parseFloat(document.getElementById('acrescimoCLI').value) || 0,
+        codCusto: document.getElementById('codCusto').value,
+        cotacao: document.getElementById('cotacao').value,
+        reducao: parseFloat(document.getElementById('reducao').value) || 0,
+        contaContabil: document.getElementById('contaContabil').value,
+        categorias: Array.from(selectedCategories),
+        observacoes: document.getElementById('observacoes').value,
+        statusHomologacao: document.getElementById('statusHomologacao').value,
+        dataCadastro: new Date(),
+        dataAtualizacao: new Date(),
+        pais: document.getElementById('pais').value || 'Brasil',
+      };
+
+      console.log("Dados a serem salvos no Firestore:", formData);
+
+      const editingId = document.getElementById('editingId').value;
+
+      try {
+        if (editingId) {
+          await updateDoc(doc(db, "fornecedores", editingId), formData);
+          alert("Parceiro atualizado com sucesso!");
+        } else {
+          const existingSupplier = fornecedores.find(f => 
+            f.codigo === formData.codigo || f.cnpjCpf === formData.cnpjCpf
+          );
+
+          if (existingSupplier) {
+            alert("Já existe um parceiro com este código ou CNPJ/CPF.");
+            return;
+          }
+
+          await addDoc(collection(db, "fornecedores"), formData);
+          alert("Parceiro cadastrado com sucesso!");
+        }
+
+        await loadSuppliers();
+        event.target.reset();
+        cancelEdit();
+      } catch (error) {
+        console.error("Erro ao salvar parceiro:", error);
+        alert("Erro ao salvar parceiro: " + error.message);
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = editingId ? 'Atualizar Parceiro' : 'Cadastrar Parceiro';
+      }
+    });
+  </script>
+</body>
+</html>

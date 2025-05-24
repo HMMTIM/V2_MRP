@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Consulta de Dados da OP</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    label { display: block; margin-top: 12px; }
+    input, button { margin-top: 4px; }
+    .result { margin-top: 24px; padding: 16px; border: 1px solid #ccc; border-radius: 8px; background: #f9f9f9; }
+    pre { background: #eee; padding: 8px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h2>Consulta de Dados da OP</h2>
+  <label>OP: <input type="text" id="op" placeholder="Ex: OP25050338"></label>
+  <label>Produto ID: <input type="text" id="produtoId" placeholder="Ex: 100924"></label>
+  <label>Armazém ID: <input type="text" id="armazemId" placeholder="Ex: ALM01"></label>
+  <button onclick="consultar()">Consultar</button>
+
+  <div class="result" id="resultado" style="display:none"></div>
+
+  <script>
+    // TODO: Substitua com sua config do Firebase
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SUA_AUTH_DOMAIN",
+      projectId: "SEU_PROJECT_ID",
+      // ...
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function consultar() {
+      const op = document.getElementById('op').value.trim();
+      const produtoId = document.getElementById('produtoId').value.trim();
+      const armazemId = document.getElementById('armazemId').value.trim();
+      if (!op || !produtoId || !armazemId) {
+        alert('Preencha todos os campos!');
+        return;
+      }
+      document.getElementById('resultado').style.display = 'block';
+      document.getElementById('resultado').innerHTML = 'Consultando...';
+      let html = '';
+      try {
+        // 1. Saldo em estoque
+        const estoqueSnap = await db.collection('estoque')
+          .where('produtoId', '==', produtoId)
+          .where('armazemId', '==', armazemId).get();
+        let saldo = estoqueSnap.empty ? 0 : (estoqueSnap.docs[0].data().saldo || 0);
+        html += `<b>Saldo em Estoque (${armazemId}):</b> ${saldo}<br>`;
+
+        // 2. Saldo reservado para a OP
+        const reservaSnap = await db.collection('reservas')
+          .where('produtoId', '==', produtoId)
+          .where('armazemId', '==', armazemId)
+          .where('op', '==', op).get();
+        let saldoReservado = reservaSnap.empty ? 0 : (reservaSnap.docs[0].data().saldoReservado || 0);
+        html += `<b>Saldo Reservado para OP:</b> ${saldoReservado}<br>`;
+
+        // 3. Apontamentos realizados para a OP
+        const apontSnap = await db.collection('apontamentos')
+          .where('produtoId', '==', produtoId)
+          .where('op', '==', op).get();
+        let totalApontado = 0;
+        let apontamentos = [];
+        apontSnap.forEach(doc => {
+          const d = doc.data();
+          totalApontado += d.quantidade || 0;
+          apontamentos.push(d);
+        });
+        html += `<b>Total Apontado para OP:</b> ${totalApontado}<br>`;
+        if (apontamentos.length) {
+          html += `<details><summary>Ver detalhes dos apontamentos</summary><pre>${JSON.stringify(apontamentos, null, 2)}</pre></details>`;
+        }
+
+        // 4. Movimentações de transferência para a OP
+        const movSnap = await db.collection('movimentacao_armazem')
+          .where('produtoId', '==', produtoId)
+          .where('op', '==', op).get();
+        let movimentacoes = [];
+        movSnap.forEach(doc => {
+          movimentacoes.push(doc.data());
+        });
+        html += `<b>Movimentações de Transferência para OP:</b> ${movimentacoes.length}<br>`;
+        if (movimentacoes.length) {
+          html += `<details><summary>Ver detalhes das movimentações</summary><pre>${JSON.stringify(movimentacoes, null, 2)}</pre></details>`;
+        }
+
+        document.getElementById('resultado').innerHTML = html;
+      } catch (e) {
+        document.getElementById('resultado').innerHTML = 'Erro: ' + e.message;
+      }
+    }
+  </script>
+</body>
+</html> 

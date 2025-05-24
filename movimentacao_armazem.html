@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movimentação entre Armazéns</title>
+    <style>
+        :root {
+            --primary-color: #0854a0;
+            --primary-hover: #0a4d8c;
+            --secondary-color: #f0f3f6;
+            --border-color: #d4d4d4;
+            --text-color: #333;
+            --text-secondary: #666;
+            --success-color: #107e3e;
+            --success-hover: #0d6e36;
+            --danger-color: #bb0000;
+            --danger-hover: #a30000;
+            --warning-color: #e9730c;
+            --header-bg: #354a5f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            color: var(--text-color);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            margin: -20px -20px 20px -20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .form-container {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        .form-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+        }
+
+        .info-box {
+            background-color: var(--secondary-color);
+            padding: 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-success:hover {
+            background-color: var(--success-hover);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .table-responsive {
+            margin-top: 30px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .items-table th,
+        .items-table td {
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .items-table th {
+            background-color: var(--secondary-color);
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .items-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+            }
+
+            .container {
+                width: 95%;
+                margin: 20px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Movimentação entre Armazéns</h1>
+            <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+        </div>
+
+        <div class="form-container">
+            <h2 class="form-title">Saldos por Armazém</h2>
+            <div class="table-responsive" style="margin-bottom: 30px;">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Tipo</th>
+                            <th>Unidade</th>
+                            <th>Armazém</th>
+                            <th>Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="balanceTableBody"></tbody>
+                </table>
+            </div>
+
+            <h2 class="form-title">Nova Movimentação (Via Requisição)</h2>
+            <form id="movementForm" onsubmit="handleMovement(event)">
+                <div class="form-row">
+                    <div class="form-col">
+                        <label>Pesquisar OP ou Produto:</label>
+                        <input type="text" id="searchOP" placeholder="Digite o número da OP ou código/descrição do produto..." oninput="filterOrders()">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <label>Ordem de Produção:</label>
+                        <select id="productionOrderSelect" onchange="loadOrderMaterials()" required>
+                            <option value="">Selecione a OP...</option>
+                        </select>
+                    </div>
+                    <div class="form-col">
+                        <label>Armazém de Produção (Destino):</label>
+                        <div id="targetWarehouseInfo" class="info-box">-</div>
+                        <input type="hidden" id="targetWarehouse">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label>Material Necessário:</label>
+                        <select id="materialSelect" onchange="updateMaterialInfo()" required>
+                            <option value="">Selecione o material...</option>
+                        </select>
+                        <div id="materialInfo" class="info-box" style="margin-top: 5px;">-</div>
+                    </div>
+                    <div class="form-col">
+                        <label>Quantidade a Transferir:</label>
+                        <input type="number" id="quantity" min="0.001" step="0.001" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label>Armazém Origem:</label>
+                        <select id="sourceWarehouse" onchange="updateProductInfo()" required>
+                            <option value="">Selecione o armazém...</option>
+                        </select>
+                    </div>
+                    <div class="form-col">
+                        <label>Saldo no Armazém Origem:</label>
+                        <div style="display: flex; align-items: center;">
+                            <div id="sourceBalance" class="info-box">-</div>
+                            <button type="button" id="btnAtualizarSaldo" title="Atualizar Saldo" style="margin-left:8px; padding:4px 8px;">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Motivo da Transferência:</label>
+                    <textarea id="reason" rows="3" required></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-success">Realizar Transferência</button>
+                    <button type="button" class="btn-success" id="transferirTudoBtn" style="margin-left:10px;">Transferir Tudo</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <h2 class="form-title">Histórico de Transferências</h2>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>OP</th>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Origem</th>
+                        <th>Destino</th>
+                        <th>Motivo</th>
+                        <th>Usuário</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { collection, addDoc, getDocs, query, where, Timestamp, orderBy, getDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let produtos = [];
+        let armazens = [];
+        let estoques = [];
+        let ordensProducao = [];
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        let selectedOrder = null;
+
+        window.onload = async function() {
+            if (!localStorage.getItem('currentUser')) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const parametrosDoc = await getDoc(doc(db, "parametros", "sistema"));
+            if (!parametrosDoc.exists() || !parametrosDoc.data().configuracaoSistema?.controleArmazem) {
+                alert('O controle de armazém não está ativo nas configurações do sistema.');
+                window.location.href = 'index.html';
+                return;
+            }
+            await loadInitialData();
+            loadHistory();
+        };
+
+        async function loadInitialData() {
+            try {
+                const [produtosSnap, armazensSnap, estoquesSnap, ordensSnap] = await Promise.all([
+                    getDocs(collection(db, "produtos")),
+                    getDocs(collection(db, "armazens")),
+                    getDocs(collection(db, "estoques")),
+                    getDocs(collection(db, "ordensProducao"))
+                ]);
+
+                produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                armazens = armazensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                ordensProducao = ordensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                populateOrderSelect();
+                populateSourceWarehouseSelect();
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+                alert("Erro ao carregar dados iniciais.");
+            }
+        }
+
+        function populateOrderSelect() {
+            const select = document.getElementById('productionOrderSelect');
+            select.innerHTML = '<option value="">Selecione a OP...</option>';
+
+            // Agrupar ordens por status
+            const ordensPendentes = ordensProducao.filter(op => 
+                op.status === 'Pendente' && 
+                op.materiaisNecessarios && 
+                op.materiaisNecessarios.length > 0
+            ).sort((a, b) => new Date(a.dataEntrega.seconds * 1000) - new Date(b.dataEntrega.seconds * 1000));
+
+            const ordensEmProducao = ordensProducao.filter(op => 
+                op.status === 'Em Produção' && 
+                op.materiaisNecessarios && 
+                op.materiaisNecessarios.length > 0
+            ).sort((a, b) => new Date(a.dataEntrega.seconds * 1000) - new Date(b.dataEntrega.seconds * 1000));
+
+            // Adicionar grupo de ordens pendentes
+            if (ordensPendentes.length > 0) {
+                select.innerHTML += '<optgroup label="Ordens Pendentes">';
+                ordensPendentes.forEach(op => {
+                    const produto = produtos.find(p => p.id === op.produtoId);
+                    const dataEntrega = new Date(op.dataEntrega.seconds * 1000).toLocaleDateString();
+                    select.innerHTML += `
+                        <option value="${op.id}">
+                            ${op.numero} - ${produto.codigo} - ${produto.descricao} (Entrega: ${dataEntrega})
+                        </option>`;
+                });
+                select.innerHTML += '</optgroup>';
+            }
+
+            // Adicionar grupo de ordens em produção
+            if (ordensEmProducao.length > 0) {
+                select.innerHTML += '<optgroup label="Ordens em Produção">';
+                ordensEmProducao.forEach(op => {
+                    const produto = produtos.find(p => p.id === op.produtoId);
+                    const dataEntrega = new Date(op.dataEntrega.seconds * 1000).toLocaleDateString();
+                    const progresso = op.quantidadeProduzida ? 
+                        ((op.quantidadeProduzida / op.quantidade) * 100).toFixed(1) : 0;
+                    select.innerHTML += `
+                        <option value="${op.id}">
+                            ${op.numero} - ${produto.codigo} - ${produto.descricao} (${progresso}% - Entrega: ${dataEntrega})
+                        </option>`;
+                });
+                select.innerHTML += '</optgroup>';
+            }
+        }
+
+        function populateSourceWarehouseSelect() {
+            const sourceWarehouse = document.getElementById('sourceWarehouse');
+            sourceWarehouse.innerHTML = '<option value="">Selecione o armazém...</option>';
+
+            armazens
+                .filter(a => a.tipo !== 'PRODUCAO') // Exclui armazéns tipo Produção para origem
+                .forEach(armazem => {
+                    sourceWarehouse.innerHTML += `
+                        <option value="${armazem.id}">
+                            ${armazem.codigo} - ${armazem.nome}
+                        </option>`;
+                });
+        }
+
+        window.loadOrderMaterials = function() {
+            const orderId = document.getElementById('productionOrderSelect').value;
+            const materialSelect = document.getElementById('materialSelect');
+            const targetWarehouseInfo = document.getElementById('targetWarehouseInfo');
+            const targetWarehouse = document.getElementById('targetWarehouse');
+
+            materialSelect.innerHTML = '<option value="">Selecione o material...</option>';
+            targetWarehouseInfo.textContent = '-';
+            targetWarehouse.value = '';
+            document.getElementById('materialInfo').textContent = '-';
+            document.getElementById('quantity').value = '';
+            document.getElementById('sourceBalance').textContent = '-';
+
+            if (!orderId) {
+                selectedOrder = null;
+                loadBalances();
+                return;
+            }
+
+            selectedOrder = ordensProducao.find(op => op.id === orderId);
+            const armazemProducao = armazens.find(a => a.id === selectedOrder.armazemProducaoId);
+
+            if (!armazemProducao || armazemProducao.tipo !== 'PRODUCAO') {
+                alert('A ordem de produção selecionada não está associada a um armazém do tipo Produção.');
+                document.getElementById('productionOrderSelect').value = '';
+                selectedOrder = null;
+                return;
+            }
+
+            targetWarehouseInfo.textContent = `${armazemProducao.codigo} - ${armazemProducao.nome}`;
+            targetWarehouse.value = armazemProducao.id;
+
+            if (selectedOrder.materiaisNecessarios) {
+                selectedOrder.materiaisNecessarios
+                    .filter(material => material.necessidade > 0) // Apenas materiais com necessidade pendente
+                    .forEach(material => {
+                        const produto = produtos.find(p => p.id === material.produtoId);
+                        materialSelect.innerHTML += `
+                            <option value="${material.produtoId}" data-needs="${material.necessidade}">
+                                ${produto.codigo} - ${produto.descricao} (Falta: ${material.necessidade.toFixed(3)} ${produto.unidade})
+                            </option>`;
+                    });
+            }
+
+            updateMaterialInfo();
+        };
+
+        window.updateMaterialInfo = function() {
+            const materialId = document.getElementById('materialSelect').value;
+            const materialInfo = document.getElementById('materialInfo');
+            const quantityInput = document.getElementById('quantity');
+
+            materialInfo.textContent = '-';
+            quantityInput.value = '';
+            loadBalances();
+
+            if (!materialId) return;
+
+            const material = selectedOrder.materiaisNecessarios.find(m => m.produtoId === materialId);
+            const produto = produtos.find(p => p.id === materialId);
+            materialInfo.textContent = `${produto.codigo} - ${produto.descricao} (${produto.unidade}) | Necessidade: ${material.necessidade.toFixed(3)} ${produto.unidade}`;
+            quantityInput.value = material.necessidade.toFixed(3);
+
+            updateProductInfo();
+            loadBalances(materialId);
+        };
+
+        function loadBalances(produtoId = null) {
+            const tableBody = document.getElementById('balanceTableBody');
+            tableBody.innerHTML = '';
+
+            if (!produtoId) return;
+
+            const produto = produtos.find(p => p.id === produtoId);
+            if (!produto) return;
+
+            armazens.forEach(armazem => {
+                const estoque = estoques.find(e => e.produtoId === produto.id && e.armazemId === armazem.id);
+                const saldo = estoque ? estoque.saldo : 0;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${produto.codigo} - ${produto.descricao}</td>
+                    <td>${produto.tipo}</td>
+                    <td>${produto.unidade}</td>
+                    <td>${armazem.codigo} - ${armazem.nome}</td>
+                    <td style="text-align: right">${saldo.toFixed(3)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        window.updateProductInfo = function() {
+            const materialId = document.getElementById('materialSelect').value;
+            const sourceId = document.getElementById('sourceWarehouse').value;
+
+            if (materialId && sourceId) {
+                const produto = produtos.find(p => p.id === materialId);
+                const sourceEstoque = estoques.find(e => e.produtoId === materialId && e.armazemId === sourceId);
+                const saldo = sourceEstoque ? sourceEstoque.saldo : 0;
+                document.getElementById('sourceBalance').textContent = `${saldo.toFixed(3)} ${produto.unidade}`;
+            } else {
+                document.getElementById('sourceBalance').textContent = '-';
+            }
+        };
+
+        window.handleMovement = async function(event) {
+            event.preventDefault();
+
+            const orderId = document.getElementById('productionOrderSelect').value;
+            const materialId = document.getElementById('materialSelect').value;
+            const quantidade = parseFloat(document.getElementById('quantity').value);
+            const sourceId = document.getElementById('sourceWarehouse').value;
+            const targetId = document.getElementById('targetWarehouse').value;
+            const motivo = document.getElementById('reason').value;
+
+            if (!orderId || !materialId || !quantidade || !sourceId || !targetId) {
+                alert('Preencha todos os campos obrigatórios.');
+                return;
+            }
+
+            if (sourceId === targetId) {
+                alert('Os armazéns de origem e destino devem ser diferentes.');
+                return;
+            }
+
+            const material = selectedOrder.materiaisNecessarios.find(m => m.produtoId === materialId);
+            if (quantidade > material.necessidade) {
+                alert('A quantidade a transferir não pode exceder a necessidade da ordem de produção.');
+                return;
+            }
+
+            const sourceEstoque = estoques.find(e => e.produtoId === materialId && e.armazemId === sourceId);
+            if (!sourceEstoque || sourceEstoque.saldo < quantidade) {
+                alert('Saldo insuficiente no armazém de origem.');
+                return;
+            }
+
+            try {
+                const transferencia = {
+                    ordemProducaoId: orderId,
+                    produtoId: materialId,
+                    quantidade,
+                    armazemOrigemId: sourceId,
+                    armazemDestinoId: targetId,
+                    motivo,
+                    dataHora: Timestamp.now(),
+                    usuario: currentUser.nome
+                };
+
+                await addDoc(collection(db, "transferenciasArmazem"), transferencia);
+
+                const produto = produtos.find(p => p.id === materialId);
+
+                // Registrar saída do armazém origem
+                let sourceEstoqueDoc = estoques.find(e => e.produtoId === materialId && e.armazemId === sourceId);
+                if (sourceEstoqueDoc) {
+                    await updateDoc(doc(db, "estoques", sourceEstoqueDoc.id), {
+                        saldo: sourceEstoqueDoc.saldo - quantidade,
+                        ultimaMovimentacao: Timestamp.now()
+                    });
+                    sourceEstoqueDoc.saldo -= quantidade;
+                }
+
+                // Registrar entrada no armazém destino
+                let targetEstoqueDoc = estoques.find(e => e.produtoId === materialId && e.armazemId === targetId);
+                if (targetEstoqueDoc) {
+                    await updateDoc(doc(db, "estoques", targetEstoqueDoc.id), {
+                        saldo: targetEstoqueDoc.saldo + quantidade,
+                        ultimaMovimentacao: Timestamp.now()
+                    });
+                    targetEstoqueDoc.saldo += quantidade;
+                } else {
+                    const newEstoque = {
+                        produtoId: materialId,
+                        armazemId: targetId,
+                        saldo: quantidade,
+                        ultimaMovimentacao: Timestamp.now()
+                    };
+                    const docRef = await addDoc(collection(db, "estoques"), newEstoque);
+                    estoques.push({ id: docRef.id, ...newEstoque });
+                }
+
+                // Registrar movimentações
+                await addDoc(collection(db, "movimentacoesEstoque"), {
+                    produtoId: materialId,
+                    tipo: 'SAIDA',
+                    quantidade,
+                    unidade: produto.unidade,
+                    tipoDocumento: 'TRANSFERENCIA',
+                    numeroDocumento: `TRF-${Date.now()}`,
+                    observacoes: `Transferência para OP ${selectedOrder.numero} - Armazém ${armazens.find(a => a.id === targetId).codigo}`,
+                    dataHora: Timestamp.now(),
+                    armazemId: sourceId
+                });
+
+                await addDoc(collection(db, "movimentacoesEstoque"), {
+                    produtoId: materialId,
+                    tipo: 'ENTRADA',
+                    quantidade,
+                    unidade: produto.unidade,
+                    tipoDocumento: 'TRANSFERENCIA',
+                    numeroDocumento: `TRF-${Date.now()}`,
+                    observacoes: `Transferência para OP ${selectedOrder.numero} - Do armazém ${armazens.find(a => a.id === sourceId).codigo}`,
+                    dataHora: Timestamp.now(),
+                    armazemId: targetId
+                });
+
+                // Atualizar necessidade e saldo reservado na OP
+                const novaNecessidade = Math.max(0, material.necessidade - quantidade);
+                const novoSaldoReservado = (material.saldoReservado || 0) + quantidade;
+                const updatedMateriais = selectedOrder.materiaisNecessarios.map(m => {
+                    if (m.produtoId === materialId) {
+                        return { ...m, necessidade: novaNecessidade, saldoEstoque: (m.saldoEstoque || 0) + quantidade, saldoReservado: novoSaldoReservado };
+                    }
+                    return m;
+                });
+
+                await updateDoc(doc(db, "ordensProducao", orderId), {
+                    materiaisNecessarios: updatedMateriais
+                });
+
+                selectedOrder.materiaisNecessarios = updatedMateriais;
+
+                alert('Transferência realizada com sucesso!');
+                document.getElementById('movementForm').reset();
+                await loadInitialData();
+                loadHistory();
+            } catch (error) {
+                console.error("Erro ao realizar transferência:", error);
+                alert("Erro ao realizar transferência: " + error.message);
+            }
+        };
+
+        async function loadHistory() {
+            try {
+                // Buscar transferências entre armazéns
+                const transferenciasSnap = await getDocs(
+                    query(collection(db, "transferenciasArmazem"), 
+                          orderBy("dataHora", "desc"))
+                );
+
+                // Buscar movimentações de produção
+                const movimentacoesSnap = await getDocs(
+                    query(collection(db, "movimentacoesEstoque"),
+                          where("tipoDocumento", "in", ["PRODUCAO", "CONSUMO"]),
+                          orderBy("dataHora", "desc"))
+                );
+
+                const tableBody = document.getElementById('historyTableBody');
+                tableBody.innerHTML = '';
+
+                // Processar transferências
+                transferenciasSnap.docs.forEach(doc => {
+                    const transfer = doc.data();
+                    const produto = produtos.find(p => p.id === transfer.produtoId);
+                    const origem = armazens.find(a => a.id === transfer.armazemOrigemId);
+                    const destino = armazens.find(a => a.id === transfer.armazemDestinoId);
+                    const op = ordensProducao.find(op => op.id === transfer.ordemProducaoId);
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date(transfer.dataHora.seconds * 1000).toLocaleString()}</td>
+                        <td>${op ? op.numero : 'N/A'}</td>
+                        <td>${produto ? `${produto.codigo} - ${produto.descricao}` : 'N/A'}</td>
+                        <td>${transfer.quantidade.toFixed(3)}</td>
+                        <td>${origem ? origem.codigo : 'N/A'}</td>
+                        <td>${destino ? destino.codigo : 'N/A'}</td>
+                        <td>${transfer.motivo}</td>
+                        <td>${transfer.usuario}</td>
+                        <td><button onclick="excluirTransferencia('${doc.id}')">Excluir</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // Processar movimentações de produção
+                movimentacoesSnap.docs.forEach(doc => {
+                    const mov = doc.data();
+                    const produto = produtos.find(p => p.id === mov.produtoId);
+                    const armazem = armazens.find(a => a.id === mov.armazemId);
+                    const op = ordensProducao.find(op => op.numero === mov.numeroDocumento);
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date(mov.dataHora.seconds * 1000).toLocaleString()}</td>
+                        <td>${op ? op.numero : mov.numeroDocumento}</td>
+                        <td>${produto ? `${produto.codigo} - ${produto.descricao}` : 'N/A'}</td>
+                        <td>${mov.quantidade.toFixed(3)}</td>
+                        <td>${mov.tipo === 'SAIDA' ? armazem?.codigo : 'N/A'}</td>
+                        <td>${mov.tipo === 'ENTRADA' ? armazem?.codigo : 'N/A'}</td>
+                        <td>${mov.tipo === 'ENTRADA' ? 'Apontamento de Produção' : 'Consumo de Material'}</td>
+                        <td>${mov.usuario || 'Sistema'}</td>
+                        <td>-</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Erro ao carregar histórico:", error);
+            }
+        }
+
+        window.excluirTransferencia = async function(id) {
+            if (!confirm('Tem certeza que deseja excluir esta transferência?')) return;
+            try {
+                await deleteDoc(doc(db, "transferenciasArmazem", id));
+                loadHistory();
+            } catch (e) {
+                alert('Erro ao excluir: ' + e.message);
+            }
+        }
+
+        window.filterOrders = function() {
+            const searchText = document.getElementById('searchOP').value.toLowerCase();
+            const select = document.getElementById('productionOrderSelect');
+            const options = select.getElementsByTagName('option');
+            const optgroups = select.getElementsByTagName('optgroup');
+
+            // Primeiro, restaurar todas as opções
+            for (let i = 0; i < options.length; i++) {
+                options[i].style.display = '';
+            }
+
+            // Se não houver texto de busca, mostrar todos os grupos
+            if (!searchText) {
+                for (let i = 0; i < optgroups.length; i++) {
+                    optgroups[i].style.display = '';
+                }
+                return;
+            }
+
+            // Filtrar opções
+            for (let i = 0; i < options.length; i++) {
+                const option = options[i];
+                if (option.value === '') continue; // Pular a opção padrão
+
+                const text = option.textContent.toLowerCase();
+                // Busca por número da OP ou código/descrição do produto
+                if (text.includes(searchText)) {
+                    option.style.display = '';
+                    // Destacar o texto encontrado
+                    const originalText = option.textContent;
+                    const highlightedText = originalText.replace(
+                        new RegExp(searchText, 'gi'),
+                        match => `<strong style="background-color: #ffeb3b">${match}</strong>`
+                    );
+                    option.innerHTML = highlightedText;
+                } else {
+                    option.style.display = 'none';
+                    // Restaurar o texto original
+                    option.innerHTML = option.textContent;
+                }
+            }
+
+            // Esconder grupos vazios
+            for (let i = 0; i < optgroups.length; i++) {
+                const group = optgroups[i];
+                const visibleOptions = Array.from(group.getElementsByTagName('option'))
+                    .filter(option => option.style.display !== 'none');
+
+                group.style.display = visibleOptions.length > 0 ? '' : 'none';
+            }
+        };
+
+        document.getElementById('transferirTudoBtn').onclick = async function() {
+            if (!selectedOrder) {
+                alert('Selecione uma ordem de produção.');
+                return;
+            }
+            const targetId = document.getElementById('targetWarehouse').value;
+            const motivo = document.getElementById('reason').value || 'Transferência automática de todos os materiais necessários';
+            if (!targetId) {
+                alert('Armazém de produção não definido.');
+                return;
+            }
+            // Filtrar materiais com necessidade > 0
+            const materiaisFaltantes = (selectedOrder.materiaisNecessarios || []).filter(m => m.necessidade > 0);
+            if (materiaisFaltantes.length === 0) {
+                alert('Não há materiais faltantes para transferir.');
+                return;
+            }
+            // Confirmação
+            let resumo = 'Os seguintes materiais serão transferidos:\n';
+            materiaisFaltantes.forEach(m => {
+                const produto = produtos.find(p => p.id === m.produtoId);
+                resumo += `- ${produto.codigo} - ${produto.descricao}: ${m.necessidade.toFixed(3)} ${produto.unidade}\n`;
+            });
+            resumo += '\nDeseja continuar?';
+            if (!confirm(resumo)) return;
+            // Executar transferências em lote
+            for (const material of materiaisFaltantes) {
+                // Encontrar armazém de origem com saldo suficiente
+                let sourceEstoque = estoques.find(e => e.produtoId === material.produtoId && armazens.find(a => a.id === e.armazemId && a.tipo !== 'PRODUCAO') && e.saldo >= material.necessidade);
+                if (!sourceEstoque) {
+                    alert(`Saldo insuficiente para ${material.produtoId}. Pulei este material.`);
+                    continue;
+                }
+                const produto = produtos.find(p => p.id === material.produtoId);
+                // Registrar transferência
+                const transferencia = {
+                    ordemProducaoId: selectedOrder.id,
+                    produtoId: material.produtoId,
+                    quantidade: material.necessidade,
+                    armazemOrigemId: sourceEstoque.armazemId,
+                    armazemDestinoId: targetId,
+                    motivo,
+                    dataHora: Timestamp.now(),
+                    usuario: currentUser.nome
+                };
+                await addDoc(collection(db, "transferenciasArmazem"), transferencia);
+                // Atualizar estoques
+                await updateDoc(doc(db, "estoques", sourceEstoque.id), {
+                    saldo: sourceEstoque.saldo - material.necessidade,
+                    ultimaMovimentacao: Timestamp.now()
+                });
+                sourceEstoque.saldo -= material.necessidade;
+                let targetEstoque = estoques.find(e => e.produtoId === material.produtoId && e.armazemId === targetId);
+                if (targetEstoque) {
+                    await updateDoc(doc(db, "estoques", targetEstoque.id), {
+                        saldo: targetEstoque.saldo + material.necessidade,
+                        ultimaMovimentacao: Timestamp.now()
+                    });
+                    targetEstoque.saldo += material.necessidade;
+                } else {
+                    const newEstoque = {
+                        produtoId: material.produtoId,
+                        armazemId: targetId,
+                        saldo: material.necessidade,
+                        ultimaMovimentacao: Timestamp.now()
+                    };
+                    const docRef = await addDoc(collection(db, "estoques"), newEstoque);
+                    estoques.push({ id: docRef.id, ...newEstoque });
+                }
+                // Registrar movimentações
+                await addDoc(collection(db, "movimentacoesEstoque"), {
+                    produtoId: material.produtoId,
+                    tipo: 'SAIDA',
+                    quantidade: material.necessidade,
+                    unidade: produto.unidade,
+                    tipoDocumento: 'TRANSFERENCIA',
+                    numeroDocumento: `TRF-${Date.now()}`,
+                    observacoes: `Transferência automática para OP ${selectedOrder.numero} - Armazém ${armazens.find(a => a.id === targetId).codigo}`,
+                    dataHora: Timestamp.now(),
+                    armazemId: sourceEstoque.armazemId
+                });
+                await addDoc(collection(db, "movimentacoesEstoque"), {
+                    produtoId: material.produtoId,
+                    tipo: 'ENTRADA',
+                    quantidade: material.necessidade,
+                    unidade: produto.unidade,
+                    tipoDocumento: 'TRANSFERENCIA',
+                    numeroDocumento: `TRF-${Date.now()}`,
+                    observacoes: `Transferência automática para OP ${selectedOrder.numero} - Do armazém ${armazens.find(a => a.id === sourceEstoque.armazemId).codigo}`,
+                    dataHora: Timestamp.now(),
+                    armazemId: targetId
+                });
+            }
+            alert('Transferência em lote concluída!');
+            loadOrderMaterials();
+            loadHistory();
+        };
+
+        document.getElementById('btnAtualizarSaldo').onclick = function() {
+            updateProductInfo();
+        };
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93dccaed8dc44563',t:'MTc0NjkxNTI5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

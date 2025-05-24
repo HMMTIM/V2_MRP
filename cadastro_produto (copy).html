@@ -1,0 +1,3117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Materiais</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+      --sidebar-bg: #1d1b31;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    .content {
+      padding: 0;
+    }
+
+    .toolbar {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .search-box {
+      flex: 0 0 300px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    /* Estilos para abas */
+    .tab-container {
+      margin-bottom: 20px;
+    }
+
+    /* Switch styles */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--primary-color);
+    }
+
+    input:focus + .slider {
+      box-shadow: 0 0 1px var(--primary-color);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 2px;
+      background-color: #f8f9fa;
+      padding: 5px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: #666;
+      font-size: 14px;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+
+    .tab-content {
+      display: none;
+      padding: 20px 0;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Estilos para seções do formulário */
+    .form-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .section-header {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    .form-group.codigo, 
+    .form-group.unidade, 
+    .form-group.tipo {
+      max-width: 125px;
+    }
+
+    .form-group.descricao {
+      max-width: none;
+      width: 100%;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .required::after {
+      content: "*";
+      color: var(--danger-color);
+      margin-left: 4px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+      color: var(--text-color);
+      background-color: #fff;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    input:invalid:focus {
+      border-color: var(--danger-color);
+      box-shadow: 0 0 0 2px rgba(187, 0, 0, 0.1);
+    }
+
+    .info-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .conversion-result {
+      font-size: 14px;
+      color: var(--primary-color);
+      margin-top: 10px;
+    }
+
+    /* Estilos para botões */
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: #fff;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    /* Estilos para tabela de resultados */
+    .table-responsive {
+      overflow-x: auto;
+      max-height: 500px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+
+    .products-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .products-table th, 
+    .products-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .products-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+      position: sticky;
+      top: 0;
+    }
+
+    .products-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+
+    /* Estilos para paginação */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .pagination button {
+      padding: 8px 16px;
+      min-width: 100px;
+    }
+
+    /* Estilos para status */
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-ativo {
+      background-color: #e5f2e5;
+      color: var(--success-color);
+    }
+
+    .status-inativo {
+      background-color: #ffeaea;
+      color: var(--danger-color);
+    }
+
+    .status-bloqueado {
+      background-color: #fff3e5;
+      color: var(--warning-color);
+    }
+
+    /* Estilos para notificações */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 4px;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: opacity 0.3s ease;
+    }
+
+    .notification-success {
+      background-color: var(--success-color);
+    }
+
+    .notification-error {
+      background-color: var(--danger-color);
+    }
+
+    .notification-warning {
+      background-color: var(--warning-color);
+      color: #000;
+    }
+
+    .notification-info {
+      background-color: var(--primary-color);
+    }
+
+    .notification-icon {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-group.codigo, 
+      .form-group.unidade, 
+      .form-group.tipo {
+        max-width: none;
+        width: 100%;
+      }
+
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-box {
+        flex: none;
+        width: 100%;
+      }
+    }
+
+    /* Estilos para os modais */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .modal-content {
+      position: relative;
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-header h2 {
+      font-size: 1.5rem;
+      color: var(--primary-color);
+    }
+
+    .close-modal {
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+      border: none;
+      background: none;
+      padding: 5px;
+    }
+
+    .close-modal:hover {
+      color: var(--danger-color);
+    }
+
+    .input-group {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-group .form-control {
+      flex: 1;
+    }
+
+    .input-group .btn-add {
+      padding: 12px 15px;
+      margin-left: 5px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    .input-group .btn-add:hover {
+      background-color: var(--primary-hover);
+    }
+
+    /* Animação do modal */
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal.active {
+      display: block;
+    }
+
+    .modal.active .modal-content {
+      animation: modalFadeIn 0.3s ease-out;
+    }
+
+    /* Adicionar estilo para o botão de status */
+    .status-toggle {
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      border: none;
+      transition: all 0.3s ease;
+    }
+
+    .status-active {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .status-inactive {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      text-align: center;
+      display: inline-block;
+      min-width: 80px;
+    }
+
+    .opcionais-container {
+      margin-top: 15px;
+    }
+
+    .opcionais-list {
+      margin-bottom: 15px;
+    }
+
+    .opcional-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      margin-bottom: 8px;
+      background-color: #fff;
+    }
+
+    .opcional-info {
+      flex: 1;
+    }
+
+    .opcional-produto {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .opcional-prioridade {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .opcional-obs {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .opcional-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-add-opcional {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-add-opcional:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .search-results {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      margin-top: 5px;
+      background: white;
+    }
+
+    .search-result-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .search-result-item:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .search-result-item.selected {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .search-result-item .codigo {
+      font-weight: 500;
+    }
+
+    .search-result-item .descricao {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .search-result-item.selected .descricao {
+      color: rgba(255, 255, 255, 0.8);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Cadastro de Materiais</h1>
+      <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+    </div>
+
+    <div class="content">
+      <div id="notification" class="notification" style="display: none;"></div>
+      <div class="toolbar">
+        <div class="search-box">
+          <input type="text" id="quickSearch" placeholder="Pesquisa rápida por código ou descrição..." oninput="quickFilterProducts()">
+        </div>
+        <button class="btn-primary" onclick="openNewProductModal()">Criar Material</button>
+        <button class="btn-secondary" onclick="generateLastCodesReport()">Relatório de Códigos</button>
+        <button class="btn-success" onclick="exportToExcel()">Exportar para Excel</button>
+        <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Importar do Excel</button>
+        <input type="file" id="importFile" style="display: none;" accept=".xlsx" onchange="importFromExcel(event)">
+        <button class="btn-secondary" onclick="generateGroupFamilyReport()">Relatório por Grupo x Família</button>
+      </div>
+
+      <div class="tab-container">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('list')">Consulta de Materiais</button>
+          <button class="tab" onclick="switchTab('details')">Detalhes do Material</button>
+        </div>
+
+        <!-- Aba de Consulta com Filtros -->
+        <div id="listTab" class="tab-content active">
+          <div class="form-section">
+            <div class="section-header">Filtros de Consulta</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Código</label>
+                <input type="text" id="filterCodigo" oninput="filterProducts()">
+              </div>
+              <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="filterDescricao" oninput="filterProducts()">
+              </div>
+              <div class="form-group">
+                <label>Tipo</label>
+                <select id="filterTipo" onchange="filterProducts()">
+                  <option value="">Todos</option>
+                  <option value="PA">PA - Produto Acabado</option>
+                  <option value="SP">SP - Sub-Produto</option>
+                  <option value="MP">MP - Matéria Prima</option>
+                  <option value="HR">HR - Hora Máquina</option>
+                  <option value="SV">SV - Serviço</option>
+                  <option value="TA">TA - Taxas</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Unidade</label>
+                <select id="filterUnidade" onchange="filterProducts()">
+                  <option value="">Todas</option>
+                  <option value="PC">PC - Peça</option>
+                  <option value="KG">KG - Quilograma</option>
+                  <option value="MT">MT - Metro</option>
+                  <option value="M2">M2 - Metro Quadrado</option>
+                  <option value="M3">M3 - Metro Cubico</option>
+                  <option value="MM">MM - Milímetro</option>
+                  <option value="CM">CM - Centímetro</option>
+                  <option value="MO">MO - Mão de Obra</option>
+                  <option value="SV">SV - Serviço</option>
+                  <option value="KT">KT - Kit</option>
+                  <option value="CJ">CJ - Conjunto</option>
+                  <option value="PA">PA - Par</option>
+                  <option value="GL">GL - Galão</option>
+                  <option value="CX">CX - Caixa</option>
+                  <option value="RL">RL - Rolo</option>
+                  <option value="TX">TX - Taxa</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Grupo</label>
+                <select id="filterGrupo" onchange="filterProducts()">
+                  <option value="">Todos</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Família</label>
+                <select id="filterFamilia" onchange="filterProducts()">
+                  <option value="">Todas</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select id="filterStatus" onchange="filterProducts()">
+                  <option value="">Todos</option>
+                  <option value="ativo">Ativo</option>
+                  <option value="inativo">Inativo</option>
+                  <option value="bloqueado">Bloqueado</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Data Cadastro (De)</label>
+                <input type="date" id="filterDataInicio" onchange="filterProducts()">
+              </div>
+              <div class="form-group">
+                <label>Data Cadastro (Até)</label>
+                <input type="date" id="filterDataFim" onchange="filterProducts()">
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="products-table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th>Unidade</th>
+                    <th>Grupo</th>
+                    <th>Família</th>
+                    <th>Estoque</th>
+                    <th>Empenhado</th>
+                    <th>Disponível</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="productsTableBody"></tbody>
+              </table>
+            </div>
+
+            <div class="pagination">
+              <button id="prevPage" disabled>Anterior</button>
+              <span id="pageInfo">Página 1 de 1</span>
+              <button id="nextPage" disabled>Próxima</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aba de Detalhes do Material -->
+        <div id="detailsTab" class="tab-content">
+          <div class="tab-container">
+            <div class="tabs">
+              <button class="tab active" onclick="switchDetailTab('dadosBasicos')">Dados Básicos</button>
+              <button class="tab" onclick="switchDetailTab('fiscal')">Fiscal</button>
+              <button class="tab" onclick="switchDetailTab('custos')">Custos</button>
+              <button class="tab" onclick="switchDetailTab('estoque')">Estoque</button>
+              <button class="tab" onclick="switchDetailTab('enderecamento')">Endereçamento</button>
+            </div>
+
+            <!-- Aba de Dados Básicos -->
+            <div id="dadosBasicosTab" class="tab-content active">
+              <div class="form-section">
+                <div class="section-header">Dados Básicos</div>
+                <div class="form-grid">
+                  <div class="form-group codigo">
+                    <label class="required">Código</label>
+                    <input type="text" id="codigo" required>
+                    <div class="info-text">Código único do material no sistema</div>
+                  </div>
+                  <div class="form-group descricao">
+                    <label class="required">Descrição</label>
+                    <input type="text" id="descricao" required>
+                  </div>
+                  <div class="form-group tipo">
+                    <label class="required">Tipo</label>
+                    <select id="tipo" required>
+                      <option value="PA">PA - Produto Acabado</option>
+                      <option value="SP">SP - Sub-Produto</option>
+                      <option value="MP">MP - Matéria Prima</option>
+                      <option value="HR">HR - Hora Máquina</option>
+                      <option value="SV">SV - Serviço</option>
+                      <option value="TA">TA - Taxas</option>
+                    </select>
+                  </div>
+                  <div class="form-group unidade">
+                    <label class="required">Unidade Principal</label>
+                    <select id="unidade" required>
+                      <option value="PC">PC - Peça</option>
+                      <option value="KG">KG - Quilograma</option>
+                      <option value="MT">MT - Metro</option>
+                      <option value="M2">M2 - Metro Quadrado</option>
+                      <option value="M3">M3 - Metro Cubico</option>
+                      <option value="MM">MM - Milímetro</option>
+                      <option value="CM">CM - Centímetro</option>
+                      <option value="MO">MO - Mão de Obra</option>
+                      <option value="SV">SV - Serviço</option>
+                      <option value="KT">KT - Kit</option>
+                      <option value="CJ">CJ - Conjunto</option>
+                      <option value="PA">PA - Par</option>
+                      <option value="GL">GL - Galão</option>
+                      <option value="CX">CX - Caixa</option>
+                      <option value="RL">RL - Rolo</option>
+                      <option value="TX">TX - Taxa</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Unidade Secundária</label>
+                    <select id="unidadeSecundaria">
+                      <option value="">Nenhuma</option>
+                      <option value="KG">KG - Quilograma</option>
+                      <option value="PC">PC - Peça</option>
+                      <option value="MT">MT - Metro</option>
+                      <option value="M2">M2 - Metro Quadrado</option>
+                      <option value="M3">M3 - Metro Cubico</option>
+                    </select>
+                    <div class="info-text">Usada para compras/fornecedores</div>
+                  </div>
+                  <div class="form-group">
+                    <label>Fator de Conversão</label>
+                    <input type="number" id="fatorConversao" min="0.001" step="0.001" placeholder="Ex: 1 PC = X KG">
+                    <div class="info-text">1 unidade principal = X unidades secundárias</div>
+                  </div>
+                  <div class="form-group">
+                    <label>Status do Produto</label>
+                    <button type="button" id="statusToggle" class="status-toggle status-active" onclick="toggleStatus()">
+                      ATIVO
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <div class="section-header">Classificação</div>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Filtrar Grupo</label>
+                    <input type="text" id="grupoFilter" placeholder="Digite para filtrar grupos..." oninput="filterGrupos()">
+                  </div>
+                  <div class="form-group">
+                    <label>Grupo</label>
+                    <select id="grupo" name="grupo">
+                      <option value="">Selecione um grupo</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Filtrar Família</label>
+                    <input type="text" id="familiaFilter" placeholder="Digite para filtrar famílias..." oninput="filterFamilias()">
+                  </div>
+                  <div class="form-group">
+                    <label>Família</label>
+                    <select id="familia" name="familia">
+                      <option value="">Selecione uma família</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <div class="section-header">Conversão de Unidade</div>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Teste de Conversão</label>
+                    <input type="number" id="testValue" min="0" step="0.001" placeholder="Valor para converter" oninput="testConversion()">
+                    <div class="info-text">Teste a conversão entre unidade principal e secundária</div>
+                  </div>
+                </div>
+                <div id="conversionTestResult" class="conversion-result"></div>
+              </div>
+            </div>
+
+            <!-- Aba Fiscal -->
+            <div id="fiscalTab" class="tab-content">
+              <div class="form-section">
+                <div class="section-header">Informações Fiscais</div>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>NCM</label>
+                    <input type="text" id="ncm" placeholder="Código NCM">
+                  </div>
+                  <div class="form-group">
+                    <label>CEST</label>
+                    <input type="text" id="cest" placeholder="Código CEST">
+                  </div>
+                  <div class="form-group">
+                    <label>Origem</label>
+                    <select id="origem">
+                      <option value="0">0 - Nacional</option>
+                      <option value="1">1 - Estrangeira - Importação direta</option>
+                      <option value="2">2 - Estrangeira - Adquirida no mercado interno</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Tipo Item</label>
+                    <select id="tipoItem">
+                      <option value="00">00 - Mercadoria para Revenda</option>
+                      <option value="01">01 - Matéria-Prima</option>
+                      <option value="02">02 - Embalagem</option>
+                      <option value="03">03 - Produto em Processo</option>
+                      <option value="04">04 - Produto Acabado</option>
+                      <option value="05">05 - Subproduto</option>
+                      <option value="06">06 - Produto Intermediário</option>
+                      <option value="07">07 - Material de Uso e Consumo</option>
+                      <option value="08">08 - Ativo Imobilizado</option>
+                      <option value="09">09 - Serviços</option>
+                      <option value="10">10 - Outros insumos</option>
+                      <option value="99">99 - Outras</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Aba de Custos -->
+            <div id="custosTab" class="tab-content">
+              <div class="form-section">
+                <div class="section-header">Informações de Custos</div>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Custo Médio</label>
+                    <input type="number" id="custoMedio" min="0" step="0.01">
+                  </div>
+                  <div class="form-group">
+                    <label>Último Custo</label>
+                    <input type="number" id="ultimoCusto" min="0" step="0.01" readonly>
+                  </div>
+                  <div class="form-group">
+                    <label>Preço de Venda</label>
+                    <input type="number" id="precoVenda" min="0" step="0.01">
+                  </div>
+                  <div class="form-group">
+                    <label>Margem de Lucro (%)</label>
+                    <input type="number" id="margemLucro" min="0" max="100" step="0.01">
+                  </div>
+                  <div class="form-section">
+                    <div class="section-header">Parâmetros de Custos</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Método de Custeio</label>
+                            <select id="metodoCusteio">
+                                <option value="padrao">Custo Padrão</option>
+                                <option value="medio">Custo Médio</option>
+                                <option value="fifo">FIFO</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Centro de Custos Obrigatório</label>
+                            <label class="switch">
+                                <input type="checkbox" id="centroCustoObrigatorio">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Aba de Estoque -->
+            <div id="estoqueTab" class="tab-content">
+              <div class="form-section">
+                <div class="section-header">Parâmetros de Estoque</div>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Estoque Mínimo</label>
+                    <input type="number" id="estoqueMinimo" min="0" step="0.001">
+                  </div>
+                  <div class="form-group">
+                    <label>Estoque Máximo</label>
+                    <input type="number" id="estoqueMaximo" min="0" step="0.001">
+                  </div>
+                  <div class="form-group">
+                    <label>Ponto de Pedido</label>
+                    <input type="number" id="pontoPedido" min="0" step="0.001">
+                  </div>
+                  <div class="form-group">
+                    <label>Lote de Compra</label>
+                    <input type="number" id="loteCompra" min="0" step="0.001">
+                  </div>
+                  <div class="form-group">
+                    <label>Rastreabilidade por Lote</label>
+                    <label class="switch">
+                      <input type="checkbox" id="rastreabilidadeLote">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label>Inspeção no Recebimento</label>
+                    <select id="inspecaoRecebimento">
+                      <option value="nao">Não</option>
+                      <option value="sim">Sim</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Aba de Endereçamento -->
+            <!-- Aba de Endereçamento -->
+<div id="enderecamentoTab" class="tab-content">
+<div class="form-section">
+  <div class="section-header">Endereçamento no Armazém</div>
+  <div class="form-grid">
+    <div class="form-group">
+      <label class="required">Armazém Padrão</label>
+      <select id="armazemPadrao" required>
+        <option value="">Selecione o armazém padrão...</option>
+      </select>
+      <div class="info-text">Armazém padrão para movimentações iniciais</div>
+    </div>
+    <div class="form-group">
+      <label>Corredor</label>
+      <input type="text" id="corredor" placeholder="Ex: A1">
+    </div>
+    <div class="form-group">
+      <label>Prateleira</label>
+      <input type="text" id="prateleira" placeholder="Ex: P01">
+    </div>
+    <div class="form-group">
+      <label>Posição</label>
+      <input type="text" id="posicao" placeholder="Ex: 001">
+    </div>
+  </div>
+</div>
+</div>
+
+              <div class="form-section" id="opcionaisSection">
+                <div class="section-header">Produtos Opcionais</div>
+                <div class="form-description">
+                  Configure produtos alternativos que podem ser utilizados na produção deste item.
+                </div>
+
+                <div class="opcionais-container">
+                  <div class="opcionais-list" id="opcionaisList"></div>
+
+                  <div class="form-group">
+                    <button type="button" class="btn-add-opcional" onclick="abrirModalOpcionais()">
+                      <i class="fas fa-plus"></i> Adicionar Produto Opcional
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Modal de Produtos Opcionais -->
+              <div id="modalOpcionais" class="modal">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h2>Adicionar Produto Opcional</h2>
+                    <button class="close-modal" onclick="fecharModal('modalOpcionais')">&times;</button>
+                  </div>
+                  <div class="form-group">
+                    <label for="produtoOpcional" class="required">Produto</label>
+                    <div class="input-group">
+                      <input type="text" id="produtoOpcionalSearch" class="form-control" placeholder="Pesquisar produto..." oninput="pesquisarProdutos(this.value)">
+                    </div>
+                    <div id="searchResults" class="search-results" style="display: none;"></div>
+                  </div>
+                  <div class="form-group">
+                    <label for="prioridadeOpcional">Prioridade</label>
+                    <select id="prioridadeOpcional" class="form-control">
+                      <option value="1">1 - Principal</option>
+                      <option value="2">2 - Secundário</option>
+                      <option value="3">3 - Terciário</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="observacaoOpcional">Observação</label>
+                    <textarea id="observacaoOpcional" class="form-control" rows="3"></textarea>
+                  </div>
+                  <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="salvarOpcional()">Salvar</button>
+                    <button class="btn btn-secondary" onclick="fecharModal('modalOpcionais')">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+
+              <style>
+                .opcionais-container {
+                  margin-top: 15px;
+                }
+
+                .opcionais-list {
+                  margin-bottom: 15px;
+                }
+
+                .opcional-item {
+                  display: flex;
+                  align-items: center;
+                  padding: 10px;
+                  border: 1px solid var(--border-color);
+                  border-radius: 4px;
+                  margin-bottom: 8px;
+                  background-color: #fff;
+                }
+
+                .opcional-info {
+                  flex: 1;
+                }
+
+                .opcional-produto {
+                  font-weight: 500;
+                  margin-bottom: 4px;
+                }
+
+                .opcional-prioridade {
+                  font-size: 12px;
+                  color: var(--text-secondary);
+                }
+
+                .opcional-obs {
+                  font-size: 13px;
+                  color: var(--text-secondary);
+                  margin-top: 4px;
+                }
+
+                .opcional-actions {
+                  display: flex;
+                  gap: 8px;
+                }
+
+                .btn-add-opcional {
+                  background-color: var(--primary-color);
+                  color: white;
+                  border: none;
+                  padding: 8px 16px;
+                  border-radius: 4px;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                }
+
+                .btn-add-opcional:hover {
+                  background-color: var(--primary-hover);
+                }
+
+                .search-results {
+                  max-height: 200px;
+                  overflow-y: auto;
+                  border: 1px solid var(--border-color);
+                  border-radius: 4px;
+                  margin-top: 5px;
+                  background: white;
+                }
+
+                .search-result-item {
+                  padding: 8px 12px;
+                  cursor: pointer;
+                  border-bottom: 1px solid var(--border-color);
+                }
+
+                .search-result-item:hover {
+                  background-color: var(--secondary-color);
+                }
+
+                .search-result-item.selected {
+                  background-color: var(--primary-color);
+                  color: white;
+                }
+
+                .search-result-item .codigo {
+                  font-weight: 500;
+                }
+
+                .search-result-item .descricao {
+                  font-size: 12px;
+                  color: var(--text-secondary);
+                }
+
+                .search-result-item.selected .descricao {
+                  color: rgba(255, 255, 255, 0.8);
+                }
+              </style>
+
+
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-secondary" onclick="cancelEdit()">Cancelar</button>
+            <button class="btn-success" onclick="saveProduct()">Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Biblioteca SheetJS para manipulação de Excel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs, 
+      doc,
+      updateDoc, 
+      deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let produtos = [];
+    let grupos = [];
+    let familias = [];
+    let estoques = [];
+    let armazens = [];
+    let currentProductId = null;
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let filteredProducts = [];
+    let isProductActive = true; // Variável global para controlar o status
+
+    window.onload = async function() {
+      const userSession = localStorage.getItem('currentUser');
+      if (!userSession) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      await loadData();
+      updateFilterSelects();
+      filterProducts();
+      filterGrupos(); // Load groups initially
+      filterFamilias(); // Load families initially
+
+      switchTab('details');
+      switchDetailTab('dadosBasicos');
+    };
+
+    async function loadData() {
+  try {
+    // Carrega todas as coleções necessárias do Firestore em paralelo
+    const [produtosSnap, gruposSnap, familiasSnap, estoquesSnap, armazensSnap] = await Promise.all([
+      getDocs(collection(db, "produtos")),
+      getDocs(collection(db, "grupos")),
+      getDocs(collection(db, "familias")),
+      getDocs(collection(db, "estoques")),
+      getDocs(collection(db, "armazens"))
+    ]);
+
+    // Mapeia os dados para arrays globais
+    produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    window.produtosGlobal = produtos; // Expõe produtos como variável global para o script não-módulo
+    console.log("Produtos carregados na variável global:", window.produtosGlobal.length); // Log para debug
+    grupos = gruposSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    familias = familiasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    armazens = armazensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    console.log("Grupos carregados:", grupos); // Log para debug
+    console.log("Famílias carregadas:", familias); // Log para debug
+    console.log("Armazéns carregados:", armazens); // Log para debug
+
+    // Preencher select de armazéns na aba de Endereçamento
+    const armazemSelect = document.getElementById('armazemPadrao');
+    armazemSelect.innerHTML = '<option value="">Selecione o armazém padrão...</option>';
+    armazens
+      .sort((a, b) => a.codigo.localeCompare(b.codigo)) // Ordena por código
+      .forEach(armazem => {
+        armazemSelect.innerHTML += `
+          <option value="${armazem.id}">
+            ${armazem.codigo} - ${armazem.nome} (${armazem.tipo})
+          </option>`;
+      });
+
+    // Configurar busca em tempo real para grupos
+    const grupoFilterInput = document.getElementById('grupoFilter');
+    grupoFilterInput.addEventListener('input', function() {
+      const termo = this.value.toLowerCase();
+      const grupoSelect = document.getElementById('grupo');
+      grupoSelect.innerHTML = '<option value="">Selecione um grupo</option>';
+
+      grupos
+        .filter(g => 
+          g.codigoGrupo.toLowerCase().includes(termo) || 
+          g.nomeGrupo.toLowerCase().includes(termo)
+        )
+        .sort((a, b) => a.codigoGrupo.localeCompare(b.codigoGrupo))
+        .forEach(grupo => {
+          grupoSelect.innerHTML += `
+            <option value="${grupo.codigoGrupo}">
+              ${grupo.codigoGrupo} - ${grupo.nomeGrupo}
+            </option>`;
+        });
+    });
+
+    // Configurar busca em tempo real para famílias
+    const familiaFilterInput = document.getElementById('familiaFilter');
+    familiaFilterInput.addEventListener('input', function() {
+      const termo = this.value.toLowerCase();
+      const familiaSelect = document.getElementById('familia');
+      familiaSelect.innerHTML = '<option value="">Selecione uma família</option>';
+
+      familias
+        .filter(f => 
+          f.codigoFamilia.toLowerCase().includes(termo) || 
+          f.nomeFamilia.toLowerCase().includes(termo)
+        )
+        .sort((a, b) => a.codigoFamilia.localeCompare(b.codigoFamilia))
+        .forEach(familia => {
+          familiaSelect.innerHTML += `
+            <option value="${familia.codigoFamilia}">
+              ${familia.codigoFamilia} - ${familia.nomeFamilia}
+            </option>`;
+        });
+    });
+
+    // Configurar filtro de grupo para atualizar famílias no filtro de consulta
+    document.getElementById('filterGrupo').addEventListener('change', function() {
+      const grupoSelecionado = this.value;
+      const filterFamiliaSelect = document.getElementById('filterFamilia');
+
+      // Habilita/desabilita o select de famílias
+      filterFamiliaSelect.disabled = !grupoSelecionado;
+
+      // Filtra famílias pelo grupo selecionado
+      if (grupoSelecionado) {
+        Array.from(filterFamiliaSelect.options).forEach(option => {
+          if (option.value === "") return; // Mantém a opção "Todas"
+          option.style.display = option.dataset.grupo === grupoSelecionado ? '' : 'none';
+        });
+        filterFamiliaSelect.value = ""; // Reseta a seleção
+      } else {
+        // Mostra todas as famílias se nenhum grupo estiver selecionado
+        Array.from(filterFamiliaSelect.options).forEach(option => {
+          option.style.display = '';
+        });
+      }
+
+      filterProducts(); // Atualiza a tabela
+    });
+
+    // Atualiza os filtros de consulta
+    updateFilterSelects();
+
+    // Atualiza os selects de grupo e família imediatamente após carregar os dados
+    const grupoSelect = document.getElementById('filterGrupo');
+    const familiaSelect = document.getElementById('filterFamilia');
+
+    grupoSelect.innerHTML = '<option value="">Todos</option>';
+    grupos
+      .sort((a, b) => a.codigoGrupo.localeCompare(b.codigoGrupo))
+      .forEach(grupo => {
+        grupoSelect.innerHTML += `<option value="${grupo.codigoGrupo}">${grupo.codigoGrupo} - ${grupo.nomeGrupo}</option>`;
+      });
+
+    familiaSelect.innerHTML = '<option value="">Todas</option>';
+    familias
+      .sort((a, b) => a.codigoFamilia.localeCompare(b.codigoFamilia))
+      .forEach(familia => {
+        familiaSelect.innerHTML += `<option value="${familia.codigoFamilia}" data-grupo="${familia.grupo}">${familia.codigoFamilia} - ${familia.nomeFamilia}</option>`;
+      });
+
+  } catch (error) {
+    console.error("Erro ao carregar dados:", error);
+    showNotification("Erro ao carregar dados. Por favor, recarregue a página.", "error");
+  }
+}
+
+    function updateFilterSelects() {
+      const filterGrupoSelect = document.getElementById('filterGrupo');
+      const filterFamiliaSelect = document.getElementById('filterFamilia');
+
+      filterGrupoSelect.innerHTML = '<option value="">Todos</option>';
+      grupos
+        .sort((a, b) => a.codigoGrupo.localeCompare(b.codigoGrupo))
+        .forEach(grupo => {
+          filterGrupoSelect.innerHTML += `
+            <option value="${grupo.codigoGrupo}">
+              ${grupo.codigoGrupo} - ${grupo.nomeGrupo}
+            </option>`;
+        });
+
+      filterFamiliaSelect.innerHTML = '<option value="">Todas</option>';
+      familias
+        .sort((a, b) => a.codigoFamilia.localeCompare(b.codigoFamilia))
+        .forEach(familia => {
+          filterFamiliaSelect.innerHTML += `
+            <option value="${familia.codigoFamilia}" data-grupo="${familia.grupo}">
+              ${familia.codigoFamilia} - ${familia.nomeFamilia}
+            </option>`;
+        });
+    }
+
+    function getEstoque(produtoId) {
+      // Soma o saldo de todos os armazéns para o produto
+      return estoques.filter(e => e.produtoId === produtoId)
+                    .reduce((total, e) => total + (e.saldo || 0), 0);
+    }
+
+    function getTipoDescricao(tipo) {
+      const tipos = {
+        'PA': 'Produto Acabado',
+        'SP': 'Sub-Produto',
+        'MP': 'Matéria Prima',
+        'HR': 'Hora Máquina',
+        'SV': 'Serviço',
+        'TA': 'Taxas'
+      };
+      return tipos[tipo] || tipo;
+    }
+
+    function getStatusDescricao(status) {
+      const statusDesc = {
+        'ativo': 'Ativo',
+        'inativo': 'Inativo',
+        'bloqueado': 'Bloqueado'
+      };
+      return statusDesc[status] || status;
+    }
+
+    window.filterGrupos = function() {
+      const grupoFilterText = document.getElementById('grupoFilter').value;
+      const familiaFilterText = document.getElementById('familiaFilter').value;
+      updateSelects(grupoFilterText, familiaFilterText);
+    };
+
+    window.filterFamilias = function() {
+      const grupoFilterText = document.getElementById('grupoFilter').value;
+      const familiaFilterText = document.getElementById('familiaFilter').value;
+      updateSelects(grupoFilterText, familiaFilterText);
+    };
+
+    function updateSelects(grupoFilterText = '', familiaFilterText = '') {
+      const grupoSelect = document.getElementById('grupo');
+      const familiaSelect = document.getElementById('familia');
+
+      const filteredGrupos = grupos
+        .filter(g => 
+          g.codigoGrupo.toLowerCase().includes(grupoFilterText.toLowerCase()) || 
+          g.nomeGrupo.toLowerCase().includes(grupoFilterText.toLowerCase())
+        )
+        .sort((a, b) => a.codigoGrupo.localeCompare(b.codigoGrupo));
+
+      grupoSelect.innerHTML = '<option value="">Selecione um grupo</option>';
+      filteredGrupos.forEach(grupo => {
+        grupoSelect.innerHTML += `
+          <option value="${grupo.codigoGrupo}">
+            ${grupo.codigoGrupo} - ${grupo.nomeGrupo}
+          </option>`;
+      });
+
+      const filteredFamilias = familias
+        .filter(f => 
+          f.codigoFamilia.toLowerCase().includes(familiaFilterText.toLowerCase()) || 
+          f.nomeFamilia.toLowerCase().includes(familiaFilterText.toLowerCase())
+        )
+        .sort((a, b) => a.codigoFamilia.localeCompare(b.codigoFamilia));
+
+      familiaSelect.innerHTML = '<option value="">Selecione uma família</option>';
+      filteredFamilias.forEach(familia => {
+        familiaSelect.innerHTML += `
+          <option value="${familia.codigoFamilia}">
+            ${familia.codigoFamilia} - ${familia.nomeFamilia}
+          </option>`;
+      });
+    }
+
+    window.quickFilterProducts = function() {
+      const searchText = document.getElementById('quickSearch').value.toLowerCase();
+      filteredProducts = produtos.filter(product => 
+        product.codigo.toLowerCase().includes(searchText) ||
+        product.descricao.toLowerCase().includes(searchText)
+      );
+      currentPage = 1;
+      displayProductsTable();
+    };
+
+    window.filterProducts = function() {
+      const filterCodigo = document.getElementById('filterCodigo').value.toLowerCase();
+      const filterDescricao = document.getElementById('filterDescricao').value.toLowerCase();
+      const filterTipo = document.getElementById('filterTipo').value;
+      const filterUnidade = document.getElementById('filterUnidade').value;
+      const filterGrupo = document.getElementById('filterGrupo').value;
+      const filterFamilia = document.getElementById('filterFamilia').value;
+      const filterStatus = document.getElementById('filterStatus').value;
+      const filterDataInicio = document.getElementById('filterDataInicio').value;
+      const filterDataFim = document.getElementById('filterDataFim').value;
+
+      filteredProducts = produtos.filter(product => {
+        const matchesCodigo = !filterCodigo || product.codigo.toLowerCase().includes(filterCodigo);
+        const matchesDescricao = !filterDescricao || product.descricao.toLowerCase().includes(filterDescricao);
+        const matchesTipo = !filterTipo || product.tipo === filterTipo;
+        const matchesUnidade = !filterUnidade || product.unidade === filterUnidade;
+        const matchesGrupo = !filterGrupo || product.grupo === filterGrupo;
+        const matchesFamilia = !filterFamilia || product.familia === filterFamilia;
+        const matchesStatus = !filterStatus || product.status === filterStatus;
+
+        let matchesData = true;
+        if (filterDataInicio || filterDataFim) {
+          const dataCadastro = product.dataCadastro ? new Date(product.dataCadastro.seconds * 1000) : null;
+          if (filterDataInicio && dataCadastro < new Date(filterDataInicio)) {
+            matchesData = false;
+          }
+          if (filterDataFim && dataCadastro > new Date(filterDataFim + 'T23:59:59')) {
+            matchesData = false;
+          }
+        }
+
+        return matchesCodigo && matchesDescricao && matchesTipo && 
+               matchesUnidade && matchesGrupo && matchesFamilia && 
+               matchesStatus && matchesData;
+      });
+
+      currentPage = 1;
+      displayProductsTable();
+    };
+
+    function displayProductsTable() {
+      const tableBody = document.getElementById('productsTableBody');
+      tableBody.innerHTML = '';
+
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+      if (paginatedProducts.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">Nenhum produto encontrado</td></tr>';
+      } else {
+        paginatedProducts.forEach(product => {
+          const estoque = getEstoque(product.id);
+          const grupo = grupos.find(g => g.codigoGrupo === product.grupo);
+          const familia = familias.find(f => f.codigoFamilia === product.familia);
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${product.codigo}</td>
+            <td>${product.descricao}</td>
+            <td>${getTipoDescricao(product.tipo)}</td>
+            <td>${product.unidade}</td>
+            <td>${grupo ? `${grupo.codigoGrupo} - ${grupo.nomeGrupo}` : '-'}</td>
+            <td>${familia ? `${familia.codigoFamilia} - ${familia.nomeFamilia}` : '-'}</td>
+            <td>${estoque} ${product.unidade}</td>
+            <td>${estoque} ${product.unidade}</td>
+            <td>${estoque} ${product.unidade}</td>
+            <td><span class="status-badge status-${product.status || 'ativo'}">${getStatusDescricao(product.status || 'ativo')}</span></td>
+            <td class="action-buttons">
+              <button class="btn-primary" onclick="editProduct('${product.id}')">Editar</button>
+              <button class="btn-danger" onclick="deleteProduct('${product.id}')">Excluir</button>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+      }
+
+      updatePaginationControls();
+    }
+
+    function updatePaginationControls() {
+      const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+      document.getElementById('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
+      document.getElementById('prevPage').disabled = currentPage <= 1;
+      document.getElementById('nextPage').disabled = currentPage >= totalPages;
+    }
+
+    document.getElementById('prevPage').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        displayProductsTable();
+      }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+      const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        displayProductsTable();
+      }
+    });
+
+    window.switchTab = function(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+      document.getElementById(`${tab}Tab`).classList.add('active');
+    };
+
+    window.switchDetailTab = function(tab) {
+      document.querySelectorAll('#detailsTab .tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('#detailsTab .tab-content').forEach(c => c.classList.remove('active'));
+
+      document.querySelector(`#detailsTab .tab[onclick="switchDetailTab('${tab}')"]`).classList.add('active');
+      document.getElementById(`${tab}Tab`).classList.add('active');
+    };
+
+    window.openNewProductModal = function() {
+    currentProductId = null;
+
+    // Limpa campos básicos
+    const elements = [
+      'codigo', 'descricao', 'tipo', 'unidade', 'unidadeSecundaria',
+      'fatorConversao', 'grupo', 'familia', 'estoqueMinimo',
+      'estoqueMaximo', 'pontoPedido', 'testValue', 'grupoFilter',
+      'familiaFilter', 'conversionTestResult'
+    ];
+
+    elements.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+          element.value = '';
+        } else if (element.tagName === 'DIV') {
+          element.textContent = '';
+        }
+      }
+    });
+
+    // Define valores padrão
+    const defaultValues = {
+      'tipo': 'PA',
+      'unidade': 'PC',
+      'estoqueMinimo': '0',
+      'estoqueMaximo': '0',
+      'pontoPedido': '0'
+    };
+
+    Object.entries(defaultValues).forEach(([id, value]) => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.value = value;
+      }
+    });
+
+    // Função auxiliar para definir valor com segurança
+    const setElementValue = (id, value, isCheckbox = false) => {
+      const element = document.getElementById(id);
+      if (element) {
+        if (isCheckbox) {
+          element.checked = value;
+        } else {
+          element.value = value;
+        }
+      }
+    };
+
+    // Limpa todos os campos com tratamento de erro
+    setElementValue('familiaFilter', '');
+    setElementValue('ncm', '');
+    setElementValue('cest', '');
+    setElementValue('origem', '0');
+    setElementValue('tipoItem', '00');
+    setElementValue('custoMedio', '');
+    setElementValue('ultimoCusto', '');
+    setElementValue('precoVenda', '');
+    setElementValue('margemLucro', '');
+    setElementValue('loteCompra', '0');
+    setElementValue('armazemPadrao', '');
+    setElementValue('corredor', '');
+    setElementValue('prateleira', '');
+    setElementValue('posicao', '');
+    setElementValue('rastreabilidadeLote', false, true);
+    setElementValue('inspecaoRecebimento', 'nao');
+    setElementValue('metodoCusteio', 'padrao');
+    setElementValue('centroCustoObrigatorio', false, true);
+
+    updateSelects();
+    switchTab('details');
+    switchDetailTab('dadosBasicos');
+};
+
+    window.editProduct = async function(productId) {
+    const product = produtos.find(p => p.id === productId);
+    if (product) {
+        currentProductId = productId;
+
+        // Preenche campos básicos
+        document.getElementById('codigo').value = product.codigo || '';
+        document.getElementById('descricao').value = product.descricao || '';
+        document.getElementById('tipo').value = product.tipo || 'PA';
+        document.getElementById('unidade').value = product.unidade || 'PC';
+        document.getElementById('unidadeSecundaria').value = product.unidadeSecundaria || '';
+        document.getElementById('fatorConversao').value = product.fatorConversao || '';
+
+        // Preenche grupo e família
+        const grupoSelect = document.getElementById('grupo');
+        grupoSelect.innerHTML = '<option value="">Selecione um grupo</option>';
+        grupos.forEach(g => {
+            const selected = g.codigoGrupo === product.grupo ? 'selected' : '';
+            grupoSelect.innerHTML += `
+                <option value="${g.codigoGrupo}" ${selected}>
+                    ${g.codigoGrupo} - ${g.nomeGrupo}
+                </option>`;
+        });
+
+        if (product.grupo) {
+            const familiasDoGrupo = familias.filter(f => f.grupo === product.grupo);
+            const familiaSelect = document.getElementById('familia');
+            familiaSelect.innerHTML = '<option value="">Selecione uma família</option>';
+            familiasDoGrupo.forEach(f => {
+                const selected = f.codigoFamilia === product.familia ? 'selected' : '';
+                familiaSelect.innerHTML += `
+                    <option value="${f.codigoFamilia}" ${selected}>
+                        ${f.codigoFamilia} - ${f.nomeFamilia}
+                    </option>`;
+            });
+        }
+
+        // Preenche outros campos
+        document.getElementById('estoqueMinimo').value = product.estoqueMinimo || 0;
+        document.getElementById('estoqueMaximo').value = product.estoqueMaximo || 0;
+        document.getElementById('pontoPedido').value = product.pontoPedido || 0;
+        document.getElementById('ncm').value = product.ncm || '';
+        document.getElementById('cest').value = product.cest || '';
+        document.getElementById('origem').value = product.origem || '0';
+        document.getElementById('tipoItem').value = product.tipoItem || '00';
+        document.getElementById('custoMedio').value = product.custoMedio || '';
+        document.getElementById('ultimoCusto').value = product.ultimoCusto || '';
+        document.getElementById('precoVenda').value = product.precoVenda || '';
+        document.getElementById('margemLucro').value = product.margemLucro || '';
+        document.getElementById('loteCompra').value = product.loteCompra || 0;
+        document.getElementById('armazemPadrao').value = product.armazemPadraoId || ''; // Corrigido de 'armazemPrincipal' para 'armazemPadrao'
+        document.getElementById('corredor').value = product.corredor || '';
+        document.getElementById('prateleira').value = product.prateleira || '';
+        document.getElementById('posicao').value = product.posicao || '';
+        document.getElementById('rastreabilidadeLote').checked = product.rastreabilidadeLote || false; // adicionado
+        document.getElementById('inspecaoRecebimento').value = product.inspecaoRecebimento || 'nao'; // adicionado
+        document.getElementById('metodoCusteio').value = product.metodoCusteio || 'padrao'; // adicionado
+        document.getElementById('centroCustoObrigatorio').checked = product.centroCustoObrigatorio || false; // adicionado
+
+        // Atualizar status
+        isProductActive = product.status !== 'inativo';
+        const statusButton = document.getElementById('statusToggle');
+        statusButton.textContent = isProductActive ? 'ATIVO' : 'INATIVO';
+        statusButton.classList.remove(isProductActive ? 'status-inactive' : 'status-active');
+        statusButton.classList.add(isProductActive ? 'status-active' : 'status-inactive');
+
+        // Ativa a aba de detalhes
+        switchTab('details');
+        switchDetailTab('dadosBasicos');
+    }
+};
+
+    window.deleteProduct = async function(productId) {
+      if (confirm('Tem certeza que deseja excluir este produto?')) {
+        try {
+          await deleteDoc(doc(db, "produtos", productId));
+          await loadData();
+          filterProducts();
+          showNotification('Produto excluído com sucesso!', 'success');
+        } catch (error) {
+          console.error("Erro ao excluir produto:", error);
+          showNotification('Erro ao excluir produto.', 'error');
+        }
+      }
+    };
+
+    window.testConversion = function() {
+      const testValue = parseFloat(document.getElementById('testValue').value);
+      const unidadePrincipal = document.getElementById('unidade').value;
+      const unidadeSecundaria = document.getElementById('unidadeSecundaria').value;
+      const fatorConversao = parseFloat(document.getElementById('fatorConversao').value);
+
+      if (!testValue || !fatorConversao || !unidadeSecundaria) {
+        document.getElementById('conversionTestResult').textContent = 'Preencha o valor, selecione a unidade secundária e defina o fator de conversão';
+        return;
+      }
+
+      const result = testValue * fatorConversao;
+      document.getElementById('conversionTestResult').textContent = 
+        `${testValue} ${unidadePrincipal} = ${result.toFixed(3)} ${unidadeSecundaria} (1 ${unidadePrincipal} = ${fatorConversao} ${unidadeSecundaria})`;
+    };
+
+    window.saveProduct = async function() {
+  // Validar campos obrigatórios
+  const requiredFields = [
+    { id: 'codigo', name: 'Código' },
+    { id: 'descricao', name: 'Descrição' },
+    { id: 'tipo', name: 'Tipo' },
+    { id: 'unidade', name: 'Unidade' },
+    { id: 'armazemPadrao', name: 'Armazém Padrão' } // Adicionado
+  ];
+
+  let isValid = true;
+  requiredFields.forEach(field => {
+    const element = document.getElementById(field.id);
+    if (!element.value.trim()) {
+      element.style.borderColor = 'var(--danger-color)';
+      isValid = false;
+      showNotification(`O campo ${field.name} é obrigatório.`, 'error');
+    } else {
+      element.style.borderColor = 'var(--border-color)';
+    }
+  });
+
+  if (!isValid) return;
+
+  // Validar código único
+  const productCode = document.getElementById('codigo').value.trim();
+  const existingProduct = produtos.find(p => 
+    p.codigo === productCode && (!currentProductId || p.id !== currentProductId));
+
+  if (existingProduct) {
+    showNotification('Já existe um produto com este código.', 'error');
+    document.getElementById('codigo').style.borderColor = 'var(--danger-color)';
+    return;
+  }
+
+  // Validar unidade secundária e fator de conversão
+  const unidadeSecundaria = document.getElementById('unidadeSecundaria').value;
+  const fatorConversao = parseFloat(document.getElementById('fatorConversao').value);
+
+  if (unidadeSecundaria && !fatorConversao) {
+    showNotification('Informe o fator de conversão quando selecionar unidade secundária.', 'error');
+    document.getElementById('fatorConversao').style.borderColor = 'var(--danger-color)';
+    return;
+  }
+
+  // Montar objeto com todos os dados
+  const productData = {
+    codigo: productCode,
+    descricao: document.getElementById('descricao').value.trim(),
+    tipo: document.getElementById('tipo').value,
+    unidade: document.getElementById('unidade').value,
+    unidadeSecundaria: unidadeSecundaria || null,
+    fatorConversao: fatorConversao || null,
+    grupo: document.getElementById('grupo').value || null,
+    familia: document.getElementById('familia').value || null,
+    // Dados fiscais
+    ncm: document.getElementById('ncm').value || null,
+    cest: document.getElementById('cest').value || null,
+    origem: document.getElementById('origem').value || '0',
+    tipoItem: document.getElementById('tipoItem').value || '00',
+    // Dados de custos
+    custoMedio: parseFloat(document.getElementById('custoMedio').value) || 0,
+    ultimoCusto: parseFloat(document.getElementById('ultimoCusto').value) || 0,
+    precoVenda: parseFloat(document.getElementById('precoVenda').value) || 0,
+    margemLucro: parseFloat(document.getElementById('margemLucro').value) || 0,
+    // Dados de estoque
+    estoqueMinimo: parseFloat(document.getElementById('estoqueMinimo').value) || 0,
+    estoqueMaximo: parseFloat(document.getElementById('estoqueMaximo').value) || 0,
+    pontoPedido: parseFloat(document.getElementById('pontoPedido').value) || 0,
+    loteCompra: parseFloat(document.getElementById('loteCompra').value) || 0,
+    // Dados de endereçamento
+    armazemPadraoId: document.getElementById('armazemPadrao').value || null, // Alterado para armazemPadraoId
+    corredor: document.getElementById('corredor').value || null,
+    prateleira: document.getElementById('prateleira').value || null,
+    posicao: document.getElementById('posicao').value || null,
+    // Dados de rastreabilidade e qualidade
+    rastreabilidadeLote: document.getElementById('rastreabilidadeLote').checked, // adicionado
+    inspecaoRecebimento: document.getElementById('inspecaoRecebimento').value, // adicionado
+    // Dados de custeio
+    metodoCusteio: document.getElementById('metodoCusteio').value, // adicionado
+    centroCustoObrigatorio: document.getElementById('centroCustoObrigatorio').checked, // adicionado
+    // Status
+    status: isProductActive ? 'ativo' : 'inativo',
+    opcionais: produtosOpcionais
+  };
+
+  try {
+    if (currentProductId) {
+      await updateDoc(doc(db, "produtos", currentProductId), productData);
+      showNotification('Produto atualizado com sucesso!', 'success');
+    } else {
+      productData.dataCadastro = new Date();
+      await addDoc(collection(db, "produtos"), productData);
+      showNotification('Produto cadastrado com sucesso!', 'success');
+    }
+
+    await loadData();
+    switchTab('list');
+    filterProducts();
+    cancelEdit();
+  } catch (error) {
+    console.error("Erro ao salvar produto:", error);
+    showNotification('Erro ao salvar produto.', 'error');
+  }
+};
+
+window.cancelEdit = function() {
+      currentProductId = null;
+      document.getElementById('codigo').value = '';
+      document.getElementById('descricao').value = '';
+      document.getElementById('tipo').value = 'PA';
+      document.getElementById('unidade').value = 'PC';
+      document.getElementById('unidadeSecundaria').value = '';
+      document.getElementById('fatorConversao').value = '';
+      document.getElementById('grupo').value = '';
+      document.getElementById('familia').value = '';
+      document.getElementById('estoqueMinimo').value = '0';
+      document.getElementById('estoqueMaximo').value = '0';
+      document.getElementById('pontoPedido').value = '0';
+      document.getElementById('ncm').value = '';
+      document.getElementById('cest').value = '';
+      document.getElementById('origem').value = '0';
+      document.getElementById('tipoItem').value = '00';
+      document.getElementById('custoMedio').value = '0';
+      document.getElementById('ultimoCusto').value = '0';
+      document.getElementById('precoVenda').value = '0';
+      document.getElementById('margemLucro').value = '0';
+      document.getElementById('loteCompra').value = '0';
+      document.getElementById('armazemPadrao').value = '';
+      document.getElementById('corredor').value = '';
+      document.getElementById('prateleira').value = '';
+      document.getElementById('posicao').value = '';
+      document.getElementById('rastreabilidadeLote').checked = false;
+      document.getElementById('inspecaoRecebimento').value = 'nao';
+      document.getElementById('metodoCusteio').value = 'padrao';
+      document.getElementById('centroCustoObrigatorio').checked = false;
+
+      updateSelects();
+      switchTab('list');
+};
+
+    function showNotification(message, type = 'success', duration = 3000) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = '';
+      notification.classList.add('notification', `notification-${type}`);
+      notification.style.display = 'block';
+
+      let icon = '';
+      if (type === 'success') {
+        icon = '✓';
+      } else if (type === 'error') {
+        icon = '✗';
+      } else if (type === 'warning') {
+        icon = '⚠';
+      } else if (type === 'info') {
+        icon = 'ℹ';
+      }
+
+      notification.innerHTML = `<span class="notification-icon">${icon}</span> ${message}`;
+
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.style.display = 'none', 300);
+      }, duration);
+    }
+
+    window.generateLastCodesReport = async function() {
+      try {
+        // Recarrega os dados mais recentes do banco
+        await loadData();
+
+        const sortedProducts = produtos
+          .filter(p => p.dataCadastro) // Mantém apenas produtos com data de cadastro
+          .sort((a, b) => {
+            // Converte timestamps do Firestore para datas JavaScript
+            const dateA = a.dataCadastro?.seconds ? new Date(a.dataCadastro.seconds * 1000) : new Date(0);
+            const dateB = b.dataCadastro?.seconds ? new Date(b.dataCadastro.seconds * 1000) : new Date(0);
+            // Ordena do mais recente para o mais antigo
+            return dateB.getTime() - dateA.getTime();
+          })
+          .slice(0, 20); // Pega os 20 mais recentes
+
+        if (sortedProducts.length === 0) {
+          showNotification("Nenhum produto cadastrado recentemente.", "info");
+          return;
+        }
+
+        let reportContent = `
+          <div class="form-section">
+            <div class="section-header">Relatório dos Últimos Códigos Cadastrados</div>
+            <div class="table-responsive">
+              <table class="products-table">
+                <thead>
+                  <tr>
+                    <th>Posição</th>
+                    <th>Código</th>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th>Data Cadastro</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+        `;
+
+        sortedProducts.forEach((product, index) => {
+          const cadastroDate = product.dataCadastro 
+            ? new Date(product.dataCadastro.seconds * 1000).toLocaleString('pt-BR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              }) 
+            : 'Não informada';
+
+          reportContent += `
+            <tr>
+              <td>${index + 1}</td>
+              <td>${product.codigo || '-'}</td>
+              <td>${product.descricao || '-'}</td>
+              <td>${getTipoDescricao(product.tipo)}</td>
+              <td>${cadastroDate}</td>
+              <td><span class="status-badge status-${product.status || 'ativo'}">${getStatusDescricao(product.status || 'ativo')}</span></td>
+            </tr>
+          `;
+        });
+
+        reportContent += `
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+
+        const reportWindow = window.open("", "_blank", "width=1000,height=600");
+        reportWindow.document.write(`
+          <!DOCTYPE html>
+          <html lang="pt-BR">
+          <head>
+            <meta charset="UTF-8">
+            <title>Relatório de Últimos Códigos Cadastrados</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              h1 { color: #0854a0; margin-bottom: 20px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f2f2f2; }
+              .status-badge {
+                display: inline-block;
+                padding: 3px 8px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: 500;
+              }
+              .status-ativo { background-color: #e5f2e5; color: #107e3e; }
+              .status-inativo { background-color: #ffeaea; color: #bb0000; }
+              .status-bloqueado { background-color: #fff3e5; color: #e9730c; }
+              .header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+              .print-btn { 
+                padding: 8px 16px; 
+                background-color: #0854a0; 
+                color: white; 
+                border: none; 
+                border-radius: 4px; 
+                cursor: pointer; 
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>Relatório dos Últimos Códigos Cadastrados</h1>
+              <button class="print-btn" onclick="window.print()">Imprimir Relatório</button>
+            </div>
+            ${reportContent}
+            <p style="margin-top: 20px; font-size: 12px; color: #666;">
+              Relatório gerado em ${new Date().toLocaleString('pt-BR')}
+            </p>
+          </body>
+          </html>
+        `);
+        reportWindow.document.close();
+
+      } catch (error) {
+        console.error("Erro ao gerar relatório:", error);
+        showNotification("Erro ao gerar relatório.", "error");
+      }
+    };
+
+    window.exportToExcel = function() {
+      try {
+        const exportData = produtos.map(product => {
+          const grupo = grupos.find(g => g.codigoGrupo === product.grupo);          const familia = familias.find(f => f.codigoFamilia === product.familia);
+          const estoque = getEstoque(product.id);
+          const dataCadastro = product.dataCadastro 
+            ? new Date(product.dataCadastro.seconds * 1000).toLocaleDateString('pt-BR') 
+            : '';
+
+          return {
+            'Código': product.codigo,
+            'Descrição': product.descricao,
+            'Tipo': getTipoDescricao(product.tipo),
+            'Unidade': product.unidade,
+            'Unidade Secundária': product.unidadeSecundaria || '',
+            'Fator de Conversão': product.fatorConversao || '',
+            'Grupo': grupo ? `${grupo.codigoGrupo} - ${grupo.nomeGrupo}` : '',
+            'Família': familia ? `${familia.codigoFamilia} - ${familia.nomeFamilia}` : '',
+            'Estoque': estoque,
+            'Status': getStatusDescricao(product.status || 'ativo'),
+            'NCM': product.ncm || '',
+            'CEST': product.cest || '',
+            'Origem': product.origem || '0',
+            'Tipo Item': product.tipoItem || '00',
+            'Custo Médio': product.custoMedio || 0,
+            'Último Custo': product.ultimoCusto || 0,
+            'Preço de Venda': product.precoVenda || 0,
+            'Margem de Lucro (%)': product.margemLucro || 0,
+            'Estoque Mínimo': product.estoqueMinimo || 0,
+            'Estoque Máximo': product.estoqueMaximo || 0,
+            'Ponto de Pedido': product.pontoPedido || 0,
+            'Lote de Compra': product.loteCompra || 0,
+            'Armazém Principal': product.armazemPrincipal || '',
+            'Corredor': product.corredor || '',
+            'Prateleira': product.prateleira || '',
+            'Posição': product.posicao || '',
+            'Data Cadastro': dataCadastro,
+            'Rastreabilidade por Lote': product.rastreabilidadeLote || false, // adicionado
+            'Inspeção de Recebimento': product.inspecaoRecebimento || 'nao', // adicionado
+            'Método de Custeio': product.metodoCusteio || 'padrao', // adicionado
+            'Centro de Custos Obrigatório': product.centroCustoObrigatorio || false // adicionado
+          };
+        });
+
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const colWidths = Object.keys(exportData[0]).map((key, i) => ({
+          wch: Math.max(key.length, ...(exportData.map(row => String(row[key]).length)))
+        }));
+        ws['!cols'] = colWidths;
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Materiais');
+
+        const fileName = `Cadastro_Materiais_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+
+        showNotification('Exportação concluída com sucesso!', 'success');
+      } catch (error) {
+        console.error('Erro ao exportar para Excel:', error);
+        showNotification('Erro ao exportar para Excel.', 'error');
+      }
+    };
+
+    window.importFromExcel = async function(event) {
+      try {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const importedData = XLSX.utils.sheet_to_json(worksheet);
+
+          for (const row of importedData) {
+            const productData = {
+              codigo: String(row['Código'] || ''),
+              descricao: String(row['Descrição'] || ''),
+              tipo: row['Tipo']?.match(/^[A-Z]{2}/)?.[0] || 'PA',
+              unidade: row['Unidade'] || 'PC',
+              unidadeSecundaria: row['Unidade Secundária'] || null,
+              fatorConversao: parseFloat(row['Fator de Conversão']) || null,
+              grupo: row['Grupo']?.split(' - ')[0] || null,
+              familia: row['Família']?.split(' - ')[0] || null,
+              ncm: String(row['NCM'] || '') || null,
+              cest: String(row['CEST'] || '') || null,
+              origem: String(row['Origem'] || '0'),
+              tipoItem: String(row['Tipo Item'] || '00'),
+              custoMedio: parseFloat(row['Custo Médio']) || 0,
+              ultimoCusto: parseFloat(row['Último Custo']) || 0,
+              precoVenda: parseFloat(row['Preço de Venda']) || 0,
+              margemLucro: parseFloat(row['Margem de Lucro (%)']) || 0,
+              estoqueMinimo: parseFloat(row['Estoque Mínimo']) || 0,
+              estoqueMaximo: parseFloat(row['Estoque Máximo']) || 0,
+              pontoPedido: parseFloat(row['Ponto de Pedido']) || 0,
+              loteCompra: parseFloat(row['Lote de Compra']) || 0,
+              armazemPrincipal: String(row['Armazém Principal'] || '') || null,
+              corredor: String(row['Corredor'] || '') || null,
+              prateleira: String(row['Prateleira'] || '') || null,
+              posicao: String(row['Posição'] || '') || null,
+              status: row['Status']?.toLowerCase() || 'ativo',
+              dataCadastro: row['Data Cadastro'] ? new Date(row['Data Cadastro']) : new Date(),
+              rastreabilidadeLote: row['Rastreabilidade por Lote'] || false, // adicionado
+              inspecaoRecebimento: row['Inspeção de Recebimento'] || 'nao', // adicionado
+              metodoCusteio: row['Método de Custeio'] || 'padrao', // adicionado
+              centroCustoObrigatorio: row['Centro de Custos Obrigatório'] || false // adicionado
+            };
+
+            const existingProduct = produtos.find(p => p.codigo === productData.codigo);
+            if (existingProduct) {
+              await updateDoc(doc(db, "produtos", existingProduct.id), productData);
+            } else {
+              await addDoc(collection(db, "produtos"), productData);
+            }
+          }
+
+          await loadData();
+          filterProducts();
+          showNotification(`Importação concluída! ${importedData.length} registros processados.`, 'success');
+
+          document.getElementById('importFile').value = '';
+        };
+        reader.readAsArrayBuffer(file);
+      } catch (error) {
+        console.error('Erro ao importar do Excel:', error);
+        showNotification('Erro ao importar do Excel.', 'error');
+      }
+    };
+    window.generateGroupFamilyReport = async function() {
+  try {
+    // Agrupar produtos por grupo e família
+    const groupedProducts = {};
+
+    produtos.forEach(product => {
+      const grupo = grupos.find(g => g.codigoGrupo === product.grupo);
+      const familia = familias.find(f => f.codigoFamilia === product.familia);
+
+      const grupoKey = grupo ? `${grupo.codigoGrupo} - ${grupo.nomeGrupo}` : 'Sem Grupo';
+      const familiaKey = familia ? `${familia.codigoFamilia} - ${familia.nomeFamilia}` : 'Sem Família';
+
+      if (!groupedProducts[grupoKey]) {
+        groupedProducts[grupoKey] = {};
+      }
+
+      if (!groupedProducts[grupoKey][familiaKey]) {
+        groupedProducts[grupoKey][familiaKey] = [];
+      }
+
+      groupedProducts[grupoKey][familiaKey].push(product);
+    });
+
+    // Ordenar grupos alfabeticamente
+    const sortedGroups = Object.keys(groupedProducts).sort();
+
+    // Gerar conteúdo do relatório
+    let reportContent = `
+      <div class="report-container">
+        <div class="form-section">
+          <div class="section-header">Relatório de Produtos por Grupo e Família</div>
+    `;
+
+    if (sortedGroups.length === 0) {
+      reportContent += `<p style="color: var(--text-secondary); text-align: center;">Nenhum produto cadastrado.</p>`;
+    } else {
+      sortedGroups.forEach(grupo => {
+        reportContent += `
+          <div class="group-section">
+            <h3 style="color: var(--primary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
+              Grupo: ${grupo}
+            </h3>
+        `;
+
+        // Ordenar famílias alfabeticamente
+        const sortedFamilias = Object.keys(groupedProducts[grupo]).sort();
+
+        sortedFamilias.forEach(familia => {
+          reportContent += `
+            <div class="familia-section">
+              <h4 style="color: var(--text-secondary); margin-top: 15px;">Família: ${familia}</h4>
+              <div class="table-responsive">
+                <table class="products-table">
+                  <thead>
+                    <tr>
+                      <th>Código</th>
+                      <th>Descrição</th>
+                      <th>Tipo</th>
+                      <th>Unidade</th>
+                      <th>Estoque</th>
+                      <th>Empenhado</th>
+                      <th>Disponível</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+          `;
+
+          // Ordenar produtos por código
+          groupedProducts[grupo][familia]
+            .sort((a, b) => a.codigo.localeCompare(b.codigo))
+            .forEach(product => {
+              const estoque = getEstoque(product.id) || 0;
+
+              reportContent += `
+                <tr>
+                  <td>${product.codigo || '-'}</td>
+                  <td>${product.descricao || '-'}</td>
+                  <td>${getTipoDescricao(product.tipo)}</td>
+                  <td>${product.unidade || '-'}</td>
+                  <td>${estoque} ${product.unidade || ''}</td>
+                  <td>${estoque} ${product.unidade || ''}</td>
+                  <td>${estoque} ${product.unidade || ''}</td>
+                  <td><span class="status-badge status-${product.status || 'ativo'}">${getStatusDescricao(product.status || 'ativo')}</span></td>
+                </tr>
+              `;
+            });
+
+          reportContent += `
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+        });
+
+        reportContent += `</div>`;
+      });
+    }
+
+    reportContent += `
+        </div>
+      </div>
+    `;
+
+    // Abrir relatório em nova janela
+    const reportWindow = window.open("", "_blank", "width=1200,height=800");
+    if (!reportWindow) {
+      showNotification("Não foi possível abrir a janela do relatório. Verifique se pop-ups estão bloqueados.", "error");
+      return;
+    }
+
+    reportWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Relatório de Produtos por Grupo e Família</title>
+        <style>
+          :root {
+            --primary-color: #0854a0;
+            --primary-hover: #0a4d8c;
+            --secondary-color: #f0f3f6;
+            --border-color: #d4d4d4;
+            --text-color: #333;
+            --text-secondary: #666;
+            --success-color: #107e3e;
+            --danger-color: #bb0000;
+            --warning-color: #e9730c;
+          }
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            color: var(--text-color);
+          }
+          .report-container {
+            max-width: 1200px;
+            margin: 0 auto;
+          }
+          h1 {
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-bottom: 20px;
+          }
+          h3 {
+            font-size: 18px;
+            margin: 20px 0 10px;
+          }
+          h4 {
+            font-size: 16px;
+            margin: 15px 0 10px;
+          }
+          .form-section {
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #fff;
+            margin-bottom: 20px;
+          }
+          .section-header {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+          }
+          .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 20px;
+          }
+          .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+          }
+          .products-table th, .products-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: left;
+          }
+          .products-table th {
+            background-color: var(--secondary-color);
+            font-weight: 600;
+            color: var(--text-secondary);
+          }
+          .products-table tr:hover {
+            background-color: #f8f9fa;
+          }
+          .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+          }
+          .status-ativo {
+            background-color: #e5f2e5;
+            color: var(--success-color);
+          }
+          .status-inativo {
+            background-color: #ffeaea;
+            color: var(--danger-color);
+          }
+          .status-bloqueado {
+            background-color: #fff3e5;
+            color: var(--warning-color);
+          }
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          }
+          .print-btn {
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+          }
+          .print-btn:hover {
+            background-color: var(--primary-hover);
+          }
+          .summary {
+            background-color: var(--secondary-color);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+          }
+          .summary-item {
+            margin-bottom: 5px;
+          }
+          @media print {
+            .print-btn {
+              display: none;
+            }
+            .report-container {
+              margin: 0;
+            }
+            .form-section {
+              border: none;
+              box-shadow: none;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Relatório de Produtos por Grupo e Família</h1>
+          <button class="print-btn" onclick="window.print()">Imprimir Relatório</button>
+        </div>
+        <div class="summary">
+          <div class="summary-item"><strong>Total de Grupos:</strong> ${sortedGroups.length}</div>
+          <div class="summary-item"><strong>Total de Produtos:</strong> ${produtos.length}</div>
+          <div class="summary-item"><strong>Data de Geração:</strong> ${new Date().toLocaleString('pt-BR')}</div>
+        </div>
+        ${reportContent}
+      </body>
+      </html>
+    `);
+    reportWindow.document.close();
+
+  } catch (error) {
+    console.error("Erro ao gerar relatório:", error);
+    showNotification("Erro ao gerar relatório por grupo/família.", "error");
+  }
+};
+
+    window.toggleStatus = function() {
+      const statusButton = document.getElementById('statusToggle');
+      isProductActive = !isProductActive;
+
+      if (isProductActive) {
+        statusButton.textContent = 'ATIVO';
+        statusButton.classList.remove('status-inactive');
+        statusButton.classList.add('status-active');
+      } else {
+        statusButton.textContent = 'INATIVO';
+        statusButton.classList.remove('status-active');
+        statusButton.classList.add('status-inactive');
+      }
+    };
+
+    window.pesquisarProdutos = async function(termo) {
+      if (termo.length < 2) {
+        document.getElementById('searchResults').style.display = 'none';
+        return;
+      }
+
+      const termoLower = termo.toLowerCase();
+      console.log("Acessando variável global, quantidade de produtos:", window.produtosGlobal ? window.produtosGlobal.length : "variável indefinida");
+      // Use window.produtosGlobal ao invés de produtos
+      const resultados = window.produtosGlobal.filter(p => 
+        (p.codigo.toLowerCase().includes(termoLower) || 
+         p.descricao.toLowerCase().includes(termoLower)) &&
+        p.id !== currentProductId &&
+        !produtosOpcionais.some(op => op.produtoId === p.id)
+      ).slice(0, 10);
+      console.log("Resultados encontrados:", resultados.length);
+
+      const searchResults = document.getElementById('searchResults');
+      searchResults.innerHTML = '';
+
+      if (resultados.length > 0) {
+        resultados.forEach(produto => {
+          const div = document.createElement('div');
+          div.className = 'search-result-item';
+          div.innerHTML = `
+            <div class="codigo">${produto.codigo}</div>
+            <div class="descricao">${produto.descricao}</div>
+          `;
+          div.onclick = () => selecionarProduto(produto);
+          searchResults.appendChild(div);
+        });
+        searchResults.style.display = 'block';
+      } else {
+        searchResults.innerHTML = '<div class="search-result-item">Nenhum produto encontrado</div>';
+        searchResults.style.display = 'block';
+      }
+    };
+  </script>
+
+  <!-- Modal Cadastro Rápido de Grupo -->
+  <div id="modalGrupo" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Cadastro Rápido de Grupo</h2>
+        <button class="close-modal" onclick="fecharModal('modalGrupo')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="codigoGrupo" class="required">Código do Grupo</label>
+        <input type="text" id="codigoGrupo" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="nomeGrupo" class="required">Nome do Grupo</label>
+        <input type="text" id="nomeGrupo" class="form-control" required>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="salvarGrupo()">Salvar</button>
+        <button class="btn btn-secondary" onclick="fecharModal('modalGrupo')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Cadastro Rápido de Família -->
+  <div id="modalFamilia" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Cadastro Rápido de Família</h2>
+        <button class="close-modal" onclick="fecharModal('modalFamilia')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="codigoFamilia" class="required">Código da Família</label>
+        <input type="text" id="codigoFamilia" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="nomeFamilia" class="required">Nome da Família</label>
+        <input type="text" id="nomeFamilia" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="grupoFamilia" class="required">Grupo</label>
+        <select id="grupoFamilia" class="form-control" required></select>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="salvarFamilia()">Salvar</button>
+        <button class="btn btn-secondary" onclick="fecharModal('modalFamilia')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      getDocs,
+      addDoc,
+      query,
+      where
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // Funções para manipulação dos modais
+    window.abrirModal = function(modalId) {
+      document.getElementById(modalId).classList.add('active');
+      if (modalId === 'modalFamilia') {
+        carregarGruposNoModal();
+      }
+    };
+
+    window.fecharModal = function(modalId) {
+      console.log("Fechando modal", modalId, "selectedProdutoOpcional antes:", selectedProdutoOpcional);
+      document.getElementById(modalId).classList.remove('active');
+
+      // Limpar campos do modal
+      if (modalId === 'modalGrupo') {
+        document.getElementById('codigoGrupo').value = '';
+        document.getElementById('nomeGrupo').value = '';
+      } else if (modalId === 'modalFamilia') {
+        document.getElementById('codigoFamilia').value = '';
+        document.getElementById('nomeFamilia').value = '';
+        document.getElementById('grupoFamilia').value = '';
+      } else if (modalId === 'modalOpcionais') {
+        // Não limpa selectedProdutoOpcional aqui para que salvarOpcional possa usá-lo
+        console.log("Modal de Opcionais fechado, selectedProdutoOpcional mantido para salvar:", selectedProdutoOpcional);
+      }
+    };
+
+    async function carregarGruposNoModal() {
+      const selectGrupo = document.getElementById('grupoFamilia');
+      selectGrupo.innerHTML = '<option value="">Selecione um grupo</option>';
+
+      const gruposSnapshot = await getDocs(collection(db, 'grupos'));
+      gruposSnapshot.forEach(doc => {
+        const grupo = doc.data();
+        selectGrupo.innerHTML += `
+          <option value="${grupo.codigoGrupo}">${grupo.codigoGrupo} - ${grupo.nomeGrupo}</option>
+        `;
+      });
+    }
+
+    window.salvarGrupo = async function() {
+      const codigo = document.getElementById('codigoGrupo').value.trim();
+      const nome = document.getElementById('nomeGrupo').value.trim();
+
+      if (!codigo || !nome) {
+        alert('Por favor, preencha todos os campos.');
+        return;
+      }
+
+      try {
+        // Verificar se já existe um grupo com este código
+        const gruposRef = collection(db, 'grupos');
+        const q = query(gruposRef, where('codigoGrupo', '==', codigo));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          alert('Já existe um grupo com este código.');
+          return;
+        }
+
+        // Salvar novo grupo
+        await addDoc(collection(db, 'grupos'), {
+          codigoGrupo: codigo,
+          nomeGrupo: nome,
+          dataCriacao: new Date()
+        });
+
+        alert('Grupo cadastrado com sucesso!');
+        fecharModal('modalGrupo');
+        await carregarGrupos(); // Recarregar lista de grupos
+      } catch (error) {
+        console.error('Erro ao salvar grupo:', error);
+        alert('Erro ao salvar grupo. Verifique o console para mais detalhes.');
+      }
+    };
+
+    window.salvarFamilia = async function() {
+      const codigo = document.getElementById('codigoFamilia').value.trim();
+      const nome = document.getElementById('nomeFamilia').value.trim();
+      const grupo = document.getElementById('grupoFamilia').value;
+
+      if (!codigo || !nome || !grupo) {
+        alert('Por favor, preencha todos os campos.');
+        return;
+      }
+
+      try {
+        // Verificar se já existe uma família com este código
+        const familiasRef = collection(db, 'familias');
+        const q = query(familiasRef, where('codigoFamilia', '==', codigo));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          alert('Já existe uma família com este código.');
+          return;
+        }
+
+        // Salvar nova família
+        await addDoc(collection(db, 'familias'), {
+          codigoFamilia: codigo,
+          nomeFamilia: nome,
+          grupo: grupo,
+          dataCriacao: new Date()
+        });
+
+        alert('Família cadastrada com sucesso!');
+        fecharModal('modalFamilia');
+        await carregarFamilias(); // Recarregar lista de famílias
+      } catch (error) {
+        console.error('Erro ao salvar família:', error);
+        alert('Erro ao salvar família. Verifique o console para mais detalhes.');
+      }
+    };
+
+    // Funções para carregar grupos e famílias
+    async function carregarGrupos() {
+      const grupoSelect = document.querySelector('select[name="grupo"]');
+      if (!grupoSelect) return;
+
+      grupoSelect.innerHTML = '<option value="">Selecione um grupo</option>';
+
+      try {
+        const gruposSnapshot = await getDocs(collection(db, 'grupos'));
+        gruposSnapshot.forEach(doc => {
+          const grupo = doc.data();
+          grupoSelect.innerHTML += `
+            <option value="${grupo.codigoGrupo}">${grupo.codigoGrupo} - ${grupo.nomeGrupo}</option>
+          `;
+        });
+      } catch (error) {
+        console.error('Erro ao carregar grupos:', error);
+        alert('Erro ao carregar grupos. Verifique o console para mais detalhes.');
+      }
+    }
+
+    async function carregarFamilias(grupoSelecionado = '') {
+      const familiaSelect = document.querySelector('select[name="familia"]');
+      if (!familiaSelect) return;
+
+      familiaSelect.innerHTML = '<option value="">Selecione uma família</option>';
+
+      try {
+        let familiasRef = collection(db, 'familias');
+        if (grupoSelecionado) {
+          familiasRef = query(familiasRef, where('grupo', '==', grupoSelecionado));
+        }
+
+        const familiasSnapshot = await getDocs(familiasRef);
+        familiasSnapshot.forEach(doc => {
+          const familia = doc.data();
+          familiaSelect.innerHTML += `
+            <option value="${familia.codigoFamilia}">${familia.codigoFamilia} - ${familia.nomeFamilia}</option>
+          `;
+        });
+      } catch (error) {
+        console.error('Erro ao carregar famílias:', error);
+        alert('Erro ao carregar famílias. Verifique o console para mais detalhes.');
+      }
+    }
+
+    // Adicionar evento para atualizar famílias quando o grupo é alterado
+    document.querySelector('select[name="grupo"]')?.addEventListener('change', function() {
+      carregarFamilias(this.value);
+    });
+
+    // Carregar grupos e famílias inicialmente
+    document.addEventListener('DOMContentLoaded', async function() {
+      await carregarGrupos();
+      await carregarFamilias();
+
+      // Adicionar botões de adicionar aos campos de grupo e família
+      const grupoField = document.querySelector('select[name="grupo"]');
+      const familiaField = document.querySelector('select[name="familia"]');
+
+      if (grupoField) {
+        grupoField.parentElement.classList.add('input-group');
+        grupoField.insertAdjacentHTML('afterend', `
+          <button type="button" class="btn-add" onclick="abrirModal('modalGrupo')">
+            <i class="fas fa-plus"></i>
+          </button>
+        `);
+      }
+
+      if (familiaField) {
+        familiaField.parentElement.classList.add('input-group');
+        familiaField.insertAdjacentHTML('afterend', `
+          <button type="button" class="btn-add" onclick="abrirModal('modalFamilia')">
+            <i class="fas fa-plus"></i>
+          </button>
+        `);
+      }
+
+      // Inicializar elementos do formulário
+      const formElements = [
+        'rastreabilidadeLote',
+        'inspecaoRecebimento',
+        'metodoCusteio',
+        'centroCustoObrigatorio'
+      ];
+
+      formElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (!element) {
+          console.warn(`Elemento ${id} não encontrado no formulário.`);
+        }
+      });
+    });
+  </script>
+
+  <!-- Adicione este código para o campo de produto no modal -->
+  <div id="modalOpcionais" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Adicionar Produto Opcional</h2>
+        <button class="close-modal" onclick="fecharModal('modalOpcionais')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="produtoOpcional" class="required">Produto</label>
+        <div class="input-group">
+          <input type="text" id="produtoOpcionalSearch" class="form-control" placeholder="Pesquisar produto..." oninput="pesquisarProdutos(this.value)">
+        </div>
+        <div id="searchResults" class="search-results" style="display: none;"></div>
+      </div>
+      <div class="form-group">
+        <label for="prioridadeOpcional">Prioridade</label>
+        <select id="prioridadeOpcional" class="form-control">
+          <option value="1">1 - Principal</option>
+          <option value="2">2 - Secundário</option>
+          <option value="3">3 - Terciário</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="observacaoOpcional">Observação</label>
+        <textarea id="observacaoOpcional" class="form-control" rows="3"></textarea>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="salvarOpcional()">Salvar</button>
+        <button class="btn btn-secondary" onclick="fecharModal('modalOpcionais')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .opcionais-container {
+      margin-top: 15px;
+    }
+
+    .opcionais-list {
+      margin-bottom: 15px;
+    }
+
+    .opcional-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      margin-bottom: 8px;
+      background-color: #fff;
+    }
+
+    .opcional-info {
+      flex: 1;
+    }
+
+    .opcional-produto {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .opcional-prioridade {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .opcional-obs {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .opcional-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-add-opcional {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-add-opcional:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .search-results {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      margin-top: 5px;
+      background: white;
+    }
+
+    .search-result-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .search-result-item:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .search-result-item.selected {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .search-result-item .codigo {
+      font-weight: 500;
+    }
+
+    .search-result-item .descricao {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .search-result-item.selected .descricao {
+      color: rgba(255, 255, 255, 0.8);
+    }
+  </style>
+
+  <script>
+    let produtosOpcionais = [];
+    let selectedProdutoOpcional = null;
+
+    window.abrirModalOpcionais = function() {
+      console.log("Abrindo modal, selectedProdutoOpcional antes:", selectedProdutoOpcional);
+      document.getElementById('modalOpcionais').classList.add('active');
+      document.getElementById('produtoOpcionalSearch').value = '';
+      document.getElementById('prioridadeOpcional').value = '1';
+      document.getElementById('observacaoOpcional').value = '';
+      document.getElementById('searchResults').style.display = 'none';
+      selectedProdutoOpcional = null;
+      console.log("Modal aberto, selectedProdutoOpcional depois:", selectedProdutoOpcional);
+    };
+
+    window.pesquisarProdutos = async function(termo) {
+      if (termo.length < 2) {
+        document.getElementById('searchResults').style.display = 'none';
+        return;
+      }
+
+      const termoLower = termo.toLowerCase();
+      // Use window.produtosGlobal ao invés de produtos
+      const resultados = window.produtosGlobal.filter(p => 
+        (p.codigo.toLowerCase().includes(termoLower) || 
+         p.descricao.toLowerCase().includes(termoLower)) &&
+        p.id !== currentProductId &&
+        !produtosOpcionais.some(op => op.produtoId === p.id)
+      ).slice(0, 10);
+
+      const searchResults = document.getElementById('searchResults');
+      searchResults.innerHTML = '';
+
+      if (resultados.length > 0) {
+        resultados.forEach(produto => {
+          const div = document.createElement('div');
+          div.className = 'search-result-item';
+          div.innerHTML = `
+            <div class="codigo">${produto.codigo}</div>
+            <div class="descricao">${produto.descricao}</div>
+          `;
+          div.onclick = () => selecionarProduto(produto);
+          searchResults.appendChild(div);
+        });
+        searchResults.style.display = 'block';
+      } else {
+        searchResults.innerHTML = '<div class="search-result-item">Nenhum produto encontrado</div>';
+        searchResults.style.display = 'block';
+      }
+    };
+
+    function selecionarProduto(produto) {
+      console.log("Produto selecionado:", produto);
+      selectedProdutoOpcional = produto;
+      document.getElementById('produtoOpcionalSearch').value = `${produto.codigo} - ${produto.descricao}`;
+      document.getElementById('searchResults').style.display = 'none';
+      console.log("selectedProdutoOpcional após seleção:", selectedProdutoOpcional);
+    }
+
+    window.salvarOpcional = function() {
+      console.log("Tentando salvar produto:", selectedProdutoOpcional);
+      if (!selectedProdutoOpcional) {
+        showNotification('Selecione um produto.', 'error');
+        return;
+      }
+
+      const prioridade = document.getElementById('prioridadeOpcional').value;
+      const observacao = document.getElementById('observacaoOpcional').value;
+
+      const opcional = {
+        produtoId: selectedProdutoOpcional.id,
+        codigo: selectedProdutoOpcional.codigo,
+        descricao: selectedProdutoOpcional.descricao,
+        prioridade: parseInt(prioridade),
+        observacao: observacao
+      };
+
+      console.log("Produto opcional a ser adicionado:", opcional);
+      produtosOpcionais.push(opcional);
+      console.log("produtosOpcionais após adicionar:", produtosOpcionais);
+      atualizarListaOpcionais();
+      fecharModal('modalOpcionais');
+      showNotification('Produto opcional adicionado com sucesso!', 'success');
+    };
+
+    function atualizarListaOpcionais() {
+      const lista = document.getElementById('opcionaisList');
+      lista.innerHTML = '';
+
+      produtosOpcionais
+        .sort((a, b) => a.prioridade - b.prioridade)
+        .forEach((opcional, index) => {
+          const div = document.createElement('div');
+          div.className = 'opcional-item';
+          div.innerHTML = `
+            <div class="opcional-info">
+              <div class="opcional-produto">${opcional.codigo} - ${opcional.descricao}</div>
+              <div class="opcional-prioridade">Prioridade: ${opcional.prioridade}</div>
+              ${opcional.observacao ? `<div class="opcional-obs">${opcional.observacao}</div>` : ''}
+            </div>
+            <div class="opcional-actions">
+              <button class="btn-danger" onclick="removerOpcional(${index})">Remover</button>
+            </div>
+          `;
+          lista.appendChild(div);
+        });
+    }
+
+    window.removerOpcional = function(index) {
+      if (confirm('Deseja remover este produto opcional?')) {
+        produtosOpcionais.splice(index, 1);
+        atualizarListaOpcionais();
+        showNotification('Produto opcional removido com sucesso!', 'success');
+      }
+    };
+
+    // Adicionar ao saveProduct
+    const originalSaveProduct = window.saveProduct;
+    window.saveProduct = async function() {
+      const productData = {
+        // ... outros campos ...
+        opcionais: produtosOpcionais
+      };
+
+      return originalSaveProduct.call(this, productData);
+    };
+
+    // Adicionar ao editProduct
+    const originalEditProduct = window.editProduct;
+    window.editProduct = async function(productId) {
+      await originalEditProduct.call(this, productId);
+
+      const product = produtos.find(p => p.id === productId);
+      if (product) {
+        produtosOpcionais = product.opcionais || [];
+        atualizarListaOpcionais();
+      }
+    };
+  </script>
+
+  <!-- Fechar a lista de resultados quando clicar fora -->
+  <div id="produtoResultados" class="search-results" style="display: none;"></div>
+</body>
+</html>

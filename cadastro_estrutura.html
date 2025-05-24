@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Estrutura de Produtos</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #f5f5f5;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+    
+    .form-container {
+      width: 95%;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0;
+      background-color: #fff;
+      border-radius: 4px;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .page-header {
+      background-color: var(--header-bg);
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    h1 {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--primary-color);
+      margin: 0;
+    }
+    
+    .content-area {
+      padding: 20px;
+    }
+    
+    .section-header {
+      background-color: var(--secondary-color);
+      padding: 10px 15px;
+      margin: 20px 0 15px;
+      border-radius: 3px;
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    h3 {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--primary-color);
+      margin: 0;
+    }
+    
+    .section-divider {
+      border-top: 1px solid var(--border-color);
+      margin: 25px 0;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    
+    input[type="text"], 
+    select, 
+    input[type="number"], 
+    textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      font-size: 14px;
+      color: var(--text-color);
+      background-color: #fff;
+      transition: border-color 0.2s;
+    }
+    
+    input[type="text"]:focus, 
+    select:focus, 
+    input[type="number"]:focus, 
+    textarea:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+    
+    button:hover {
+      transform: translateY(-1px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: #fff;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .btn-success {
+      background-color: var(--success-color);
+      color: #fff;
+    }
+    
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: #fff;
+    }
+    
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: #fff;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+    
+    .row {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+    
+    .table-header {
+      display: flex;
+      align-items: center;
+      background-color: var(--secondary-color);
+      padding: 8px 10px;
+      border-radius: 3px;
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+    }
+    
+    .sequence-input {
+      width: 50px !important;
+      flex: none !important;
+      text-align: center;
+    }
+    
+    .operacao {
+      width: 180px !important;
+      flex: none !important;
+    }
+    
+    .recurso {
+      width: 180px !important;
+      flex: none !important;
+    }
+    
+    .tempo {
+      width: 80px !important;
+      flex: none !important;
+      text-align: right;
+    }
+    
+    .descricao {
+      width: 350px !important;
+      flex: none !important;
+      resize: vertical;
+      min-height: 40px;
+    }
+    
+    .operation-controls {
+      display: flex;
+      gap: 5px;
+      flex: none;
+    }
+    
+    .move-btn {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .move-btn:hover {
+      background-color: #5a6268;
+    }
+    
+    .remove-btn {
+      background-color: var(--danger-color);
+      color: #fff;
+      padding: 4px 8px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .remove-btn:hover {
+      background-color: var(--danger-hover);
+    }
+    
+    .list-container {
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 15px;
+      background-color: #fff;
+    }
+    
+    .back-button {
+      padding: 10px 20px;
+      background-color: #6c757d;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+      text-align: center;
+      display: block;
+      margin-top: 20px;
+      width: 100%;
+    }
+    
+    .back-button:hover {
+      background-color: #5a6268;
+    }
+    
+    .operation-description {
+      flex: 2;
+    }
+    
+    /* Estilos do Modal de Produto */
+    .product-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    
+    .product-modal-content {
+      position: relative;
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 25px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 4px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .close-modal {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+    
+    .close-modal:hover {
+      color: #000;
+    }
+    
+    .quick-add-btn {
+      background-color: var(--primary-color);
+      color: white;
+      margin-left: 10px;
+      padding: 8px 15px;
+      border-radius: 3px;
+    }
+    
+    .quick-add-btn:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .info-box {
+      background-color: #e8f4fd;
+      border-left: 4px solid var(--primary-color);
+      padding: 10px 15px;
+      margin: 10px 0;
+      border-radius: 3px;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .action-buttons button {
+      flex: 1;
+    }
+    
+    .component-header, .operation-header {
+      display: flex;
+      margin-bottom: 5px;
+    }
+    
+    .component-header > div, .operation-header > div {
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--text-secondary);
+      padding: 5px;
+    }
+    
+    .component-header .componente-header {
+      width: calc(100% - 240px);
+    }
+    
+    .component-header .quantidade-header {
+      width: 100px;
+      text-align: center;
+    }
+    
+    .component-header .unidade-header {
+      width: 80px;
+      text-align: center;
+    }
+    
+    .component-header .action-header {
+      width: 40px;
+      text-align: center;
+    }
+    
+    .componente {
+      width: calc(100% - 240px) !important;
+    }
+    
+    .quantidade {
+      width: 100px !important;
+      text-align: right;
+    }
+    
+    .unidade {
+      width: 80px !important;
+      text-align: center;
+    }
+    
+    /* Estilo para campos desabilitados */
+    input:disabled, select:disabled {
+      background-color: #f5f5f5;
+      color: #666;
+      cursor: not-allowed;
+    }
+    
+    /* Estilo para mensagens de erro */
+    .error-message {
+      color: var(--danger-color);
+      font-size: 13px;
+      margin-top: 5px;
+    }
+    
+    /* Estilo para tooltips */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .tooltip .tooltip-text {
+      visibility: hidden;
+      width: 200px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 3px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -100px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .tooltip:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    /* Estilos para o autocomplete */
+    .autocomplete-container {
+      position: relative;
+      width: 100%;
+    }
+    
+    .autocomplete-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      max-height: 250px;
+      overflow-y: auto;
+      background-color: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: 0 0 3px 3px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+      display: none;
+    }
+    
+    .autocomplete-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .autocomplete-item:last-child {
+      border-bottom: none;
+    }
+    
+    .autocomplete-item:hover {
+      background-color: var(--secondary-color);
+    }
+    
+    .autocomplete-item.selected {
+      background-color: #e8f4fd;
+    }
+    
+    .autocomplete-highlight {
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+    
+    .search-icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 16px;
+    }
+    
+    .clear-search {
+      position: absolute;
+      right: 30px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      cursor: pointer;
+      font-size: 16px;
+      display: none;
+    }
+    
+    .clear-search:hover {
+      color: var(--danger-color);
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <div class="page-header">
+      <h1>Cadastro de Estrutura de Produtos</h1>
+    </div>
+    
+    <div class="content-area">
+      <form id="structureForm">
+        <div class="form-group">
+          <label for="codigoProduto">Código do Produto Pai (PA/SP)</label>
+          <div class="autocomplete-container">
+            <input type="text" id="codigoProduto" placeholder="Digite para pesquisar produto..." autocomplete="off" required>
+            <span class="clear-search" id="clearSearch">&times;</span>
+            <span class="search-icon">&#128269;</span>
+            <div class="autocomplete-results" id="autocompleteResults"></div>
+          </div>
+          <input type="hidden" id="selectedProdutoId">
+          <div id="produtoInfo" class="info-box" style="display: none;"></div>
+          <button type="button" class="quick-add-btn" onclick="openProductModal()" style="margin-top: 10px;">+ Cadastrar Novo Produto</button>
+        </div>
+
+        <div class="section-header">
+          <h3>Componentes</h3>
+        </div>
+        
+        <div class="list-container">
+          <div class="component-header">
+            <div class="componente-header">Componente</div>
+            <div class="quantidade-header">Quantidade</div>
+            <div class="unidade-header">Unidade</div>
+            <div class="action-header">Ação</div>
+          </div>
+          
+          <div id="componentsList">
+            <!-- Os componentes serão adicionados aqui dinamicamente -->
+          </div>
+          
+          <button type="button" class="btn-primary" onclick="addComponent()" style="margin-top: 10px;">Adicionar Componente</button>
+        </div>
+
+        <div class="section-header">
+          <h3>Operações</h3>
+        </div>
+        
+        <div class="list-container">
+          <div class="table-header">
+            <div style="width: 50px; text-align: center;">Seq.</div>
+            <div style="width: 180px; margin-left: 10px;">Operação</div>
+            <div style="width: 180px; margin-left: 10px;">Recurso</div>
+            <div style="width: 80px; margin-left: 10px; text-align: center;">Tempo</div>
+            <div style="width: 350px; margin-left: 10px;">Descrição</div>
+            <div style="width: 110px; margin-left: 10px; text-align: center;">Ações</div>
+          </div>
+          
+          <div id="operationsList">
+            <!-- As operações serão adicionadas aqui dinamicamente -->
+          </div>
+          
+          <button type="button" class="btn-primary" onclick="addOperation()" style="margin-top: 10px;">Adicionar Operação</button>
+        </div>
+
+        <div class="action-buttons">
+          <button type="submit" class="btn-success">Salvar Estrutura</button>
+          <button type="button" id="deleteButton" class="btn-danger" style="display: none;">Excluir Estrutura</button>
+          <button type="button" id="cancelButton" class="btn-secondary" style="display: none;">Cancelar</button>
+        </div>
+      </form>
+      
+      <button onclick="window.location.href='index.html'" class="back-button">Voltar</button>
+    </div>
+  </div>
+
+  <!-- Modal de Cadastro Rápido de Produto -->
+  <div id="productModal" class="product-modal">
+    <div class="product-modal-content">
+      <span class="close-modal" onclick="closeProductModal()">&times;</span>
+      <h2 style="margin-bottom: 20px; color: var(--primary-color);">Cadastro Rápido de Produto</h2>
+      
+      <form id="quickProductForm" onsubmit="handleQuickProduct(event)">
+        <div class="form-group">
+          <label for="quickCodigo">Código</label>
+          <input type="text" id="quickCodigo" required>
+        </div>
+
+        <div class="form-group">
+          <label for="quickDescricao">Descrição</label>
+          <input type="text" id="quickDescricao" required>
+        </div>
+
+        <div class="form-group">
+          <label for="quickTipo">Tipo</label>
+          <select id="quickTipo" required>
+            <option value="PA">PA</option>
+            <option value="SP">SP</option>
+            <option value="MP">MP</option>
+            <option value="HR">HR</option>
+            <option value="SV">SV</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="quickUnidade">Unidade</label>
+          <select id="quickUnidade" required>
+            <option value="PC">PC</option>
+            <option value="KG">KG</option>
+            <option value="MT">MT</option>
+            <option value="MM">MM</option>
+            <option value="MO">MO</option>
+            <option value="SV">SV</option>
+            <option value="KT">KT</option>
+            <option value="CJ">CJ</option>
+            <option value="PA">PA</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-success" style="width: 100%; margin-top: 20px;">Cadastrar Produto</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs,
+      query,
+      where,
+      doc,
+      updateDoc,
+      deleteDoc 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let produtos = [];
+    let produtosPaisFiltrados = []; // Para armazenar produtos PA/SP filtrados
+    let operacoes = [];
+    let recursos = [];
+    let estruturas = [];
+    let currentEstruturaId = null;
+    let selectedProdutoId = null;
+    let debounceTimer;
+
+    window.onload = async function() {
+      await loadInitialData();
+      initializeForm();
+      setupAutocomplete();
+      resetForm();
+    };
+
+    async function loadInitialData() {
+      try {
+        const [produtosSnap, operacoesSnap, recursosSnap, estruturasSnap] = await Promise.all([
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "operacoes")),
+          getDocs(collection(db, "recursos")),
+          getDocs(collection(db, "estruturas"))
+        ]);
+
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Pré-filtrar produtos PA/SP para o autocomplete
+        produtosPaisFiltrados = produtos.filter(p => p.tipo === 'PA' || p.tipo === 'SP');
+        operacoes = operacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        recursos = recursosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estruturas = estruturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados. Por favor, recarregue a página.");
+      }
+    }
+
+    function setupAutocomplete() {
+      const input = document.getElementById('codigoProduto');
+      const resultsContainer = document.getElementById('autocompleteResults');
+      const clearSearch = document.getElementById('clearSearch');
+      
+      // Limpar pesquisa
+      clearSearch.addEventListener('click', function() {
+        input.value = '';
+        resultsContainer.style.display = 'none';
+        clearSearch.style.display = 'none';
+        document.getElementById('produtoInfo').style.display = 'none';
+        document.getElementById('selectedProdutoId').value = '';
+        selectedProdutoId = null;
+        resetForm();
+      });
+      
+      // Mostrar/esconder o botão de limpar
+      input.addEventListener('input', function() {
+        if (this.value.length > 0) {
+          clearSearch.style.display = 'block';
+        } else {
+          clearSearch.style.display = 'none';
+        }
+        
+        // Debounce para evitar muitas chamadas durante a digitação
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          const searchTerm = this.value.trim().toUpperCase();
+          if (searchTerm.length >= 1) {
+            showAutocompleteResults(searchTerm);
+          } else {
+            resultsContainer.style.display = 'none';
+          }
+        }, 300);
+      });
+      
+      // Fechar o autocomplete ao clicar fora
+      document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !resultsContainer.contains(e.target)) {
+          resultsContainer.style.display = 'none';
+        }
+      });
+      
+      // Navegação com teclado
+      input.addEventListener('keydown', function(e) {
+        if (resultsContainer.style.display === 'block') {
+          const items = resultsContainer.querySelectorAll('.autocomplete-item');
+          const selectedItem = resultsContainer.querySelector('.selected');
+          
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (!selectedItem) {
+              items[0].classList.add('selected');
+            } else {
+              const nextItem = selectedItem.nextElementSibling;
+              if (nextItem) {
+                selectedItem.classList.remove('selected');
+                nextItem.classList.add('selected');
+              }
+            }
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (selectedItem) {
+              const prevItem = selectedItem.previousElementSibling;
+              if (prevItem) {
+                selectedItem.classList.remove('selected');
+                prevItem.classList.add('selected');
+              }
+            }
+          } else if (e.key === 'Enter' && selectedItem) {
+            e.preventDefault();
+            selectProduct(selectedItem.getAttribute('data-id'));
+            resultsContainer.style.display = 'none';
+          } else if (e.key === 'Escape') {
+            resultsContainer.style.display = 'none';
+          }
+        }
+      });
+    }
+    
+    function showAutocompleteResults(searchTerm) {
+      const resultsContainer = document.getElementById('autocompleteResults');
+      resultsContainer.innerHTML = '';
+      
+      // Filtrar produtos que correspondem à pesquisa (código ou descrição)
+      const filteredProducts = produtosPaisFiltrados.filter(p => 
+        p.codigo.toUpperCase().includes(searchTerm) || 
+        p.descricao.toUpperCase().includes(searchTerm)
+      );
+      
+      // Limitar a 15 resultados para melhor desempenho
+      const limitedResults = filteredProducts.slice(0, 15);
+      
+      if (limitedResults.length > 0) {
+        limitedResults.forEach(produto => {
+          const item = document.createElement('div');
+          item.className = 'autocomplete-item';
+          item.setAttribute('data-id', produto.id);
+          
+          // Destacar o termo pesquisado
+          const codigoHtml = highlightMatch(produto.codigo, searchTerm);
+          const descricaoHtml = highlightMatch(produto.descricao, searchTerm);
+          
+          item.innerHTML = `<strong>${codigoHtml}</strong> - ${descricaoHtml} <span style="color:#666">(${produto.tipo})</span>`;
+          
+          item.addEventListener('click', function() {
+            selectProduct(produto.id);
+            resultsContainer.style.display = 'none';
+          });
+          
+          resultsContainer.appendChild(item);
+        });
+        
+        resultsContainer.style.display = 'block';
+      } else {
+        resultsContainer.style.display = 'none';
+      }
+    }
+    
+    function highlightMatch(text, searchTerm) {
+      if (!text) return '';
+      const regex = new RegExp(`(${searchTerm.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
+      return text.replace(regex, '<span class="autocomplete-highlight">$1</span>');
+    }
+    
+    async function selectProduct(produtoId) {
+      const produto = produtos.find(p => p.id === produtoId);
+      if (produto) {
+        document.getElementById('codigoProduto').value = produto.codigo;
+        document.getElementById('selectedProdutoId').value = produto.id;
+        selectedProdutoId = produto.id;
+        
+        const produtoInfo = document.getElementById('produtoInfo');
+        produtoInfo.innerHTML = `<strong>Produto:</strong> ${produto.descricao} (${produto.tipo})`;
+        produtoInfo.style.display = 'block';
+        
+        await loadEstrutura(produto.id);
+      }
+    }
+
+    function initializeForm() {
+      document.getElementById('structureForm').addEventListener('submit', handleFormSubmit);
+      document.getElementById('deleteButton').addEventListener('click', handleDelete);
+      document.getElementById('cancelButton').addEventListener('click', handleCancel);
+    }
+
+    window.openProductModal = function() {
+      document.getElementById('productModal').style.display = 'block';
+    };
+
+    window.closeProductModal = function() {
+      document.getElementById('productModal').style.display = 'none';
+      document.getElementById('quickProductForm').reset();
+    };
+
+    window.handleQuickProduct = async function(event) {
+      event.preventDefault();
+      
+      const formData = {
+        codigo: document.getElementById('quickCodigo').value,
+        descricao: document.getElementById('quickDescricao').value,
+        tipo: document.getElementById('quickTipo').value,
+        unidade: document.getElementById('quickUnidade').value,
+        dataCadastro: new Date()
+      };
+
+      try {
+        const existingProduct = produtos.find(p => p.codigo.toLowerCase() === formData.codigo.toLowerCase());
+        if (existingProduct) {
+          alert("Já existe um produto com este código. Por favor, use outro código.");
+          return;
+        }
+        
+        const docRef = await addDoc(collection(db, "produtos"), formData);
+        formData.id = docRef.id;
+        produtos.push(formData);
+        
+        // Atualizar a lista de produtos pais se for PA ou SP
+        if (formData.tipo === 'PA' || formData.tipo === 'SP') {
+          produtosPaisFiltrados.push(formData);
+        }
+        
+        // Atualizar selects de componentes
+        document.querySelectorAll('.componente').forEach(select => {
+          updateComponentSelect(select);
+        });
+
+        // Se for PA ou SP, atualizar o campo de código do produto pai
+        if (formData.tipo === 'PA' || formData.tipo === 'SP') {
+          document.getElementById('codigoProduto').value = formData.codigo;
+          document.getElementById('selectedProdutoId').value = formData.id;
+          const produtoInfo = document.getElementById('produtoInfo');
+          produtoInfo.innerHTML = `<strong>Produto:</strong> ${formData.descricao} (${formData.tipo})`;
+          produtoInfo.style.display = 'block';
+          selectedProdutoId = formData.id;
+          document.getElementById('clearSearch').style.display = 'block';
+        }
+
+        alert("Produto cadastrado com sucesso!");
+        closeProductModal();
+      } catch (error) {
+        console.error("Erro ao cadastrar produto:", error);
+        alert("Erro ao cadastrar produto. Por favor, tente novamente.");
+      }
+    };
+
+    async function handleFormSubmit(event) {
+      event.preventDefault();
+      
+      if (!selectedProdutoId) {
+        alert('Por favor, selecione um produto válido.');
+        return;
+      }
+
+      const components = [];
+      const componentIds = new Set();
+      let hasInvalidComponent = false;
+
+      document.querySelectorAll('#componentsList .row').forEach(row => {
+        const componentId = row.querySelector('.componente').value;
+        const quantidade = row.querySelector('.quantidade').value;
+        const unidade = row.querySelector('.unidade').value;
+        
+        if (!componentId || !quantidade || !unidade) {
+          hasInvalidComponent = true;
+          return;
+        }
+
+        if (componentIds.has(componentId)) {
+          alert('Não é permitido usar o mesmo componente mais de uma vez na estrutura.');
+          hasInvalidComponent = true;
+          return;
+        }
+        
+        componentIds.add(componentId);
+        components.push({
+          componentId,
+          quantidade: parseFloat(quantidade),
+          unidade
+        });
+      });
+
+      if (hasInvalidComponent) {
+        alert('Por favor, preencha todos os campos dos componentes corretamente.');
+        return;
+      }
+
+      // Verificar ciclos na estrutura
+      function checkForCycles(productId, visited = new Set()) {
+        if (visited.has(productId)) {
+          return true;
+        }
+        
+        visited.add(productId);
+        const estrutura = estruturas.find(e => e.produtoPaiId === productId);
+        
+        if (estrutura) {
+          for (const comp of estrutura.componentes) {
+            if (checkForCycles(comp.componentId, new Set(visited))) {
+              return true;
+            }
+          }
+        }
+        
+        return false;
+      }
+
+      let hasCycles = false;
+      for (const component of components) {
+        const tempVisited = new Set([selectedProdutoId]);
+        if (checkForCycles(component.componentId, tempVisited)) {
+          hasCycles = true;
+          break;
+        }
+      }
+
+      if (hasCycles) {
+        alert('A estrutura não pode conter ciclos. Verifique os componentes selecionados.');
+        return;
+      }
+
+      const operations = [];
+      let hasInvalidOperation = false;
+
+      document.querySelectorAll('#operationsList .row').forEach(row => {
+        const operacaoId = row.querySelector('.operacao').value;
+        const recursoId = row.querySelector('.recurso').value;
+        const tempo = row.querySelector('.tempo').value;
+        const sequencia = row.querySelector('.sequence-input').value;
+        const descricao = row.querySelector('.descricao').value;
+        
+        if (!operacaoId || !recursoId || !tempo || !sequencia) {
+          hasInvalidOperation = true;
+          return;
+        }
+        
+        operations.push({
+          operacaoId,
+          recursoId,
+          tempo: parseFloat(tempo),
+          sequencia: parseInt(sequencia),
+          descricao: descricao || ''
+        });
+      });
+
+      if (hasInvalidOperation) {
+        alert('Por favor, preencha todos os campos das operações corretamente.');
+        return;
+      }
+
+      operations.sort((a, b) => a.sequencia - b.sequencia);
+
+      try {
+        const estrutura = {
+          produtoPaiId: selectedProdutoId,
+          componentes: components,
+          operacoes: operations,
+          dataCadastro: new Date()
+        };
+
+        if (currentEstruturaId) {
+          await updateDoc(doc(db, "estruturas", currentEstruturaId), estrutura);
+          alert("Estrutura atualizada com sucesso!");
+        } else {
+          await addDoc(collection(db, "estruturas"), estrutura);
+          alert("Estrutura cadastrada com sucesso!");
+        }
+
+        resetForm();
+        document.getElementById('codigoProduto').value = '';
+        document.getElementById('clearSearch').style.display = 'none';
+        document.getElementById('produtoInfo').style.display = 'none';
+        document.getElementById('selectedProdutoId').value = '';
+        selectedProdutoId = null;
+      } catch (error) {
+        console.error("Erro ao salvar estrutura:", error);
+        alert("Erro ao salvar estrutura. Por favor, tente novamente.");
+      }
+    }
+
+    async function handleDelete() {
+      if (currentEstruturaId && confirm("Tem certeza que deseja excluir esta estrutura?")) {
+        try {
+          await deleteDoc(doc(db, "estruturas", currentEstruturaId));
+          alert("Estrutura excluída com sucesso!");
+          resetForm();
+          document.getElementById('codigoProduto').value = '';
+          document.getElementById('clearSearch').style.display = 'none';
+          document.getElementById('produtoInfo').style.display = 'none';
+          document.getElementById('selectedProdutoId').value = '';
+          selectedProdutoId = null;
+        } catch (error) {
+          console.error("Erro ao excluir estrutura:", error);
+          alert("Erro ao excluir estrutura. Por favor, tente novamente.");
+        }
+      }
+    }
+
+    function handleCancel() {
+      resetForm();
+      document.getElementById('codigoProduto').value = '';
+      document.getElementById('clearSearch').style.display = 'none';
+      document.getElementById('produtoInfo').style.display = 'none';
+      document.getElementById('selectedProdutoId').value = '';
+      selectedProdutoId = null;
+    }
+    window.addComponent = function() {
+  const componentsList = document.getElementById('componentsList');
+  const newRow = document.createElement('div');
+  newRow.className = 'row';
+  newRow.innerHTML = `
+    <select class="componente" required>
+      <option value="">Selecione o componente...</option>
+    </select>
+    <input type="number" class="quantidade" placeholder="Quantidade" required min="0.001" step="0.001">
+    <select class="unidade" required disabled>
+      <option value="">Unidade</option>
+    </select>
+    <button type="button" class="remove-btn" onclick="removeComponent(this)">X</button>
+  `;
+  componentsList.appendChild(newRow);
+
+  const componentSelect = newRow.querySelector('.componente');
+  updateComponentSelect(componentSelect);
+  setupComponentSelectEvents(componentSelect);
+
+  // Habilita o botão "Salvar Estrutura" ao adicionar um componente
+  enableSaveButton();
+};
+
+window.addOperation = function() {
+  const operationsList = document.getElementById('operationsList');
+  const newRow = document.createElement('div');
+  newRow.className = 'row';
+  
+  const sortedOperacoes = operacoes.sort((a, b) => a.numero.localeCompare(b.numero));
+  const sortedRecursos = recursos.sort((a, b) => a.maquina.localeCompare(b.maquina));
+  newRow.innerHTML = `
+    <input type="number" class="sequence-input" placeholder="Seq." required min="1" step="1" value="${document.querySelectorAll('#operationsList .row').length + 1}">
+    <select class="operacao" required>
+      <option value="">Selecione a operação...</option>
+      ${sortedOperacoes.map(op => `
+        <option value="${op.id}">${op.numero} - ${op.operacao}</option>
+      `).join('')}
+    </select>
+    <select class="recurso" required>
+      <option value="">Selecione o recurso...</option>
+      ${recursos.map(rec => `
+        <option value="${rec.id}">${rec.codigo} - ${rec.maquina} (${rec.setor})</option>
+      `).join('')}
+    </select>
+    <input type="number" class="tempo" placeholder="Tempo (min)" required min="1" step="1">
+    <textarea class="descricao" placeholder="Descrição da operação" maxlength="50" rows="1"></textarea>
+    <div class="operation-controls">
+      <button type="button" class="move-btn" onclick="moveOperation(this, -1)">↑</button>
+      <button type="button" class="move-btn" onclick="moveOperation(this, 1)">↓</button>
+      <button type="button" class="remove-btn" onclick="removeOperation(this)">X</button>
+    </div>
+  `;
+  operationsList.appendChild(newRow);
+
+  // Habilita o botão "Salvar Estrutura" ao adicionar uma operação
+  enableSaveButton();
+};
+
+window.removeComponent = function(button) {
+  if (document.querySelectorAll('#componentsList .row').length > 1) {
+    button.closest('.row').remove();
+    enableSaveButton(); // Habilita o botão ao remover um componente
+  } else {
+    alert('É necessário manter pelo menos um componente!');
+  }
+};
+
+window.removeOperation = function(button) {
+  if (document.querySelectorAll('#operationsList .row').length > 1) {
+    button.closest('.row').remove();
+    updateSequenceNumbers();
+    enableSaveButton(); // Habilita o botão ao remover uma operação
+  } else {
+    alert('É necessário manter pelo menos uma operação!');
+  }
+};
+
+    function updateComponentSelect(select) {
+      select.innerHTML = '<option value="">Selecione o componente...</option>';
+      
+      // Filtrar e ordenar os componentes
+      const sortedProdutos = produtos
+        .filter(p => ['MP', 'SP', 'SV', 'MO', 'HR'].includes(p.tipo))
+        .sort((a, b) => a.codigo.localeCompare(b.codigo)); // Ordenar por código
+
+      // Adicionar os componentes ordenados ao select
+      sortedProdutos.forEach(produto => {
+        select.innerHTML += `
+          <option value="${produto.id}" data-unidade="${produto.unidade}">
+            ${produto.codigo} - ${produto.descricao} (${produto.tipo})
+          </option>`;
+      });
+    }
+    
+    function setupComponentSelectEvents(select) {
+      select.addEventListener('change', function() {
+        const unidadeSelect = this.parentElement.querySelector('.unidade');
+        const selectedOption = this.options[this.selectedIndex];
+        
+        if (selectedOption.value) {
+          const produto = produtos.find(p => p.id === selectedOption.value);
+          if (produto) {
+            unidadeSelect.innerHTML = `<option value="${produto.unidade}">${produto.unidade}</option>`;
+          }
+        } else {
+          unidadeSelect.innerHTML = '<option value="">Unidade</option>';
+        }
+      });
+    }
+
+    window.addOperation = function() {
+      const operationsList = document.getElementById('operationsList');
+      const newRow = document.createElement('div');
+      newRow.className = 'row';
+      
+      // Ordenar operações por número (ou descrição, se preferir)
+      const sortedOperacoes = operacoes.sort((a, b) => a.numero.localeCompare(b.numero));
+      const sortedRecursos = recursos.sort((a, b) => a.maquina.localeCompare(b.maquina));
+      newRow.innerHTML = `
+        <input type="number" class="sequence-input" placeholder="Seq." required min="1" step="1" value="${document.querySelectorAll('#operationsList .row').length + 1}">
+        <select class="operacao" required>
+          <option value="">Selecione a operação...</option>
+          ${sortedOperacoes.map(op => `
+            <option value="${op.id}">${op.numero} - ${op.operacao}</option>
+          `).join('')}
+        </select>
+        <select class="recurso" required>
+          <option value="">Selecione o recurso...</option>
+          ${recursos.map(rec => `
+            <option value="${rec.id}">${rec.codigo} - ${rec.maquina} (${rec.setor})</option>
+          `).join('')}
+        </select>
+        <input type="number" class="tempo" placeholder="Tempo (min)" required min="1" step="1">
+        <textarea class="descricao" placeholder="Descrição da operação" maxlength="50" rows="1"></textarea>
+        <div class="operation-controls">
+          <button type="button" class="move-btn" onclick="moveOperation(this, -1)">↑</button>
+          <button type="button" class="move-btn" onclick="moveOperation(this, 1)">↓</button>
+          <button type="button" class="remove-btn" onclick="removeOperation(this)">X</button>
+        </div>
+      `;
+      operationsList.appendChild(newRow);
+    };
+
+    window.removeComponent = function(button) {
+      if (document.querySelectorAll('#componentsList .row').length > 1) {
+        button.closest('.row').remove();
+      } else {
+        alert('É necessário manter pelo menos um componente!');
+      }
+    };
+
+    window.removeOperation = function(button) {
+      if (document.querySelectorAll('#operationsList .row').length > 1) {
+        button.closest('.row').remove();
+        updateSequenceNumbers();
+      } else {
+        alert('É necessário manter pelo menos uma operação!');
+      }
+    };
+
+    window.moveOperation = function(button, direction) {
+    const row = button.closest('.row');
+    const list = document.getElementById('operationsList');
+    const rows = Array.from(list.children);
+    const index = rows.indexOf(row);
+    const newIndex = index + direction;
+  
+  if (newIndex >= 0 && newIndex < rows.length) {
+    if (direction === 1) {
+      list.insertBefore(rows[newIndex], row);
+    } else {
+      list.insertBefore(row, rows[newIndex]);
+    }
+    updateSequenceNumbers();
+    enableSaveButton(); // Habilita o botão ao mover uma operação
+  }
+};
+
+    window.updateSequenceNumbers = function() {
+      const rows = document.querySelectorAll('#operationsList .row');
+      rows.forEach((row, index) => {
+        row.querySelector('.sequence-input').value = index + 1;
+      });
+    };
+
+    async function loadEstrutura(produtoId) {
+  if (!produtoId) {
+    resetForm();
+    return;
+  }
+
+  try {
+    const q = query(collection(db, "estruturas"), where("produtoPaiId", "==", produtoId));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const docData = querySnapshot.docs[0];
+      currentEstruturaId = docData.id;
+      const estrutura = docData.data();
+
+      // Limpa as listas existentes
+      const componentsList = document.getElementById("componentsList");
+      const operationsList = document.getElementById("operationsList");
+      componentsList.innerHTML = "";
+      operationsList.innerHTML = "";
+
+      // Carrega os componentes
+      estrutura.componentes.forEach(component => {
+        const componenteProduto = produtos.find(p => p.id === component.componentId);
+        const row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML = `
+          <select class="componente" required>
+            <option value="">Selecione o componente...</option>
+            ${produtos
+              .filter(p => ['MP', 'SP', 'SV', 'MO', 'HR'].includes(p.tipo))
+              .map(p => `
+                <option value="${p.id}" ${p.id === component.componentId ? 'selected' : ''}>
+                  ${p.codigo} - ${p.descricao} (${p.tipo})
+                </option>
+              `).join('')}
+          </select>
+          <input type="number" class="quantidade" placeholder="Quantidade" required min="0.001" step="0.001" value="${component.quantidade}">
+          <select class="unidade" required disabled>
+            <option value="${componenteProduto.unidade}">${componenteProduto.unidade}</option>
+          </select>
+          <button type="button" class="remove-btn" onclick="removeComponent(this)">X</button>
+        `;
+        componentsList.appendChild(row);
+        setupComponentSelectEvents(row.querySelector('.componente'));
+      });
+
+      // Carrega as operações
+      estrutura.operacoes.forEach(operation => {
+        const row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML = `
+          <input type="number" class="sequence-input" placeholder="Seq." required min="1" step="1" value="${operation.sequencia}">
+          <select class="operacao" required>
+            <option value="">Selecione a operação...</option>
+            ${operacoes.map(op => `
+              <option value="${op.id}" ${op.id === operation.operacaoId ? 'selected' : ''}>
+                ${op.numero} - ${op.operacao}
+              </option>
+            `).join('')}
+          </select>
+          <select class="recurso" required>
+            <option value="">Selecione o recurso...</option>
+            ${recursos.map(rec => `
+              <option value="${rec.id}" ${rec.id === operation.recursoId ? 'selected' : ''}>
+                ${rec.codigo} - ${rec.maquina} (${rec.setor})
+              </option>
+            `).join('')}
+          </select>
+          <input type="number" class="tempo" placeholder="Tempo (min)" required min="0.1" step="0.1" value="${operation.tempo}">
+          <textarea class="descricao" placeholder="Descrição da operação" maxlength="100" rows="2">${operation.descricao || ''}</textarea>
+          <div class="operation-controls">
+            <button type="button" class="move-btn" onclick="moveOperation(this, -1)">↑</button>
+            <button type="button" class="move-btn" onclick="moveOperation(this, 1)">↓</button>
+            <button type="button" class="remove-btn" onclick="removeOperation(this)">X</button>
+          </div>
+        `;
+        operationsList.appendChild(row);
+      });
+
+      // Mostra os botões "Excluir" e "Cancelar"
+      document.getElementById("deleteButton").style.display = "inline-block";
+      document.getElementById("cancelButton").style.display = "inline-block";
+
+      // Desabilita o botão "Salvar Estrutura"
+      const saveButton = document.querySelector('#structureForm .btn-success');
+      saveButton.disabled = true;
+    } else {
+      resetForm();
+    }
+  } catch (error) {
+    console.error("Erro ao carregar estrutura:", error);
+    alert("Erro ao carregar a estrutura. Por favor, tente novamente.");
+  }
+}
+function resetForm() {
+  currentEstruturaId = null;
+  document.getElementById('deleteButton').style.display = 'none';
+  document.getElementById('cancelButton').style.display = 'none';
+  
+  const componentsList = document.getElementById('componentsList');
+  componentsList.innerHTML = '';
+  addComponent();
+
+  const operationsList = document.getElementById('operationsList');
+  operationsList.innerHTML = '';
+  addOperation();
+
+  // Garante que o botão "Salvar Estrutura" esteja habilitado ao resetar (novo cadastro)
+  const saveButton = document.querySelector('#structureForm .btn-success');
+  saveButton.disabled = false;
+}
+function setupFormChangeListener() {
+  const form = document.getElementById('structureForm');
+  const saveButton = form.querySelector('.btn-success');
+
+  form.addEventListener('input', () => {
+    saveButton.disabled = false; // Habilita o botão ao detectar qualquer alteração
+  });
+
+  form.addEventListener('change', () => {
+    saveButton.disabled = false; // Habilita o botão ao mudar selects ou outros elementos
+  });
+}
+
+// Chame essa função após carregar a estrutura ou ao inicializar a página
+window.onload = async function() {
+  await loadInitialData();
+  initializeForm();
+  setupAutocomplete();
+  resetForm();
+  setupFormChangeListener(); // Adiciona o listener de alterações
+};
+
+function enableSaveButton() {
+  const saveButton = document.querySelector('#structureForm .btn-success');
+  saveButton.disabled = false;
+}
+
+  </script>

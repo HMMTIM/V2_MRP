@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PLAZHA - SISTEMAS - Faturamento</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --header-bg: #354a5f;
+      --warning-color: #e9730c;
+      --warning-hover: #d56b0c;
+      --paid-color: #107e3e;
+      --pending-color: #e9730c;
+      --overdue-color: #bb0000;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .sap-header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sap-logo {
+      font-weight: 500;
+      font-size: 24px;
+    }
+
+    #authContainer {
+      font-size: 14px;
+      color: white;
+    }
+
+    .sap-menu {
+      background-color: var(--secondary-color);
+      padding: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sap-menu span {
+      margin-right: 20px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .sap-menu span:hover {
+      color: var(--primary-color);
+    }
+
+    .sap-container {
+      padding: 20px;
+      background-color: white;
+      margin: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .sap-title {
+      background-color: var(--secondary-color);
+      padding: 10px;
+      font-weight: 500;
+      font-size: 18px;
+      color: var(--primary-color);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sap-form {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .sap-form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    input, select {
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+      background-color: white;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    .sap-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .sap-table th {
+      background-color: var(--secondary-color);
+      padding: 12px 15px;
+      text-align: left;
+      border: 1px solid var(--border-color);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .sap-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      font-size: 14px;
+    }
+
+    .sap-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .sap-buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .sap-button {
+      padding: 8px 16px;
+      background-color: var(--success-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .sap-button:hover {
+      background-color: var(--success-hover);
+    }
+
+    .sap-button.warning {
+      background-color: var(--warning-color);
+    }
+
+    .sap-button.warning:hover {
+      background-color: var(--warning-hover);
+    }
+
+    .sap-button.danger {
+      background-color: var(--danger-color);
+    }
+
+    .sap-button.danger:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .sap-button.secondary {
+      background-color: #6c757d;
+    }
+
+    .sap-button.secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .sap-table td .sap-button {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+
+    .sap-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--secondary-color);
+      padding: 10px;
+      font-size: 12px;
+      margin-top: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      color: var(--text-secondary);
+    }
+
+    .sap-tabs {
+      display: flex;
+      margin-top: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sap-tab {
+      padding: 8px 16px;
+      background-color: var(--secondary-color);
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      margin-right: 2px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .sap-tab.active {
+      background-color: white;
+      border-bottom: 1px solid white;
+      margin-bottom: -1px;
+      color: var(--primary-color);
+    }
+
+    .sap-tab:hover:not(.active) {
+      background-color: #e0e0e0;
+    }
+
+    .field-with-button {
+      display: flex;
+      gap: 5px;
+    }
+
+    .field-with-button input, .field-with-button select {
+      flex-grow: 1;
+    }
+
+    .field-with-button button {
+      background-color: #f0f0f0;
+      border: 1px solid var(--border-color);
+      padding: 0 10px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .field-with-button button:hover {
+      background-color: #e0e0e0;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 900px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .close-button {
+      position: absolute;
+      right: 15px;
+      top: 15px;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    .close-button:hover {
+      color: var(--danger-color);
+    }
+
+    .fatura-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .fatura-header-section {
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 15px;
+    }
+
+    .fatura-row {
+      display: flex;
+      margin-bottom: 10px;
+    }
+
+    .fatura-label {
+      width: 150px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .fatura-value {
+      flex-grow: 1;
+    }
+
+    .summary-box {
+      background-color: var(--secondary-color);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      font-size: 16px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: white;
+    }
+
+    .status-badge.pago {
+      background-color: var(--paid-color);
+    }
+
+    .status-badge.pendente {
+      background-color: var(--pending-color);
+    }
+
+    .status-badge.vencido {
+      background-color: var(--overdue-color);
+    }
+
+    .payment-history {
+      margin-top: 20px;
+    }
+
+    .fiscal-info {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .print-area {
+      background-color: white;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      border: 1px solid var(--border-color);
+    }
+
+    .print-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .print-header h1 {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .flex-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .badge {
+      font-size: 12px;
+      display: inline-block;
+      padding: 3px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .paid-badge {
+      background-color: rgba(16, 126, 62, 0.2);
+      color: var(--paid-color);
+    }
+
+    .pending-badge {
+      background-color: rgba(233, 115, 12, 0.2);
+      color: var(--pending-color);
+    }
+
+    .overdue-badge {
+      background-color: rgba(187, 0, 0, 0.2);
+      color: var(--overdue-color);
+    }
+
+    #filtroStatus {
+      min-width: 150px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sap-header">
+    <div class="sap-logo">PLAZHA - SISTEMAS</div>
+    <div id="authContainer">Usuário: <span id="userStatus">Não logado</span> | Empresa: 1000</div>
+  </div>
+
+  
+
+  <div class="sap-container">
+    <div class="sap-title">Faturamento</div>
+
+    <div class="sap-tabs">
+      <div class="sap-tab active" onclick="changeTab('pedidos-tab')">Pedidos a Faturar</div>
+      <div class="sap-tab" onclick="changeTab('faturas-tab')">Faturas</div>
+      <div class="sap-tab" onclick="changeTab('relatorios-tab')">Relatórios</div>
+    </div>
+
+    <!-- Tab de Pedidos a Faturar -->
+    <div id="pedidos-tab" class="tab-content active">
+      <div class="sap-form">
+        <div class="sap-form-group">
+          <label>Buscar Pedido</label>
+          <input type="text" id="searchPedidoInput" placeholder="Número ou cliente..." oninput="filterPedidos()">
+        </div>
+        <div class="sap-form-group">
+          <label>Período</label>
+          <div class="flex-row">
+            <input type="date" id="dataInicioPedido">
+            <span>até</span>
+            <input type="date" id="dataFimPedido">
+            <button class="sap-button" onclick="filterPedidos()">Filtrar</button>
+          </div>
+        </div>
+      </div>
+
+      <table class="sap-table">
+        <thead>
+          <tr>
+            <th>Nº Pedido</th>
+            <th>Cliente</th>
+            <th>Valor Total (R$)</th>
+            <th>Data Pedido</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="pedidosTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Tab de Faturas -->
+    <div id="faturas-tab" class="tab-content">
+      <div class="sap-form">
+        <div class="sap-form-group">
+          <label>Buscar Fatura</label>
+          <input type="text" id="searchFaturaInput" placeholder="Número, cliente ou NF..." oninput="filterFaturas()">
+        </div>
+        <div class="sap-form-group">
+          <label>Status</label>
+          <select id="filtroStatus" onchange="filterFaturas()">
+            <option value="">Todos</option>
+            <option value="Pago">Pagos</option>
+            <option value="Pendente">Pendentes</option>
+            <option value="Vencido">Vencidos</option>
+          </select>
+        </div>
+        <div class="sap-form-group">
+          <label>Período de Emissão</label>
+          <div class="flex-row">
+            <input type="date" id="dataInicioFatura">
+            <span>até</span>
+            <input type="date" id="dataFimFatura">
+            <button class="sap-button" onclick="filterFaturas()">Filtrar</button>
+          </div>
+        </div>
+      </div>
+
+      <table class="sap-table">
+        <thead>
+          <tr>
+            <th>Nº Fatura</th>
+            <th>Nº Nota Fiscal</th>
+            <th>Nº Pedido</th>
+            <th>Cliente</th>
+            <th>Valor Total (R$)</th>
+            <th>Data Emissão</th>
+            <th>Vencimento</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="faturasTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Tab de Relatórios -->
+    <div id="relatorios-tab" class="tab-content">
+      <div class="sap-form">
+        <div class="sap-form-group">
+          <label>Tipo de Relatório</label>
+          <select id="tipoRelatorio">
+            <option value="faturamento_mensal">Faturamento Mensal</option>
+            <option value="faturamento_cliente">Faturamento por Cliente</option>
+            <option value="faturas_vencidas">Faturas Vencidas</option>
+            <option value="previsao_recebimentos">Previsão de Recebimentos</option>
+          </select>
+        </div>
+        <div class="sap-form-group">
+          <label>Período</label>
+          <div class="flex-row">
+            <input type="date" id="dataInicioRelatorio">
+            <span>até</span>
+            <input type="date" id="dataFimRelatorio">
+          </div>
+        </div>
+      </div>
+
+      <div class="sap-buttons">
+        <button class="sap-button" onclick="gerarRelatorio()">Gerar Relatório</button>
+        <button class="sap-button secondary" onclick="exportarRelatorio()">Exportar</button>
+      </div>
+
+      <div id="relatorioResultado" style="margin-top: 20px;"></div>
+    </div>
+
+    <div class="sap-buttons">
+      <button class="sap-button" onclick="window.location.href='index.html'">Voltar</button>
+      <button class="sap-button danger" id="logoutButton" style="display: none;" onclick="logout()">Sair</button>
+    </div>
+  </div>
+
+  <!-- Modal de Faturamento -->
+  <div id="faturamentoModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal('faturamentoModal')">×</span>
+      <div class="sap-title">Gerar Fatura</div>
+      <form id="faturamentoForm" onsubmit="gerarFatura(event)">
+        <input type="hidden" id="pedidoId">
+
+        <div class="fatura-header">
+          <div class="fatura-header-section">
+            <h3>Dados do Cliente</h3>
+            <div id="dadosCliente"></div>
+          </div>
+          <div class="fatura-header-section">
+            <h3>Dados do Pedido</h3>
+            <div id="dadosPedido"></div>
+          </div>
+        </div>
+
+        <table class="sap-table">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Quantidade</th>
+              <th>Valor Unitário</th>
+              <th>Valor Total</th>
+            </tr>
+          </thead>
+          <tbody id="itensPedidoTableBody"></tbody>
+        </table>
+
+        <div class="summary-box">
+          <div class="fatura-row">
+            <div class="fatura-label">Subtotal:</div>
+            <div class="fatura-value" id="subtotal">R$ 0,00</div>
+          </div>
+          <div class="fatura-row">
+            <div class="fatura-label">Frete:</div>
+            <div class="fatura-value" id="valorFrete">R$ 0,00</div>
+          </div>
+          <div class="fatura-row">
+            <div class="fatura-label">Impostos:</div>
+            <div class="fatura-value" id="impostos">R$ 0,00</div>
+          </div>
+          <div class="summary-total">
+            <div>Total da Fatura:</div>
+            <div id="totalFatura">R$ 0,00</div>
+          </div>
+        </div>
+
+        <div class="sap-form" style="margin-top: 20px;">
+          <div class="sap-form-group">
+            <label>Número da Nota Fiscal</label>
+            <input type="text" id="numeroNF" required placeholder="Insira o número da NF">
+          </div>
+          <div class="sap-form-group">
+            <label>Série</label>
+            <input type="text" id="serieNF" required placeholder="Série da NF">
+          </div>
+          <div class="sap-form-group">
+            <label>Data de Emissão</label>
+            <input type="date" id="dataEmissao" required>
+          </div>
+          <div class="sap-form-group">
+            <label>Data de Vencimento</label>
+            <input type="date" id="dataVencimento" required>
+          </div>
+          <div class="sap-form-group">
+            <label>Condição de Pagamento</label>
+            <select id="condicaoPagamento" required>
+              <option value="A_VISTA">À Vista</option>
+              <option value="30_DIAS">30 Dias</option>
+              <option value="60_DIAS">60 Dias</option>
+              <option value="PARCELADO_3X">Parcelado 3x</option>
+            </select>
+          </div>
+          <div class="sap-form-group">
+            <label>Forma de Pagamento</label>
+            <select id="formaPagamento" required>
+              <option value="BOLETO">Boleto Bancário</option>
+              <option value="TRANSFERENCIA">Transferência Bancária</option>
+              <option value="CARTAO">Cartão de Crédito</option>
+              <option value="DINHEIRO">Dinheiro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fiscal-info">
+          <p>Informações fiscais adicionais serão geradas automaticamente conforme os parâmetros do sistema.</p>
+        </div>
+
+        <div class="sap-buttons">
+          <button type="submit" class="sap-button">Gerar Fatura</button>
+          <button type="button" class="sap-button secondary" onclick="closeModal('faturamentoModal')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Visualização de Fatura -->
+  <div id="verFaturaModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal('verFaturaModal')">×</span>
+      <div class="sap-title">Detalhes da Fatura</div>
+      
+      <div class="sap-buttons" style="justify-content: space-between; margin-bottom: 20px;">
+        <div>
+          <span id="statusFatura" class="status-badge pendente">Pendente</span>
+        </div>
+        <div>
+          <button class="sap-button warning" onclick="imprimirFatura()">Imprimir Fatura</button>
+          <button class="sap-button" onclick="registrarPagamento()">Registrar Pagamento</button>
+        </div>
+      </div>
+
+      <div class="fatura-header">
+        <div class="fatura-header-section">
+          <h3>Dados da Fatura</h3>
+          <div class="fatura-row">
+            <div class="fatura-label">Nº Fatura:</div>
+            <div class="fatura-value" id="numeroFaturaView"></div>
+          </div>
+          <div class="fatura-row">
+            <div class="fatura-label">Nº Nota Fiscal:</div>
+            <div class="fatura-value" id="numeroNFView"></div>
+          </div>
+          <div class="fatura-row">
+            <div class="fatura-label">Série:</div>
+            <div class="fatura-value" id="serieNFView"></div>
+          </div>
+          <div class="fatura-row">
+            <div class="fatura-label">Data Emissão:</div>
+            <div class="fatura-value" id="dataEmissaoView"></div>
+          </div>
+          <div class="fatura-row">
+            <div class="fatura-label">Vencimento:</div>
+            <div class="fatura-value" id="dataVencimentoView"></div>
+          </div>
+          <div class="fatura-row">
+            <div class="fatura-label">Nº Pedido:</div>
+            <div class="fatura-value" id="numeroPedidoView"></div>
+          </div>
+        </div>
+        <div class="fatura-header-section">
+          <h3>Dados do Cliente</h3>
+          <div class="fatura-row">
+            <div class="fatura-label">Cliente:</div>
+            <div class="fatura-value" id="clienteNomeView"></div>
+          </div>
+          <div class="fatura-row">
+            <div class="fatura-label">CNPJ:</div>
+            <div class="fatura-value" id="clienteCnpjView"></div>
+          </div>
+          <div class="fatura-row">
+            <div class="fatura-label">Endereço:</div>
+            <div class="fatura-value" id="clienteEnderecoView"></div>
+          </div>
+          <div class="fatura-row">
+            <div class="fatura-label">Email:</div>
+            <div class="fatura-value" id="clienteEmailView"></div>
+          </div>
+          <div class="fatura-row">
+            <div class="fatura-label">Telefone:</div>
+            <div class="fatura-value" id="clienteTelefoneView"></div>
+          </div>
+        </div>
+      </div>
+
+      <table class="sap-table">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Quantidade</th>
+            <th>Valor Unitário</th>
+            <th>Valor Total</th>
+          </tr>
+        </thead>
+        <tbody id="itensFaturaTableBody"></tbody>
+      </table>
+
+      <div class="summary-box">
+        <div class="fatura-row">
+          <div class="fatura-label">Subtotal:</div>
+          <div class="fatura-value" id="subtotalView">R$ 0,00</div>
+        </div>
+        <div class="fatura-row">
+          <div class="fatura-label">Frete:</div>
+          <div class="fatura-value" id="valorFreteView">R$ 0,00</div>
+        </div>
+        <div class="fatura-row">
+          <div class="fatura-label">Impostos:</div>
+          <div class="fatura-value" id="impostosView">R$ 0,00</div>
+        </div>
+        <div class="summary-total">
+          <div>Total da Fatura:</div>
+          <div id="totalFaturaView">R$ 0,00</div>
+        </div>
+      </div>
+
+      <div class="payment-history">
+        <h3>Histórico de Pagamentos</h3>
+        <table class="sap-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Valor</th>
+              <th>Forma de Pagamento</th>
+              <th>Referência</th>
+            </tr>
+          </thead>
+          <tbody id="pagamentosTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="sap-buttons">
+        <button class="sap-button secondary" onclick="closeModal('verFaturaModal')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Registrar Pagamento -->
+  <div id="pagamentoModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal('pagamentoModal')">×</span>
+      <div class="sap-title">Registrar Pagamento</div>
+      <form id="pagamentoForm" onsubmit="salvarPagamento(event)">
+        <input type="hidden" id="faturaIdPagamento">
+        
+        <div class="sap-form">
+          <div class="sap-form-group">
+            <label>Nº da Fatura</label>
+            <input type="text" id="numeroFaturaPagamento" readonly>
+          </div>
+          <div class="sap-form-group">
+            <label>Cliente</label>
+            <input type="text" id="clientePagamento" readonly>
+          </div>
+          <div class="sap-form-group">
+            <label>Valor Total</label>
+            <input type="text" id="valorTotalPagamento" readonly>
+          </div>
+          <div class="sap-form-group">
+            <label>Valor Já Pago</label>
+            <input type="text" id="valorPagoPagamento" readonly>
+          </div>
+          <div class="sap-form-group">
+            <label>Valor Restante</label>
+            <input type="text" id="valorRestantePagamento" readonly>
+          </div>
+          <div class="sap-form-group">
+            <label>Data do Pagamento</label>
+            <input type="date" id="dataPagamento" required>
+          </div>
+          <div class="sap-form-group">
+            <label>Valor do Pagamento</label>
+            <input type="number" id="valorPagamento" required step="0.01" min="0">
+          </div>
+          <div class="sap-form-group">
+            <label>Forma de Pagamento</label>
+            <select id="formaPagamentoPagamento" required>
+              <option value="BOLETO">Boleto Bancário</option>
+              <option value="TRANSFERENCIA">Transferência Bancária</option>
+              <option value="CARTAO">Cartão de Crédito</option>
+              <option value="DINHEIRO">Dinheiro</option>
+            </select>
+          </div>
+          <div class="sap-form-group">
+            <label>Referência</label>
+            <input type="text" id="referenciaPagamento" placeholder="Ex: Nº do boleto ou transação">
+          </div>
+        </div>
+
+        <div class="sap-buttons">
+          <button type="submit" class="sap-button">Salvar Pagamento</button>
+          <button type="button" class="sap-button secondary" onclick="closeModal('pagamentoModal')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs,
+      query,
+      where,
+      orderBy,
+      Timestamp,
+      doc,
+      updateDoc,
+      deleteDoc,
+      onSnapshot,
+      getDoc,
+      writeBatch
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm';
+
+    let state = {
+      usuarioAtual: null,
+      pedidos: [],
+      faturas: [],
+      clientes: [],
+      produtos: [],
+      pagamentos: [],
+      transportadoras: [],
+      parametros: null
+    };
+
+    window.onload = async function() {
+      state.usuarioAtual = JSON.parse(localStorage.getItem('currentUser'));
+      if (!state.usuarioAtual) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      document.getElementById('userStatus').textContent = state.usuarioAtual.nome;
+      document.getElementById('logoutButton').style.display = 'inline';
+
+      await loadInitialData();
+      await setupListeners();
+      await loadPedidos();
+      await loadFaturas();
+      updateDashboard();
+    };
+
+    async function loadInitialData() {
+      try {
+        const [
+          pedidosSnap,
+          faturasSnap,
+          fornecedoresSnap,
+          produtosSnap,
+          pagamentosSnap,
+          transportadorasSnap,
+          parametrosSnap
+        ] = await Promise.all([
+          getDocs(collection(db, "pedidosVenda")),
+          getDocs(collection(db, "faturas")),
+          getDocs(query(collection(db, "fornecedores"), where("tipo", "in", ["Cliente", "Ambos"]))),
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "pagamentos")),
+          getDocs(collection(db, "transportadoras")),
+          getDoc(doc(db, "parametros", "sistema"))
+        ]);
+
+        state.pedidos = pedidosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        state.faturas = faturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        state.clientes = fornecedoresSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        state.produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        state.pagamentos = pagamentosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        state.transportadoras = transportadorasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        state.parametros = parametrosSnap.data();
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        showNotification("Erro ao carregar dados iniciais", "error");
+      }
+    }
+
+    async function setupListeners() {
+      // Listener para faturas
+      onSnapshot(collection(db, "faturas"), (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added" || change.type === "modified") {
+            const index = state.faturas.findIndex(f => f.id === change.doc.id);
+            const fatura = { id: change.doc.id, ...change.doc.data() };
+            if (index > -1) {
+              state.faturas[index] = fatura;
+            } else {
+              state.faturas.push(fatura);
+            }
+          } else if (change.type === "removed") {
+            state.faturas = state.faturas.filter(f => f.id !== change.doc.id);
+          }
+        });
+        loadFaturas();
+        updateDashboard();
+      });
+
+      // Listener para pagamentos
+      onSnapshot(collection(db, "pagamentos"), (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added" || change.type === "modified") {
+            const index = state.pagamentos.findIndex(p => p.id === change.doc.id);
+            const pagamento = { id: change.doc.id, ...change.doc.data() };
+            if (index > -1) {
+              state.pagamentos[index] = pagamento;
+            } else {
+              state.pagamentos.push(pagamento);
+            }
+          } else if (change.type === "removed") {
+            state.pagamentos = state.pagamentos.filter(p => p.id !== change.doc.id);
+          }
+        });
+        loadFaturas();
+        updateDashboard();
+      });
+    }
+
+    async function loadPedidos() {
+      const tableBody = document.getElementById('pedidosTableBody');
+      tableBody.innerHTML = '';
+
+      const pedidosNaoFaturados = state.pedidos.filter(p => 
+        !state.faturas.some(f => f.pedidoId === p.id) && 
+        p.status !== 'Cancelado' && 
+        p.status !== 'Rascunho'
+      );
+
+      for (const pedido of pedidosNaoFaturados) {
+        const cliente = state.clientes.find(c => c.id === pedido.clienteId);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${pedido.numero}</td>
+          <td>${cliente?.nome || cliente?.razaoSocial || 'Desconhecido'}</td>
+          <td class="text-right">R$ ${formatMoney(pedido.valorTotal)}</td>
+          <td>${formatDate(pedido.dataCriacao)}</td>
+          <td><span class="status-badge ${getStatusClass(pedido.status)}">${pedido.status}</span></td>
+          <td>
+            <button class="sap-button" onclick="abrirFaturamento('${pedido.id}')">
+              <i class="fas fa-file-invoice-dollar"></i> Faturar
+            </button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      }
+    }
+
+    async function loadFaturas() {
+      const tableBody = document.getElementById('faturasTableBody');
+      tableBody.innerHTML = '';
+
+      // Ordenação
+      const ordenacao = document.getElementById('ordenacao').value;
+      let faturasOrdenadas = [...state.faturas];
+      
+      switch (ordenacao) {
+        case 'data_desc':
+          faturasOrdenadas.sort((a, b) => b.dataEmissao.seconds - a.dataEmissao.seconds);
+          break;
+        case 'data_asc':
+          faturasOrdenadas.sort((a, b) => a.dataEmissao.seconds - b.dataEmissao.seconds);
+          break;
+        case 'valor_desc':
+          faturasOrdenadas.sort((a, b) => b.total - a.total);
+          break;
+        case 'valor_asc':
+          faturasOrdenadas.sort((a, b) => a.total - b.total);
+          break;
+        case 'vencimento':
+          faturasOrdenadas.sort((a, b) => a.dataVencimento.seconds - b.dataVencimento.seconds);
+          break;
+      }
+
+      for (const fatura of faturasOrdenadas) {
+        const pedido = state.pedidos.find(p => p.id === fatura.pedidoId);
+        const cliente = state.clientes.find(c => c.id === pedido?.clienteId);
+        const pagamentosFatura = state.pagamentos.filter(p => p.faturaId === fatura.id);
+        const valorPago = pagamentosFatura.reduce((sum, p) => sum + p.valor, 0);
+        const status = getStatusFatura(fatura, valorPago);
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${fatura.numero}</td>
+          <td>${fatura.numeroNF}</td>
+          <td>${pedido?.numero || '-'}</td>
+          <td>${cliente?.nome || cliente?.razaoSocial || 'Desconhecido'}</td>
+          <td class="text-right">R$ ${formatMoney(fatura.total)}</td>
+          <td>${formatDate(fatura.dataEmissao)}</td>
+          <td>${formatDate(fatura.dataVencimento)}</td>
+          <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
+          <td>
+            <div class="sap-buttons">
+              <button class="sap-button" onclick="verFatura('${fatura.id}')">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="sap-button" onclick="imprimirFatura('${fatura.id}')">
+                <i class="fas fa-print"></i>
+              </button>
+              ${status !== 'Pago' ? `
+                <button class="sap-button" onclick="registrarPagamento('${fatura.id}')">
+                  <i class="fas fa-dollar-sign"></i>
+                </button>
+              ` : ''}
+              <button class="sap-button" onclick="enviarFatura('${fatura.id}')">
+                <i class="fas fa-envelope"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      }
+    }
+
+    function updateDashboard() {
+      let totalFaturado = 0;
+      let totalReceber = 0;
+      let totalVencido = 0;
+      let diasRecebimento = [];
+      const hoje = new Date();
+
+      state.faturas.forEach(fatura => {
+        const pagamentosFatura = state.pagamentos.filter(p => p.faturaId === fatura.id);
+        const valorPago = pagamentosFatura.reduce((sum, p) => sum + p.valor, 0);
+        
+        totalFaturado += valorPago;
+        
+        if (valorPago < fatura.total) {
+          const valorRestante = fatura.total - valorPago;
+          const vencimento = new Date(fatura.dataVencimento.seconds * 1000);
+          
+          if (vencimento < hoje) {
+            totalVencido += valorRestante;
+          }
+          totalReceber += valorRestante;
+        }
+
+        // Calcula média de dias para recebimento
+        if (pagamentosFatura.length > 0) {
+          const emissao = new Date(fatura.dataEmissao.seconds * 1000);
+          pagamentosFatura.forEach(pagamento => {
+            const dataPagamento = new Date(pagamento.data.seconds * 1000);
+            const dias = Math.floor((dataPagamento - emissao) / (1000 * 60 * 60 * 24));
+            diasRecebimento.push(dias);
+          });
+        }
+      });
+
+      // Calcula média de dias para recebimento
+      const mediaDias = diasRecebimento.length > 0 
+        ? Math.round(diasRecebimento.reduce((a, b) => a + b) / diasRecebimento.length)
+        : 0;
+
+      document.getElementById('totalFaturado').textContent = `R$ ${formatMoney(totalFaturado)}`;
+      document.getElementById('totalReceber').textContent = `R$ ${formatMoney(totalReceber)}`;
+      document.getElementById('totalVencido').textContent = `R$ ${formatMoney(totalVencido)}`;
+      document.getElementById('mediaRecebimento').textContent = `${mediaDias} dias`;
+    }
+
+    // Funções auxiliares
+    function formatMoney(value) {
+      return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatDate(timestamp) {
+      return new Date(timestamp.seconds * 1000).toLocaleDateString('pt-BR');
+    }
+
+    function getStatusClass(status) {
+      switch (status.toLowerCase()) {
+        case 'pago':
+          return 'pago';
+        case 'vencido':
+          return 'vencido';
+        default:
+          return 'pendente';
+      }
+    }
+
+    function getStatusFatura(fatura, valorPago) {
+      const hoje = new Date();
+      const vencimento = new Date(fatura.dataVencimento.seconds * 1000);
+      
+      if (valorPago >= fatura.total) return 'Pago';
+      if (vencimento < hoje) return 'Vencido';
+      return 'Pendente';
+    }
+
+    function showNotification(message, type) {
+      Swal.fire({
+        text: message,
+        icon: type,
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000
+      });
+    }
+
+    // Funções exportadas para o window
+    window.changeTab = function(tabId) {
+      document.querySelectorAll('.sap-tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.querySelector(`.sap-tab[onclick="changeTab('${tabId}')"]`).classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    };
+
+    window.filterPedidos = function() {
+      const searchText = document.getElementById('searchPedidoInput').value.toLowerCase();
+      const dataInicio = document.getElementById('dataInicioPedido').value;
+      const dataFim = document.getElementById('dataFimPedido').value;
+      
+      const rows = document.getElementById('pedidosTableBody').getElementsByTagName('tr');
+      
+      for (const row of rows) {
+        const numero = row.cells[0].textContent.toLowerCase();
+        const cliente = row.cells[1].textContent.toLowerCase();
+        const data = new Date(row.cells[3].textContent.split('/').reverse().join('-'));
+        
+        const matchesSearch = numero.includes(searchText) || cliente.includes(searchText);
+        const matchesDate = (!dataInicio || data >= new Date(dataInicio)) && 
+                           (!dataFim || data <= new Date(dataFim));
+        
+        row.style.display = matchesSearch && matchesDate ? '' : 'none';
+      }
+    };
+
+    window.filterFaturas = function() {
+      const searchText = document.getElementById('searchFaturaInput').value.toLowerCase();
+      const statusFilter = document.getElementById('filtroStatus').value;
+      const dataInicio = document.getElementById('dataInicioFatura').value;
+      const dataFim = document.getElementById('dataFimFatura').value;
+      
+      const rows = document.getElementById('faturasTableBody').getElementsByTagName('tr');
+      
+      for (const row of rows) {
+        const numero = row.cells[0].textContent.toLowerCase();
+        const numeroNF = row.cells[1].textContent.toLowerCase();
+        const numeroPedido = row.cells[2].textContent.toLowerCase();
+        const cliente = row.cells[3].textContent.toLowerCase();
+        const status = row.cells[7].querySelector('.status-badge').textContent;
+        const data = new Date(row.cells[5].textContent.split('/').reverse().join('-'));
+        
+        const matchesSearch = numero.includes(searchText) || 
+                            numeroNF.includes(searchText) || 
+                            numeroPedido.includes(searchText) || 
+                            cliente.includes(searchText);
+        const matchesStatus = !statusFilter || status === statusFilter;
+        const matchesDate = (!dataInicio || data >= new Date(dataInicio)) && 
+                           (!dataFim || data <= new Date(dataFim));
+        
+        row.style.display = matchesSearch && matchesStatus && matchesDate ? '' : 'none';
+      }
+      
+      loadFaturas();
+    };
+
+    window.abrirFaturamento = async function(pedidoId) {
+      const pedido = state.pedidos.find(p => p.id === pedidoId);
+      if (!pedido) return;
+
+      const cliente = state.clientes.find(c => c.id === pedido.clienteId);
+      const produto = state.produtos.find(p => p.id === pedido.produtoId);
+
+      document.getElementById('pedidoId').value = pedidoId;
+      document.getElementById('dadosCliente').innerHTML = `
+        <div class="fatura-row"><div class="fatura-label">Nome:</div><div class="fatura-value">${cliente?.nome || 'Desconhecido'}</div></div>
+        <div class="fatura-row"><div class="fatura-label">CNPJ:</div><div class="fatura-value">${cliente?.cnpj || '-'}</div></div>
+      `;
+      document.getElementById('dadosPedido').innerHTML = `
+        <div class="fatura-row"><div class="fatura-label">Nº Pedido:</div><div class="fatura-value">${pedido.numero}</div></div>
+        <div class="fatura-row"><div class="fatura-label">Data:</div><div class="fatura-value">${formatDate(pedido.dataCriacao)}</div></div>
+      `;
+      document.getElementById('itensPedidoTableBody').innerHTML = `
+        <tr>
+          <td>${produto ? `${produto.codigo} - ${produto.descricao}` : 'Desconhecido'}</td>
+          <td>${pedido.quantidade} ${produto?.unidade || ''}</td>
+          <td>R$${formatMoney(pedido.valorUnitario)}</td>
+          <td>R$${formatMoney(pedido.valorTotal)}</td>
+        </tr>
+      `;
+      document.getElementById('subtotal').textContent = `R$${formatMoney(pedido.valorTotal)}`;
+      document.getElementById('valorFrete').textContent = `R$${formatMoney(pedido.valorFrete || 0)}`;
+      document.getElementById('impostos').textContent = `R$0,00`; // Assuming no taxes for simplicity
+      document.getElementById('totalFatura').textContent = `R$${formatMoney(pedido.valorTotal + (pedido.valorFrete || 0))}`;
+
+      document.getElementById('faturamentoModal').style.display = 'block';
+    };
+
+    window.gerarFatura = async function(event) {
+      event.preventDefault();
+
+      const pedidoId = document.getElementById('pedidoId').value;
+      const numeroNF = document.getElementById('numeroNF').value;
+      const serieNF = document.getElementById('serieNF').value;
+      const dataEmissao = document.getElementById('dataEmissao').value;
+      const dataVencimento = document.getElementById('dataVencimento').value;
+      const condicaoPagamento = document.getElementById('condicaoPagamento').value;
+      const formaPagamento = document.getElementById('formaPagamento').value;
+
+      const pedido = state.pedidos.find(p => p.id === pedidoId);
+      const numeroFatura = (state.faturas.length + 1).toString().padStart(6, '0');
+
+      try {
+        const fatura = {
+          numero: numeroFatura,
+          pedidoId,
+          numeroNF,
+          serieNF,
+          dataEmissao: Timestamp.fromDate(new Date(dataEmissao)),
+          dataVencimento: Timestamp.fromDate(new Date(dataVencimento)),
+          total: pedido.valorTotal + (pedido.valorFrete || 0),
+          subtotal: pedido.valorTotal,
+          frete: pedido.valorFrete || 0,
+          impostos: 0,
+          condicaoPagamento,
+          formaPagamento,
+          status: 'Pendente',
+          dataCriacao: Timestamp.now(),
+          criadoPor: state.usuarioAtual?.id || 'Desconhecido'
+        };
+
+        await addDoc(collection(db, "faturas"), fatura);
+        await updateDoc(doc(db, "pedidosVenda", pedidoId), { status: 'Faturado' });
+
+        showNotification(`Fatura ${numeroFatura} gerada com sucesso!`, 'success');
+        closeModal('faturamentoModal');
+        await loadInitialData();
+        await loadPedidos();
+        await loadFaturas();
+      } catch (error) {
+        console.error("Erro ao gerar fatura:", error);
+        showNotification("Erro ao gerar fatura.", 'error');
+      }
+    };
+
+    window.verFatura = async function(faturaId) {
+      const fatura = state.faturas.find(f => f.id === faturaId);
+      if (!fatura) return;
+
+      const pedido = state.pedidos.find(p => p.id === fatura.pedidoId);
+      const cliente = state.clientes.find(c => c.id === pedido?.clienteId);
+      const produto = state.produtos.find(p => p.id === pedido?.produtoId);
+      const pagamentosFatura = state.pagamentos.filter(p => p.faturaId === faturaId);
+      const valorPago = pagamentosFatura.reduce((sum, p) => sum + p.valor, 0);
+      const hoje = new Date();
+      const status = valorPago >= fatura.total ? 'Pago' : 
+                     (new Date(fatura.dataVencimento.seconds * 1000) < hoje ? 'Vencido' : 'Pendente');
+
+      document.getElementById('statusFatura').textContent = status;
+      document.getElementById('statusFatura').className = `status-badge ${status.toLowerCase()}`;
+      document.getElementById('numeroFaturaView').textContent = fatura.numero;
+      document.getElementById('numeroNFView').textContent = fatura.numeroNF;
+      document.getElementById('serieNFView').textContent = fatura.serieNF;
+      document.getElementById('dataEmissaoView').textContent = formatDate(fatura.dataEmissao);
+      document.getElementById('dataVencimentoView').textContent = formatDate(fatura.dataVencimento);
+      document.getElementById('numeroPedidoView').textContent = pedido?.numero || '-';
+      document.getElementById('clienteNomeView').textContent = cliente?.nome || 'Desconhecido';
+      document.getElementById('clienteCnpjView').textContent = cliente?.cnpj || '-';
+      document.getElementById('clienteEnderecoView').textContent = cliente?.endereco || '-';
+      document.getElementById('clienteEmailView').textContent = cliente?.email || '-';
+      document.getElementById('clienteTelefoneView').textContent = cliente?.telefone || '-';
+      document.getElementById('itensFaturaTableBody').innerHTML = `
+        <tr>
+          <td>${produto ? `${produto.codigo} - ${produto.descricao}` : 'Desconhecido'}</td>
+          <td>${pedido?.quantidade || 0} ${produto?.unidade || ''}</td>
+          <td>R$${formatMoney(pedido?.valorUnitario || 0)}</td>
+          <td>R$${formatMoney(pedido?.valorTotal || 0)}</td>
+        </tr>
+      `;
+      document.getElementById('subtotalView').textContent = `R$${formatMoney(fatura.subtotal)}`;
+      document.getElementById('valorFreteView').textContent = `R$${formatMoney(fatura.frete)}`;
+      document.getElementById('impostosView').textContent = `R$${formatMoney(fatura.impostos)}`;
+      document.getElementById('totalFaturaView').textContent = `R$${formatMoney(fatura.total)}`;
+
+      const pagamentosTableBody = document.getElementById('pagamentosTableBody');
+      pagamentosTableBody.innerHTML = '';
+      pagamentosFatura.forEach(p => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${formatDate(p.data)}</td>
+          <td>R$${formatMoney(p.valor)}</td>
+          <td>${p.formaPagamento}</td>
+          <td>${p.referencia || '-'}</td>
+        `;
+        pagamentosTableBody.appendChild(row);
+      });
+
+      document.getElementById('verFaturaModal').style.display = 'block';
+    };
+
+    window.imprimirFatura = function(faturaId) {
+      const fatura = state.faturas.find(f => f.id === faturaId);
+      if (!fatura) return;
+
+      const content = document.getElementById('verFaturaModal').innerHTML;
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Imprimir Fatura</title>
+            <style>${document.querySelector('style').innerHTML}</style>
+          </head>
+          <body onload="window.print(); window.close();">
+            <div class="print-area">${content}</div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    };
+
+    window.registrarPagamento = function(faturaId) {
+      const fatura = state.faturas.find(f => f.id === faturaId);
+      if (!fatura) return;
+
+      const pedido = state.pedidos.find(p => p.id === fatura.pedidoId);
+      const cliente = state.clientes.find(c => c.id === pedido?.clienteId);
+      const pagamentosFatura = state.pagamentos.filter(p => p.faturaId === faturaId);
+      const valorPago = pagamentosFatura.reduce((sum, p) => sum + p.valor, 0);
+
+      document.getElementById('faturaIdPagamento').value = faturaId;
+      document.getElementById('numeroFaturaPagamento').value = fatura.numero;
+      document.getElementById('clientePagamento').value = cliente?.nome || 'Desconhecido';
+      document.getElementById('valorTotalPagamento').value = `R$${formatMoney(fatura.total)}`;
+      document.getElementById('valorPagoPagamento').value = `R$${formatMoney(valorPago)}`;
+      document.getElementById('valorRestantePagamento').value = `R$${formatMoney(fatura.total - valorPago)}`;
+
+      document.getElementById('pagamentoModal').style.display = 'block';
+    };
+
+    window.salvarPagamento = async function(event) {
+      event.preventDefault();
+
+      const faturaId = document.getElementById('faturaIdPagamento').value;
+      const dataPagamento = document.getElementById('dataPagamento').value;
+      const valorPagamento = parseFloat(document.getElementById('valorPagamento').value);
+      const formaPagamento = document.getElementById('formaPagamentoPagamento').value;
+      const referencia = document.getElementById('referenciaPagamento').value;
+
+      const fatura = state.faturas.find(f => f.id === faturaId);
+      const valorTotal = fatura.total;
+      const valorPagoAtual = state.pagamentos
+        .filter(p => p.faturaId === faturaId)
+        .reduce((sum, p) => sum + p.valor, 0);
+
+      if (valorPagamento + valorPagoAtual > valorTotal) {
+        showNotification('O valor do pagamento excede o valor restante da fatura!', 'error');
+        return;
+      }
+
+      try {
+        const pagamento = {
+          faturaId,
+          data: Timestamp.fromDate(new Date(dataPagamento)),
+          valor: valorPagamento,
+          formaPagamento,
+          referencia: referencia || '',
+          dataCriacao: Timestamp.now(),
+          criadoPor: state.usuarioAtual?.id || 'Desconhecido'
+        };
+
+        await addDoc(collection(db, "pagamentos"), pagamento);
+
+        const novoValorPago = valorPagoAtual + valorPagamento;
+        const novoStatus = novoValorPago >= valorTotal ? 'Pago' : 'Pendente';
+        await updateDoc(doc(db, "faturas", faturaId), { status: novoStatus });
+
+        showNotification('Pagamento registrado com sucesso!', 'success');
+        closeModal('pagamentoModal');
+        closeModal('verFaturaModal');
+        await loadInitialData();
+        await loadFaturas();
+      } catch (error) {
+        console.error("Erro ao registrar pagamento:", error);
+        showNotification("Erro ao registrar pagamento.", 'error');
+      }
+    };
+
+    window.gerarRelatorio = async function() {
+      const tipoRelatorio = document.getElementById('tipoRelatorio').value;
+      const dataInicio = document.getElementById('dataInicioRelatorio').value;
+      const dataFim = document.getElementById('dataFimRelatorio').value;
+      const resultado = document.getElementById('relatorioResultado');
+
+      let html = '';
+      if (tipoRelatorio === 'faturamento_mensal') {
+        html = '<h3>Faturamento Mensal</h3><table class="sap-table"><thead><tr><th>Mês</th><th>Total (R$)</th></tr></thead><tbody>';
+        const faturasFiltradas = state.faturas.filter(f => {
+          const dataEmissao = new Date(f.dataEmissao.seconds * 1000);
+          return (!dataInicio || dataEmissao >= new Date(dataInicio)) && 
+                 (!dataFim || dataEmissao <= new Date(dataFim));
+        });
+        const porMes = faturasFiltradas.reduce((acc, f) => {
+          const mes = new Date(f.dataEmissao.seconds * 1000).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+          acc[mes] = (acc[mes] || 0) + f.total;
+          return acc;
+        }, {});
+        for (const [mes, total] of Object.entries(porMes)) {
+          html += `<tr><td>${mes}</td><td>R$${formatMoney(total)}</td></tr>`;
+        }
+        html += '</tbody></table>';
+      } else if (tipoRelatorio === 'faturamento_cliente') {
+        html = '<h3>Faturamento por Cliente</h3><table class="sap-table"><thead><tr><th>Cliente</th><th>Total (R$)</th></tr></thead><tbody>';
+        const porCliente = state.faturas.reduce((acc, f) => {
+          const pedido = state.pedidos.find(p => p.id === f.pedidoId);
+          const cliente = state.clientes.find(c => c.id === pedido?.clienteId);
+          const nomeCliente = cliente?.nome || 'Desconhecido';
+          acc[nomeCliente] = (acc[nomeCliente] || 0) + f.total;
+          return acc;
+        }, {});
+        for (const [cliente, total] of Object.entries(porCliente)) {
+          html += `<tr><td>${cliente}</td><td>R$${formatMoney(total)}</td></tr>`;
+        }
+        html += '</tbody></table>';
+      } else if (tipoRelatorio === 'faturas_vencidas') {
+        html = '<h3>Faturas Vencidas</h3><table class="sap-table"><thead><tr><th>Nº Fatura</th><th>Cliente</th><th>Valor</th><th>Vencimento</th></tr></thead><tbody>';
+        const hoje = new Date();
+        const vencidas = state.faturas.filter(f => {
+          const valorPago = state.pagamentos.filter(p => p.faturaId === f.id).reduce((sum, p) => sum + p.valor, 0);
+          return valorPago < f.total && new Date(f.dataVencimento.seconds * 1000) < hoje;
+        });
+        for (const f of vencidas) {
+          const pedido = state.pedidos.find(p => p.id === f.pedidoId);
+          const cliente = state.clientes.find(c => c.id === pedido?.clienteId);
+          html += `<tr><td>${f.numero}</td><td>${cliente?.nome || 'Desconhecido'}</td><td>R$${formatMoney(f.total)}</td><td>${formatDate(f.dataVencimento)}</td></tr>`;
+        }
+        html += '</tbody></table>';
+      } else if (tipoRelatorio === 'previsao_recebimentos') {
+        html = '<h3>Previsão de Recebimentos</h3><table class="sap-table"><thead><tr><th>Data</th><th>Total (R$)</th></tr></thead><tbody>';
+        const porData = state.faturas.reduce((acc, f) => {
+          const valorPago = state.pagamentos.filter(p => p.faturaId === f.id).reduce((sum, p) => sum + p.valor, 0);
+          if (valorPago < f.total) {
+            const data = new Date(f.dataVencimento.seconds * 1000).toLocaleDateString();
+            acc[data] = (acc[data] || 0) + (f.total - valorPago);
+          }
+          return acc;
+        }, {});
+        for (const [data, total] of Object.entries(porData)) {
+          html += `<tr><td>${data}</td><td>R$${formatMoney(total)}</td></tr>`;
+        }
+        html += '</tbody></table>';
+      }
+      resultado.innerHTML = html;
+    };
+
+    window.exportarRelatorio = function() {
+      const resultado = document.getElementById('relatorioResultado').innerHTML;
+      const blob = new Blob([`
+        <html>
+          <head><style>${document.querySelector('style').innerHTML}</style></head>
+          <body>${resultado}</body>
+        </html>
+      `], { type: 'text/html' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `Relatorio_${new Date().toISOString().split('T')[0]}.html`;
+      link.click();
+    };
+
+    window.closeModal = function(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+      if (modalId === 'verFaturaModal') delete document.querySelector('#verFaturaModal').dataset.faturaId;
+    };
+
+    window.logout = function() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    };
+  </script>
+</body>
+</html>

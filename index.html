@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>
+        if (!localStorage.getItem('currentUser')) {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Inicial - MRP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0854a0;
+            --primary-hover: #0a4d8c;
+            --secondary-color: #f0f3f6;
+            --sidebar-bg: #1d1b31;
+            --text-color: #333;
+            --text-secondary: #fff;
+            --success-color: #107e3e;
+            --warning-color: #e9730c;
+            --danger-color: #bb0000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f7f7;
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        body.loading::before {
+            content: 'Carregando...';
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: var(--primary-color);
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 280px;
+            background: var(--sidebar-bg);
+            padding: 20px;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar .logo {
+            width: 150px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        .sidebar .user-info {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .sidebar .user-info .username {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .sidebar .logout-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .sidebar .logout-btn:hover {
+            color: #a30000;
+        }
+
+        .nav-list {
+            list-style: none;
+        }
+
+        .nav-list li {
+            margin-bottom: 5px;
+        }
+
+        .nav-list .section-title {
+            color: #9191a5;
+            font-size: 14px;
+            padding: 10px 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-list .menu-button {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-list .menu-button i {
+            margin-right: 10px;
+        }
+
+        .nav-list .menu-button:hover {
+            background: var(--primary-color);
+            padding-left: 20px;
+            transform: translateX(5px);
+        }
+
+        .nav-list .financial {
+            background: var(--success-color);
+        }
+
+        .nav-list .financial:hover {
+            background: #0d6e36;
+        }
+
+        .nav-list .settings {
+            background: var(--warning-color);
+        }
+
+        .nav-list .settings:hover {
+            background: #d66a0b;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .main-content h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--text-color);
+        }
+
+        .center-image {
+            max-width: 100%;
+            max-height: 500px;
+            margin-top: 20px;
+            border: 1px solid #d4d4d4;
+            border-radius: 4px;
+        }
+
+        .version-info {
+            text-align: center;
+            color: #666;
+            font-size: 0.8em;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .menu-toggle {
+            display: block;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 18px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        .menu-toggle:hover {
+            background: var(--primary-hover);
+        }
+        .export-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .export-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .highlight-btn {
+            background-color: #ff9800; /*  Added styling for highlighted button */
+            color: white;
+        }
+
+        .highlight-btn:hover {
+            background-color: #e68a00; /*  Hover effect for highlighted button */
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                left: -280px;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <img id="companyLogo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23666' font-size='14'%3ELogo%3C/text%3E%3C/svg%3E" alt="Logo da Empresa" class="logo">
+        <div class="user-info">
+            <div>Usuário: <span class="username" id="currentUserName">-</span></div>
+            <div>Nível: <span id="currentUserLevel">-</span></div>
+            <button class="logout-btn" onclick="logout()">Sair</button>
+        </div>
+
+        <ul class="nav-list">
+            <li class="section-title">Financeiro</li>
+            <li><button class="menu-button financial" data-level="2" data-permission="contas_pagar" onclick="abrirTela('contasPagar')"><i class="fas fa-money-bill"></i> Contas a Pagar</button></li>
+            <li><button class="menu-button financial" data-level="2" data-permission="contas_receber" onclick="abrirTela('contasReceber')"><i class="fas fa-hand-holding-usd"></i> Contas a Receber</button></li>
+            <li><button class="menu-button financial" data-level="2" data-permission="condicoes_pagamento" onclick="abrirTela('condicoesPagamento')"><i class="fas fa-file-invoice"></i> Condições de Pagamento</button></li>
+            <li><button class="menu-button financial" data-level="2" data-permission="fluxo_caixa" onclick="abrirTela('fluxoCaixa')"><i class="fas fa-chart-line"></i> Fluxo de Caixa</button></li>
+            <li><button class="menu-button financial" data-level="2" data-permission="analise_credito" onclick="abrirTela('analiseCredito')"><i class="fas fa-credit-card"></i> Análise de Crédito</button></li>
+            <li><button class="menu-button financial highlight-btn" data-level="2" data-permission="faturamento" onclick="abrirTela('faturamento')"><i class="fas fa-receipt"></i> Faturamento</button></li>
+
+            <li class="section-title">Vendas</li>
+            <li><button class="menu-button" data-level="2" data-permission="orcamentos" onclick="abrirTela('orcamentos')"><i class="fas fa-file-invoice-dollar"></i> Orçamentos</button></li>
+            <li><button class="menu-button" data-level="2" data-permission="pedidos_venda" onclick="abrirTela('pedidosVenda')"><i class="fas fa-shopping-cart"></i> Pedidos de Venda</button></li>
+            <li><button class="menu-button" data-level="2" data-permission="tabela_precos" onclick="abrirTela('tabelaPrecos')"><i class="fas fa-tags"></i> Tabela de Preços</button></li>
+            <li><button class="menu-button" data-level="2" data-permission="condicoes_especiais" onclick="abrirTela('condicoesEspeciais')"><i class="fas fa-percentage"></i> Condições Especiais</button></li>
+
+            <li class="section-title">Compras</li>
+            <li><button class="menu-button" data-level="2" data-permission="solicitacao_compras" onclick="abrirTela('solicitacaoCompras')"><i class="fas fa-shopping-cart"></i> Solicitação de Compras</button></li>
+            <li><button class="menu-button" data-level="2" data-permission="cotacoes" onclick="abrirTela('cotacoes')"><i class="fas fa-file-alt"></i> Cotações</button></li>
+            <li><button class="menu-button" data-level="2" data-permission="pedidos_compra" onclick="abrirTela('pedidosCompra')"><i class="fas fa-file-signature"></i> Pedidos de Compra</button></li>
+            <li><button class="menu-button" data-level="2" data-permission="relatorio_necessidades_compras" onclick="abrirTela('relatorioNecessidadesCompras')"><i class="fas fa-shopping-basket"></i> Necessidades de Compras</button></li>
+            <li><button class="menu-button" data-level="2" data-permission="relatorio_necessidade_materiais" onclick="abrirTela('relatorioNecessidadeMateriais')"><i class="fas fa-boxes"></i> Produtos x OPs</button></li>
+
+            <li class="section-title">Engenharia</li>
+            <li><button class="menu-button" data-level="1" data-permission="cadastro_produtos" onclick="abrirTela('cadastroProduto')"><i class="fas fa-box"></i> Cadastro de Produtos</button></li>
+            <li><button class="menu-button" data-level="1" data-permission="cadastro_grupo" onclick="abrirTela('cadastroGrupo')"><i class="fas fa-layer-group"></i> Cadastro de Grupo</button></li>
+            <li><button class="menu-button" data-level="1" data-permission="cadastro_familia" onclick="abrirTela('cadastroFamilia')"><i class="fas fa-object-group"></i> Cadastro de Família</button></li>
+            <li><button class="menu-button" data-level="1" data-permission="cadastro_recursos" onclick="abrirTela('cadastroRecursos')"><i class="fas fa-tools"></i> Cadastro de Recursos</button></li>
+            <li><button class="menu-button" data-level="9" data-permission="cadastro_armazem" onclick="abrirTela('cadastroArmazem')"><i class="fas fa-warehouse"></i> Cadastro de Armazem</button></li>
+            <li><button class="menu-button" data-level="1" data-permission="estrutura_produtos" onclick="abrirTela('estruturaProdutos')"><i class="fas fa-sitemap"></i> Estrutura de Produtos</button></li>
+            <li><button class="menu-button" data-level="1" data-permission="estrutura_nova" onclick="abrirTela('estruturaNova')"><i class="fas fa-project-diagram"></i> Estrutura Drop</button></li>
+
+            <li class="section-title">Cadastros</li>
+            <li><button class="menu-button" data-level="1" data-permission="centralDocumentos" onclick="abrirTela('centralDocumentos')"><i class="fas fa-folder"></i> Central de Documentos</button></li>
+            <li><button class="menu-button" data-level="1" data-permission="cadastro_clientes" onclick="abrirTela('cadastroClientes')"><i class="fas fa-users"></i> Cadastro de Clientes</button></li>
+            <li><button class="menu-button" data-level="1" data-permission="cadastro_operacoes" onclick="abrirTela('cadastroOperacoes')"><i class="fas fa-cogs"></i> Cadastro de Operações</button></li>
+            <li><button class="menu-button" data-level="1" data-permission="cadastro_fornecedores" onclick="abrirTela('cadastroFornecedores')"><i class="fas fa-truck"></i> Cadastro de Parceiros</button></li>
+            <li><button class="menu-button" data-level="9" data-permission="cadastro_centro_custo" onclick="abrirTela('cadastroCentroCusto')"><i class="fas fa-coins"></i> Cadastro de Centro de Custo</button></li>
+            <li><button class="menu-button" data-level="9" data-permission="cadastro_setores" onclick="abrirTela('cadastroSetores')"><i class="fas fa-building"></i> Cadastro de Setores</button></li>
+            <li><button class="menu-button" data-level="9" data-permission="cadastro_usuarios" onclick="abrirTela('cadastroUsuarios')"><i class="fas fa-user-plus"></i> Cadastro de Usuários</button></li>
+            <li><button class="menu-button" data-level="3" data-permission="produtos_fornecedores" onclick="abrirTela('produtosFornecedores')"><i class="fas fa-link"></i> Produtos x Fornecedores</button></li>
+            <li><button class="menu-button" data-level="9" data-permission="saldos_iniciais" onclick="abrirTela('saldosIniciais')"><i class="fas fa-balance-scale"></i> Saldos Iniciais</button></li>
+
+            <li class="section-title">Produção</li>
+            <li><button class="menu-button" data-level="3" data-permission="ordens_producao" onclick="abrirTela('ordensProducao')"><i class="fas fa-industry"></i> Ordens de Produção</button></li>
+            <li><button class="menu-button" data-level="3" data-permission="simulacao_ordens" onclick="abrirTela('simulacaoOrdens')"><i class="fas fa-calculator"></i> Simulação de Ordens</button></li>
+            <li><button class="menu-button" data-level="9" data-permission="zerar_ordens" onclick="abrirTela('zerarOrdens')"><i class="fas fa-eraser"></i> Zerar Ordens</button></li>
+            <li><button class="menu-button" data-level="3" data-permission="op_alteracao" onclick="abrirTela('alterarOp')"><i class="fas fa-edit"></i> Alterar OP</button></li>
+            <li><button class="menu-button" data-level="3" data-permission="apontamentos" onclick="abrirTela('apontamentos')"><i class="fas fa-clipboard"></i> Registrar Apontamentos</button></li>
+            <li><button class="menu-button" data-level="3" data-permission="estoques" onclick="abrirTela('estoques')"><i class="fas fa-boxes"></i> Controle de Estoques</button></li>
+            <li><button class="menu-button" data-level="3" data-permission="estoques" onclick="abrirTela('movimentacaoArmazem')"><i class="fas fa-exchange-alt"></i> Movimentação entre Armazéns</button></li>
+            <li><button class="menu-button" data-level="9" data-permission="estorno" onclick="abrirTela('estorno')"><i class="fas fa-undo"></i> Estorno de Movimentos</button></li>
+
+            <li class="section-title" id="menuQualidade">Qualidade</li>
+            <li><button class="menu-button" id="btnEspecificacoes" data-level="3" data-permission="especificacoes_produtos" onclick="abrirTela('especificacoesProdutos')"><i class="fas fa-file-alt"></i> Especificações de Produtos</button></li>
+            <li><button class="menu-button" id="btnHomologacao" data-level="3" data-permission="homologacao_fornecedores" onclick="abrirTela('homologacaoFornecedores')"><i class="fas fa-check-circle"></i> Homologação de Fornecedores</button></li>
+            <li><button class="menu-button" id="btnRecebimento" data-level="3" data-permission="recebimento_materiais" onclick="abrirTela('recebimentoMateriais')"><i class="fas fa-truck-loading"></i> Recebimento de Materiais</button></li>
+            <li><button class="menu-button" id="btnInspecao" data-level="3" data-permission="estoque_qualidade" onclick="abrirTela('inspecaoQualidade')"><i class="fas fa-clipboard-check"></i> Inspeção Qualidade</button></li>
+
+            <li class="section-title">Relatórios</li>
+            <li><button class="menu-button" data-level="2" data-permission="relatorio_financeiro" onclick="abrirTela('relatorioFinanceiro')"><i class="fas fa-chart-line"></i> Relatório Financeiro</button></li>
+            <li><button class="menu-button" data-level="2" data-permission="relatorio_inventario" onclick="abrirTela('relatorioInventario')"><i class="fas fa-boxes"></i> Relatório de Inventário</button></li>
+            <li><button class="menu-button" data-level="2" data-permission="relatorio_mrp_compras" onclick="abrirTela('relatorioMrpCompras')"><i class="fas fa-chart-bar"></i> Relatório MRP e Compras</button></li>
+            <li><button class="menu-button" data-level="3" data-permission="relatorio_estrutura" onclick="abrirTela('relatorioEstrutura')"><i class="fas fa-sitemap"></i> Relatório de Estrutura</button></li>
+            <li><button class="menu-button" data-level="3" data-permission="relatorio_op_sap" onclick="abrirTela('relatorioOpSap')"><i class="fas fa-file-excel"></i> Relatório de OP (SAP)</button></li>
+            <li><button class="menu-button" data-level="3" data-permission="relatorio_ordens" onclick="abrirTela('relatorioOrdens')"><i class="fas fa-list"></i> Relatório Ordens x Setor</button></li>
+            <li><button class="menu-button" data-level="1" data-permission="relatorio_onde_usado" onclick="abrirTela('relatorioOndeUsado')"><i class="fas fa-search"></i> Onde é Usado</button></li>
+            <li><button class="menu-button" data-level="3" data-permission="relatorio_substituir" onclick="abrirTela('relatorioSubstituir')"><i class="fas fa-exchange-alt"></i> Substituir Material</button></li>
+            <li><button class="menu-button" data-level="1" data-permission="relatorio_copia_estrutura" onclick="abrirTela('relatorioCopiaEstrutura')"><i class="fas fa-copy"></i> Cópia de Estrutura</button></li>
+            <li><button class="menu-button" data-level="1" data-permission="exportar_estrutura" onclick="abrirTela('exportar_estrutura')"><i class="fas fa-file-export"></i> Exportar todas estruturas</button></li>
+            <li><button class="menu-button" data-level="2" data-permission="relatorio_custo" onclick="abrirTela('relatorioCusto')"><i class="fas fa-dollar-sign"></i> Relatório de Custo</button></li>
+            <li><button class="menu-button" data-level="3" data-permission="relatorio_inspecoes" onclick="abrirTela('relatorioInspecoes')"><i class="fas fa-clipboard-list"></i> Relatório de Inspeções</button></li>
+
+            <li class="section-title">Configurações</li>
+            <li><button class="menu-button settings" data-level="7" data-permission="config_empresa" onclick="abrirTela('configEmpresa')"><i class="fas fa-building"></i> Dados da Empresa</button></li>
+            <li><button class="menu-button settings" data-level="7" data-permission="config_parametros" onclick="abrirTela('configParametros')"><i class="fas fa-cog"></i> Parâmetros do Sistema</button></li>
+            <li><button class="menu-button settings" data-level="7" data-permission="config_backup" onclick="abrirTela('configBackup')"><i class="fas fa-database"></i> Backup e Restauração</button></li>
+            <li><button class="menu-button settings" data-level="7" data-permission="config_logs" onclick="abrirTela('configLogs')"><i class="fas fa-file-alt"></i> Logs do Sistema</button></li>
+            <li><button class="menu-button settings" data-level="7" data-permission="config_permissoes" onclick="abrirTela('permissoesUsuario')"><i class="fas fa-user-shield"></i> Permissões de Usuário</button></li>
+            <li><button class="menu-button settings" data-level="7" data-permission="config_cfops" onclick="abrirTela('importarCfops')"><i class="fas fa-list-alt"></i> Importar CFOPs</button></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <button type="button" class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <h1 id="companyTitle">Sistema MRP</h1>
+        <img id="centerImage" class="center-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='300' viewBox='0 0 500 300'%3E%3Crect width='500' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23666' font-size='18'%3EImagem Central%3C/text%3E%3C/svg%3E" alt="Imagem Central">
+        <div class="version-info">
+            Versão 1.0.0 - Sistema MRP HTS Tecnologia © 2025 - Todos os direitos reservados.
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+    <script>
+        function exportToExcel() {
+            let wb = XLSX.utils.book_new();
+            let ws = XLSX.utils.table_to_sheet(document.querySelector(".main-content"));
+            XLSX.utils.book_append_sheet(wb, ws, "");
+            XLSX.writeFile(wb, "Sistema_MRP.xlsx");
+        }
+    </script>
+    <script type="module">
+        import { db, storage } from './firebase-config.js';
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let currentUser = null;
+        let userPermissions = [];
+
+        window.onload = async function() {
+            document.body.classList.add('loading');
+            const userSession = localStorage.getItem('currentUser');
+            if (!userSession) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userSession);
+            document.getElementById('currentUserName').textContent = currentUser.nome;
+            document.getElementById('currentUserLevel').textContent = getNivelDescricao(currentUser.nivel);
+
+            if (currentUser.nivel < 9) {
+                await loadUserPermissions();
+            }
+
+            setupMenuAccess();
+            await loadCompanyData();
+            document.body.classList.remove('loading');
+        };
+
+        async function loadUserPermissions() {
+            try {
+                const permissionsDoc = await getDoc(doc(db, "permissoes", currentUser.id));
+                if (permissionsDoc.exists()) {
+                    userPermissions = permissionsDoc.data().permissoes || [];
+                }
+            } catch (error) {
+                console.error("Erro ao carregar permissões:", error);
+            }
+        }
+
+        async function loadCompanyData() {
+            try {
+                const [empresaDoc, parametrosDoc] = await Promise.all([
+                    getDoc(doc(db, "empresa", "config")),
+                    getDoc(doc(db, "parametros", "sistema"))
+                ]);
+
+                // Configurar visibilidade dos menus baseado nos parâmetros
+                if (parametrosDoc.exists()) {
+                    const params = parametrosDoc.data();
+
+                    // Menu Qualidade sempre visível para permitir recebimento
+                    document.getElementById('menuQualidade').style.display = 'block';
+
+                    // Outros itens condicionados aos parâmetros
+                    document.getElementById('btnEspecificacoes').style.display = params.controleQualidade ? 'block' : 'none';
+                    document.getElementById('btnHomologacao').style.display = params.homologacaoFornecedor ? 'block' : 'none';
+                    document.getElementById('btnRecebimento').style.display = 'block'; // Always visible, as per requirement
+                    document.getElementById('btnInspecao').style.display = (params.inspecaoRecebimento || params.armazemQualidade) ? 'block' : 'none';
+                }
+
+                const docRef = doc(db, "empresa", "config");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    // Set default logo if logoUrl is not available
+                    document.getElementById('companyLogo').src = data.logoUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23666' font-size='14'%3ELogo%3C/text%3E%3C/svg%3E";
+
+                    // Set default company name if nomeFantasia is not available
+                    document.getElementById('companyTitle').textContent = data.nomeFantasia || "Sistema MRP";
+
+                    // Set default center image if centerImageUrl is not available
+                    document.getElementById('centerImage').src = data.centerImageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='300' viewBox='0 0 500 300'%3E%3Crect width='500' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23666' font-size='18'%3EImagem Central%3C/text%3E%3C/svg%3E";
+                } else {
+                    console.warn("Dados da empresa não encontrados. Usando valores padrão.");
+                }
+            } catch (error) {
+                console.error("Erro ao carregar dados da empresa:", error);
+                // Set default values in case of error
+                document.getElementById('companyLogo').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23666' font-size='14'%3ELogo%3C/text%3E%3C/svg%3E";
+                document.getElementById('companyTitle').textContent = "Sistema MRP";
+                document.getElementById('centerImage').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='300' viewBox='0 0 500 300'%3E%3Crect width='500' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23666' font-size='18'%3EImagem Central%3C/text%3E%3C/svg%3E";
+            }
+        }
+
+        function getNivelDescricao(nivel) {
+            switch (parseInt(nivel)) {
+                case 1: return "Básico";
+                case 2: return "Intermediário";
+                case 3: return "Avançado";
+                case 7: return "Administrador";
+                case 9: return "Superusuário";
+                default: return nivel;
+            }
+        }
+
+        function setupMenuAccess() {
+            if (currentUser.nivel === 9) return;
+            const buttons = document.querySelectorAll('.menu-button');
+            buttons.forEach(button => {
+                const requiredLevel = parseInt(button.getAttribute('data-level') || '7');
+                const requiredPermission = button.getAttribute('data-permission');
+                if (currentUser.nivel < requiredLevel || (requiredPermission && !userPermissions.includes(requiredPermission))) {
+                    button.style.display = 'none';
+                }
+            });
+        }
+
+        window.logout = function() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        };
+
+        window.abrirTela = function(tela) {
+            switch (tela) {
+                case 'relatorioMrpCompras': window.location.href = 'relatorio_mrp_compras.html'; break;
+                case 'centralDocumentos': window.location.href = 'central_documentos.html'; break;
+                case 'cadastroClientes': window.location.href = 'cadastro_clientes.html'; break;
+                case 'cadastroProduto': window.location.href = 'cadastro_produto.html'; break;
+                case 'cadastroOperacoes': window.location.href = 'cadastro_operacoes.html'; break;
+                case 'cadastroRecursos': window.location.href = 'cadastro_recursos.html'; break;
+                case 'cadastroFornecedores': window.location.href = 'cadastro_fornecedores.html'; break;
+                case 'cadastroUsuarios': window.location.href = 'cadastro_usuarios.html'; break;
+                case 'produtosFornecedores': window.location.href = 'produtos_fornecedores.html'; break;
+                case 'estruturaProdutos': window.location.href = 'cadastro_estrutura.html'; break;
+                case 'estruturaNova': window.location.href = 'estrutura_nova.html'; break;
+                case 'pedidosVenda': window.location.href = 'pedidos_venda.html'; break;
+                case 'ordensProducao': window.location.href = 'ordens_producao.html'; break;
+                case 'apontamentos': window.location.href = 'apontamentos.html'; break;
+                case 'estoques': window.location.href = 'estoques.html'; break;
+                case 'movimentacaoArmazem': window.location.href = 'movimentacao_armazem.html'; break;
+                case 'cotacoes': window.location.href = 'cotacoes.html'; break;
+                case 'pedidosCompra': window.location.href = 'pedidos_compra.html'; break;
+                case 'relatoriocompras': window.location.href = 'relatorio_mrp_compras.html'; break;
+                case 'solicitacaoCompras': window.location.href = 'solicitacao_compras.html'; break;
+                case 'relatorioEstrutura': window.location.href = 'relatorio_estrutura.html'; break;
+                case 'relatorioOrdens': window.location.href = 'relatorio_ordens_setor.html'; break;
+                case 'relatorioOp': window.location.href = 'relatorio_op.html'; break;
+                case 'relatorioOpSap': window.location.href = 'relatorio_op_sap.html'; break;
+                case 'relatorioOndeUsado': window.location.href = 'relatorio_onde_usado.html'; break;
+                case 'relatorioSubstituir': window.location.href = 'altera_componentes.html'; break;
+                case 'relatorioCopiaEstrutura': window.location.href = 'relatorio_copia_estrutura.html'; break;
+                case 'exportar_estrutura': window.location.href = 'exportar-estrutura.html'; break;
+                case 'contasPagar': window.location.href = 'contas_pagar.html'; break;
+                case 'contasReceber': window.location.href = 'contas_receber.html'; break;
+                case 'condicoesPagamento': window.location.href = 'cadastro_condicoes_pagamento.html'; break;
+                case 'fluxoCaixa': window.location.href = 'fluxo_caixa.html'; break;
+                case 'configEmpresa': window.location.href = 'config_empresa.html'; break;
+                case 'configParametros': window.location.href = 'config_parametros.html'; break;
+                case 'configBackup': window.location.href = 'backup_sistema.html'; break;
+                case 'configLogs': window.location.href = 'config_logs.html'; break;
+                case 'cadastroGrupo': window.location.href = 'cadastro_grupo.html'; break;
+                case 'cadastroFamilia': window.location.href = 'cadastro_familia.html'; break;
+                case 'gestaoCustos': window.location.href = 'gestao_custos.html'; break;
+                case 'orcamentos': window.location.href = 'orcamentos.html'; break;
+                case 'tabelaPrecos': window.location.href = 'tabela_precos.html'; break;
+                case 'relatorioVendas': window.location.href = 'relatorio_vendas.html'; break;
+                case 'relatorioOrcamentos': window.location.href = 'relatorio_orcamentos.html'; break;
+                case 'relatorioPedidosVenda': window.location.href = 'relatorio_pedidos_venda.html'; break;
+                case 'especificacoesProdutos': window.location.href = 'especificacoes_produtos.html'; break;
+                case 'homologacaoFornecedores': window.location.href = 'homologacao_fornecedores.html'; break;
+                case 'recebimentoMateriais': window.location.href = 'recebimento_materiais.html'; break;
+                case 'inspecaoQualidade': window.location.href = 'inspecao_qualidade.html'; break;
+                case 'cadastroArmazem': window.location.href = 'cadastro_armazem.html'; break;
+                case 'estorno': window.location.href = 'estorno_movimento.html'; break;
+                case 'faturamento': window.location.href = 'faturamento.html'; break;
+                case 'permissoesUsuario': window.location.href = 'permissoes_usuario.html'; break;
+                case 'relatorioInspecoes': window.location.href = 'relatorio_inspecoes.html'; break;
+                case 'relatorioNecessidadesCompras': window.location.href = 'relatorio_necessidades_compras.html'; break;
+                case 'relatorioFinanceiro': window.location.href = 'relatorio_financeiro.html'; break;
+                case 'relatorioInventario': window.location.href = 'relatorio_inventario.html'; break;
+                case 'saldosIniciais': window.location.href = 'saldos_iniciais.html'; break;
+                case 'analiseCredito': window.location.href = 'analise_credito.html'; break;
+                case 'alterarOp': window.location.href = 'altera_opsemestoque.html'; break;
+                case 'cadastroCentroCusto': window.location.href = 'cadastro_centro_custo.html'; break;
+                case 'cadastroSetores': window.location.href = 'cadastro_setores.html'; break;
+                case 'simulacaoOrdens': window.location.href = 'simulacao_ordens.html'; break;
+                case 'zerarOrdens': window.location.href = 'zerar_ordens.html'; break;
+                case 'relatorioNecessidadeMateriais': window.location.href = 'relatorio_necessidade_materiais.html'; break;
+                case 'condicoesEspeciais': window.location.href = 'condicoes_especiais.html'; break;
+                case 'importarCfops': window.location.href = 'importar_cfops.html'; break;
+                default: alert('Tela não encontrada!'); break;
+            }
+        };
+
+        window.toggleSidebar = function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        };
+    </script>
+</body>
+</html>

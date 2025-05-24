@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Materiais</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .content {
+      padding: 0;
+    }
+
+    .toolbar {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .search-box {
+      flex: 0 0 300px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    .tab-container {
+      margin-bottom: 20px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 2px;
+      background-color: #f8f9fa;
+      padding: 5px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: #666;
+      font-size: 14px;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+
+    .tab-content {
+      display: none;
+      padding: 20px 0;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .products-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .products-table th,
+    .products-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .products-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .products-table th:hover {
+      background-color: #e0e0e0;
+    }
+
+    .products-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .sort-indicator {
+      margin-left: 5px;
+      font-size: 12px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-active {
+      background-color: #e5f2e5;
+      color: var(--success-color);
+    }
+
+    .status-inactive {
+      background-color: #ffeaea;
+      color: var(--danger-color);
+    }
+
+    .form-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .section-header {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .required::after {
+      content: "*";
+      color: var(--danger-color);
+      margin-left: 4px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+      color: var(--text-color);
+      background-color: #fff;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    input:invalid:focus {
+      border-color: var(--danger-color);
+      box-shadow: 0 0 0 2px rgba(187, 0, 0, 0.1);
+    }
+
+    .info-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .conversion-result {
+      font-size: 14px;
+      color: var(--primary-color);
+      margin-top: 10px;
+    }
+
+    .conversion-note {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: #fff;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    #notification {
+      display: none;
+      padding: 10px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-box {
+        flex: none;
+        width: 100%;
+      }
+
+      .products-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Cadastro de Materiais</h1>
+      <button class="btn-secondary" onclick="window.location.href='home.html'">Voltar</button>
+    </div>
+
+    <div class="content">
+      <div id="notification"></div>
+      <div class="toolbar">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Pesquisar por código ou descrição..." oninput="filterProducts()">
+        </div>
+        <button class="btn-primary" onclick="openNewProductModal()">Criar Material</button>
+      </div>
+
+      <div class="tab-container">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('list')">Lista de Materiais</button>
+          <button class="tab" onclick="switchTab('details')">Detalhes do Material</button>
+        </div>
+
+        <div id="listTab" class="tab-content active">
+          <table class="products-table">
+            <thead>
+              <tr>
+                <th onclick="sortTable('codigo')">Código <span id="sortCodigo" class="sort-indicator"></span></th>
+                <th onclick="sortTable('descricao')">Descrição <span id="sortDescricao" class="sort-indicator"></span></th>
+                <th onclick="sortTable('tipo')">Tipo <span id="sortTipo" class="sort-indicator"></span></th>
+                <th onclick="sortTable('unidade')">Unidade <span id="sortUnidade" class="sort-indicator"></span></th>
+                <th onclick="sortTable('grupo')">Grupo <span id="sortGrupo" class="sort-indicator"></span></th>
+                <th onclick="sortTable('familia')">Família <span id="sortFamilia" class="sort-indicator"></span></th>
+                <th onclick="sortTable('leadTime')">Lead Time <span id="sortLeadTime" class="sort-indicator"></span></th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody"></tbody>
+          </table>
+        </div>
+
+        <div id="detailsTab" class="tab-content">
+          <div class="form-section">
+            <div class="section-header">Dados Básicos</div>
+            <div class="section-content">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="required">Código</label>
+                  <input type="text" id="codigo" required>
+                  <div class="info-text">Código único do material no sistema</div>
+                </div>
+                <div class="form-group">
+                  <label class="required">Descrição</label>
+                  <input type="text" id="descricao" required>
+                </div>
+                <div class="form-group">
+                  <label class="required">Tipo</label>
+                  <select id="tipo" required>
+                    <option value="PA">PA - Produto Acabado</option>
+                    <option value="SP">SP - Sub-Produto</option>
+                    <option value="MP">MP - Matéria Prima</option>
+                    <option value="HR">HR - Hora Máquina</option>
+                    <option value="SV">SV - Serviço</option>
+                    <option value="TA">TA - Taxas</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="required">Unidade Principal</label>
+                  <select id="unidade" required onchange="updateConversionResults()">
+                    <option value="PC">PC - Peça</option>
+                    <option value="KG">KG - Quilograma</option>
+                    <option value="MT">MT - Metro</option>
+                    <option value="M2">M2 - Metro Quadrado</option>
+                    <option value="M3">M3 - Metro Cubico</option>
+                    <option value="MM">MM - Milímetro</option>
+                    <option value="CM">CM - Centímetro</option>
+                    <option value="MO">MO - Mão de Obra</option>
+                    <option value="SV">SV - Serviço</option>
+                    <option value="KT">KT - Kit</option>
+                    <option value="CJ">CJ - Conjunto</option>
+                    <option value="PA">PA - Par</option>
+                    <option value="GL">GL - Galão</option>
+                    <option value="CX">CX - Caixa</option>
+                    <option value="RL">RL - Rolo</option>
+                    <option value="TX">TX - Taxa</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-header">Classificação</div>
+            <div class="section-content">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Grupo</label>
+                  <select id="grupo">
+                    <option value="">Selecione um grupo</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Família</label>
+                  <select id="familia">
+                    <option value="">Selecione uma família</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-header">Parâmetros MRP</div>
+            <div class="section-content">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Lead Time (dias)</label>
+                  <input type="number" id="leadTime" min="0" value="0">
+                  <div class="info-text">Tempo de ressuprimento em dias</div>
+                </div>
+                <div class="form-group">
+                  <label>Estoque Mínimo</label>
+                  <input type="number" id="estoqueMinimo" min="0" step="0.001" value="0">
+                </div>
+                <div class="form-group">
+                  <label>Estoque Máximo</label>
+                  <input type="number" id="estoqueMaximo" min="0" step="0.001" value="0">
+                </div>
+                <div class="form-group">
+                  <label>Ponto de Pedido</label>
+                  <input type="number" id="pontoPedido" min="0" step="0.001" value="0">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-header">Conversão de Unidade (SAP)</div>
+            <div class="section-content">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Unidade Secundária 1</label>
+                  <select id="conversionUnit1" onchange="updateConversionResults()">
+                    <option value="">Selecione uma unidade</option>
+                    <option value="PC">PC - Peça</option>
+                    <option value="KG">KG - Quilograma</option>
+                    <option value="MT">MT - Metro</option>
+                    <option value="MM">MM - Milímetro</option>
+                    <option value="MO">MO - Mão de Obra</option>
+                    <option value="SV">SV - Serviço</option>
+                    <option value="KT">KT - Kit</option>
+                    <option value="CJ">CJ - Conjunto</option>
+                    <option value="PA">PA - Par</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Fator de Conversão 1</label>
+                  <input type="number" id="conversionValue1" min="0" step="0.001" value="0" oninput="updateConversionResults()">
+                  <div class="info-text">Ex.: 1 KG = X MM (insira X)</div>
+                </div>
+                <div class="form-group">
+                  <label>Unidade Secundária 2</label>
+                  <select id="conversionUnit2" onchange="updateConversionResults()">
+                    <option value="">Selecione uma unidade</option>
+                    <option value="PC">PC - Peça</option>
+                    <option value="KG">KG - Quilograma</option>
+                    <option value="MT">MT - Metro</option>
+                    <option value="MM">MM - Milímetro</option>
+                    <option value="MO">MO - Mão de Obra</option>
+                    <option value="SV">SV - Serviço</option>
+                    <option value="KT">KT - Kit</option>
+                    <option value="CJ">CJ - Conjunto</option>
+                    <option value="PA">PA - Par</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Fator de Conversão 2</label>
+                  <input type="number" id="conversionValue2" min="0" step="0.001" value="0" oninput="updateConversionResults()">
+                  <div class="info-text">Ex.: 1 KG = X MT (insira X)</div>
+                </div>
+              </div>
+              <div class="conversion-result" id="conversionResult1">Conversão 1: -</div>
+              <div class="conversion-result" id="conversionResult2">Conversão 2: -</div>
+              <div class="conversion-note">
+                <strong>Nota SAP:</strong> No SAP, a unidade principal é a base para todas as conversões. Defina os fatores de conversão para unidades secundárias. Exemplo: se a unidade principal for "KG" e a secundária "MM", insira o fator (ex.: 20.52 significa 1 KG = 20,52 MM). O sistema calcula automaticamente os valores convertidos.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-secondary" onclick="cancelEdit()">Cancelar</button>
+            <button class="btn-success" onclick="saveProduct()">Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs, 
+      doc, 
+      updateDoc, 
+      deleteDoc,
+      query,
+      where 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let produtos = [];
+    let estruturas = [];
+    let grupos = [];
+    let familias = [];
+    let estoques = [];
+    let solicitacoesCompra = [];
+    let cotacoes = [];
+    let pedidosCompra = [];
+    let currentProductId = null;
+    let sortDirection = 'asc';
+    let currentSortColumn = '';
+
+    window.onload = async function() {
+      await loadData();
+      displayProducts(produtos);
+    };
+
+    async function loadData() {
+      try {
+        const [produtosSnap, estruturasSnap, gruposSnap, familiasSnap, estoquesSnap, 
+               solicitacoesSnap, cotacoesSnap, pedidosSnap] = await Promise.all([
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "estruturas")),
+          getDocs(collection(db, "grupos")),
+          getDocs(collection(db, "familias")),
+          getDocs(collection(db, "estoques")),
+          getDocs(collection(db, "solicitacoesCompra")),
+          getDocs(collection(db, "cotacoes")),
+          getDocs(collection(db, "pedidosCompra"))
+        ]);
+
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estruturas = estruturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        grupos = gruposSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        familias = familiasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        solicitacoesCompra = solicitacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        cotacoes = cotacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        pedidosCompra = pedidosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        updateSelects();
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        showNotification("Erro ao carregar dados. Por favor, recarregue a página.", "error");
+      }
+    }
+
+    function updateSelects() {
+      const grupoSelect = document.getElementById('grupo');
+      const familiaSelect = document.getElementById('familia');
+
+      grupos.sort((a, b) => a.codigoGrupo.localeCompare(b.codigoGrupo));
+      grupoSelect.innerHTML = '<option value="">Selecione um grupo</option>';
+      grupos.forEach(grupo => {
+        grupoSelect.innerHTML += `
+          <option value="${grupo.codigoGrupo}">
+            ${grupo.codigoGrupo} - ${grupo.nomeGrupo}
+          </option>`;
+      });
+
+      familias.sort((a, b) => a.codigoFamilia.localeCompare(b.codigoFamilia));
+      familiaSelect.innerHTML = '<option value="">Selecione uma família</option>';
+      familias.forEach(familia => {
+        familiaSelect.innerHTML += `
+          <option value="${familia.codigoFamilia}">
+            ${familia.codigoFamilia} - ${familia.nomeFamilia}
+          </option>`;
+      });
+    }
+
+    window.filterProducts = function() {
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+      const filteredProducts = produtos.filter(product => 
+        product.codigo.toLowerCase().includes(searchText) ||
+        product.descricao.toLowerCase().includes(searchText) ||
+        product.tipo.toLowerCase().includes(searchText)
+      );
+      displayProducts(filteredProducts);
+    };
+
+    function getEstoque(produtoId) {
+      const estoque = estoques.find(e => e.produtoId === produtoId);
+      return estoque ? estoque.saldo : 0;
+    }
+
+    function displayProducts(productsToDisplay) {
+      const tableBody = document.getElementById('productsTableBody');
+      tableBody.innerHTML = '';
+
+      productsToDisplay.forEach(product => {
+        const estoque = getEstoque(product.id);
+        const grupo = grupos.find(g => g.codigoGrupo === product.grupo);
+        const familia = familias.find(f => f.codigoFamilia === product.familia);
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${product.codigo}</td>
+          <td>${product.descricao}</td>
+          <td>${product.tipo}</td>
+          <td>${product.unidade}</td>
+          <td>${grupo ? `${grupo.codigoGrupo} - ${grupo.nomeGrupo}` : '-'}</td>
+          <td>${familia ? `${familia.codigoFamilia} - ${familia.nomeFamilia}` : '-'}</td>
+          <td>${product.leadTime || 0} dias</td>
+          <td>
+            <span class="status-badge ${estoque > 0 ? 'status-active' : 'status-inactive'}">
+              ${estoque} ${product.unidade}
+            </span>
+          </td>
+          <td>
+            <button class="btn-primary" onclick="editProduct('${product.id}')">Editar</button>
+            <button class="btn-danger" onclick="deleteProduct('${product.id}')">Excluir</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    window.sortTable = function(sortBy) {
+      if (sortBy === currentSortColumn) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSortColumn = sortBy;
+        sortDirection = 'asc';
+      }
+
+      produtos.sort((a, b) => {
+        if (sortBy === 'codigo') return sortDirection === 'asc' ? a.codigo.localeCompare(b.codigo) : b.codigo.localeCompare(a.codigo);
+        if (sortBy === 'descricao') return sortDirection === 'asc' ? a.descricao.localeCompare(b.descricao) : b.descricao.localeCompare(a.descricao);
+        if (sortBy === 'tipo') return sortDirection === 'asc' ? a.tipo.localeCompare(b.tipo) : b.tipo.localeCompare(a.tipo);
+        if (sortBy === 'unidade') return sortDirection === 'asc' ? a.unidade.localeCompare(b.unidade) : b.unidade.localeCompare(a.unidade);
+        if (sortBy === 'grupo') return sortDirection === 'asc' ? (a.grupo || '').localeCompare(b.grupo || '') : (b.grupo || '').localeCompare(a.grupo || '');
+        if (sortBy === 'familia') return sortDirection === 'asc' ? (a.familia || '').localeCompare(b.familia || '') : (b.familia || '').localeCompare(a.familia || '');
+        if (sortBy === 'leadTime') return sortDirection === 'asc' ? (a.leadTime || 0) - (b.leadTime || 0) : (b.leadTime || 0) - (a.leadTime || 0);
+      });
+
+      updateSortIndicators(sortBy, sortDirection);
+      displayProducts(produtos);
+    };
+
+    function updateSortIndicators(column, direction) {
+      document.getElementById('sortCodigo').innerHTML = '';
+      document.getElementById('sortDescricao').innerHTML = '';
+      document.getElementById('sortTipo').innerHTML = '';
+      document.getElementById('sortUnidade').innerHTML = '';
+      document.getElementById('sortGrupo').innerHTML = '';
+      document.getElementById('sortFamilia').innerHTML = '';
+      document.getElementById('sortLeadTime').innerHTML = '';
+
+      if (column === 'codigo') document.getElementById('sortCodigo').innerHTML = direction === 'asc' ? '▲' : '▼';
+      if (column === 'descricao') document.getElementById('sortDescricao').innerHTML = direction === 'asc' ? '▲' : '▼';
+      if (column === 'tipo') document.getElementById('sortTipo').innerHTML = direction === 'asc' ? '▲' : '▼';
+      if (column === 'unidade') document.getElementById('sortUnidade').innerHTML = direction === 'asc' ? '▲' : '▼';
+      if (column === 'grupo') document.getElementById('sortGrupo').innerHTML = direction === 'asc' ? '▲' : '▼';
+      if (column === 'familia') document.getElementById('sortFamilia').innerHTML = direction === 'asc' ? '▲' : '▼';
+      if (column === 'leadTime') document.getElementById('sortLeadTime').innerHTML = direction === 'asc' ? '▲' : '▼';
+    }
+
+    window.switchTab = function(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+      document.getElementById(`${tab}Tab`).classList.add('active');
+    };
+
+    window.openNewProductModal = function() {
+      currentProductId = null;
+      document.getElementById('codigo').value = '';
+      document.getElementById('descricao').value = '';
+      document.getElementById('tipo').value = 'PA';
+      document.getElementById('unidade').value = 'PC';
+      document.getElementById('grupo').value = '';
+      document.getElementById('familia').value = '';
+      document.getElementById('leadTime').value = '0';
+      document.getElementById('estoqueMinimo').value = '0';
+      document.getElementById('estoqueMaximo').value = '0';
+      document.getElementById('pontoPedido').value = '0';
+      document.getElementById('conversionUnit1').value = '';
+      document.getElementById('conversionValue1').value = '0';
+      document.getElementById('conversionUnit2').value = '';
+      document.getElementById('conversionValue2').value = '0';
+      document.getElementById('conversionResult1').textContent = 'Conversão 1: -';
+      document.getElementById('conversionResult2').textContent = 'Conversão 2: -';
+      
+      switchTab('details');
+    };
+
+    window.editProduct = function(productId) {
+      const product = produtos.find(p => p.id === productId);
+      if (product) {
+        currentProductId = productId;
+        document.getElementById('codigo').value = product.codigo;
+        document.getElementById('descricao').value = product.descricao;
+        document.getElementById('tipo').value = product.tipo;
+        document.getElementById('unidade').value = product.unidade;
+        document.getElementById('grupo').value = product.grupo || '';
+        document.getElementById('familia').value = product.familia || '';
+        document.getElementById('leadTime').value = product.leadTime || 0;
+        document.getElementById('estoqueMinimo').value = product.estoqueMinimo || 0;
+        document.getElementById('estoqueMaximo').value = product.estoqueMaximo || 0;
+        document.getElementById('pontoPedido').value = product.pontoPedido || 0;
+        document.getElementById('conversionUnit1').value = product.conversionUnit1 || '';
+        document.getElementById('conversionValue1').value = product.conversionValue1 || '0';
+        document.getElementById('conversionUnit2').value = product.conversionUnit2 || '';
+        document.getElementById('conversionValue2').value = product.conversionValue2 || '0';
+        updateConversionResults();
+
+        switchTab('details');
+      }
+    };
+
+    window.deleteProduct = async function(productId) {
+      const estruturaComProduto = estruturas.find(e => 
+        e.produtoPaiId === productId || e.componentes.some(c => c.componentId === productId));
+      if (estruturaComProduto) {
+        showNotification('Este produto não pode ser excluído pois está em uma estrutura.', 'error');
+        return;
+      }
+
+      const solicitacaoComProduto = solicitacoesCompra.some(s => 
+        s.itens.some(i => produtos.find(p => p.codigo === i.codigo)?.id === productId));
+      if (solicitacaoComProduto) {
+        showNotification('Este produto não pode ser excluído pois está em uma solicitação de compra.', 'error');
+        return;
+      }
+
+      const cotacaoComProduto = cotacoes.some(c => 
+        c.itens.some(i => produtos.find(p => p.codigo === i.codigo)?.id === productId));
+      if (cotacaoComProduto) {
+        showNotification('Este produto não pode ser excluído pois está em uma cotação.', 'error');
+        return;
+      }
+
+      const pedidoComProduto = pedidosCompra.some(p => 
+        p.itens.some(i => produtos.find(prod => prod.codigo === i.codigo)?.id === productId));
+      if (pedidoComProduto) {
+        showNotification('Este produto não pode ser excluído pois está em um pedido de compra.', 'error');
+        return;
+      }
+
+      if (confirm('Tem certeza que deseja excluir este produto?')) {
+        try {
+          await deleteDoc(doc(db, "produtos", productId));
+          await loadData();
+          displayProducts(produtos);
+          showNotification('Produto excluído com sucesso!', 'success');
+        } catch (error) {
+          console.error("Erro ao excluir produto:", error);
+          showNotification('Erro ao excluir produto.', 'error');
+        }
+      }
+    };
+
+    window.saveProduct = async function() {
+      const productCode = document.getElementById('codigo').value.trim();
+      const productDescription = document.getElementById('descricao').value.trim();
+
+      if (!productCode || !productDescription) {
+        showNotification('Por favor, preencha todos os campos obrigatórios.', 'error');
+        return;
+      }
+
+      const existingProduct = produtos.find(p => 
+        p.codigo === productCode && (!currentProductId || p.id !== currentProductId));
+      if (existingProduct) {
+        showNotification('Já existe um produto com este código.', 'error');
+        return;
+      }
+
+      const productData = {
+        codigo: productCode,
+        descricao: productDescription,
+        tipo: document.getElementById('tipo').value,
+        unidade: document.getElementById('unidade').value,
+        grupo: document.getElementById('grupo').value,
+        familia: document.getElementById('familia').value,
+        leadTime: parseInt(document.getElementById('leadTime').value) || 0,
+        estoqueMinimo: parseFloat(document.getElementById('estoqueMinimo').value) || 0,
+        estoqueMaximo: parseFloat(document.getElementById('estoqueMaximo').value) || 0,
+        pontoPedido: parseFloat(document.getElementById('pontoPedido').value) || 0,
+        conversionUnit1: document.getElementById('conversionUnit1').value,
+        conversionValue1: parseFloat(document.getElementById('conversionValue1').value) || 0,
+        conversionUnit2: document.getElementById('conversionUnit2').value,
+        conversionValue2: parseFloat(document.getElementById('conversionValue2').value) || 0,
+      };
+
+      if (!currentProductId) productData.dataCadastro = new Date();
+
+      try {
+        if (currentProductId) {
+          await updateDoc(doc(db, "produtos", currentProductId), productData);
+          showNotification('Produto atualizado com sucesso!', 'success');
+        } else {
+          await addDoc(collection(db, "produtos"), productData);
+          showNotification('Produto cadastrado com sucesso!', 'success');
+        }
+
+        await loadData();
+        displayProducts(produtos);
+        switchTab('list');
+      } catch (error) {
+        console.error("Erro ao salvar produto:", error);
+        showNotification('Erro ao salvar produto.', 'error');
+      }
+    };
+
+    window.cancelEdit = function() {
+      currentProductId = null;
+      document.getElementById('codigo').value = '';
+      document.getElementById('descricao').value = '';
+      document.getElementById('tipo').value = 'PA';
+      document.getElementById('unidade').value = 'PC';
+      document.getElementById('grupo').value = '';
+      document.getElementById('familia').value = '';
+      document.getElementById('leadTime').value = '0';
+      document.getElementById('estoqueMinimo').value = '0';
+      document.getElementById('estoqueMaximo').value = '0';
+      document.getElementById('pontoPedido').value = '0';
+      document.getElementById('conversionUnit1').value = '';
+      document.getElementById('conversionValue1').value = '0';
+      document.getElementById('conversionUnit2').value = '';
+      document.getElementById('conversionValue2').value = '0';
+      document.getElementById('conversionResult1').textContent = 'Conversão 1: -';
+      document.getElementById('conversionResult2').textContent = 'Conversão 2: -';
+      
+      switchTab('list');
+    };
+
+    function showNotification(message, type = 'success') {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.style.backgroundColor = type === 'success' ? '#e5f2e5' : '#ffeaea';
+      notification.style.display = 'block';
+      setTimeout(() => notification.style.display = 'none', 3000);
+    }
+
+    window.updateConversionResults = function() {
+      const mainUnit = document.getElementById('unidade').value;
+      const conversionUnit1 = document.getElementById('conversionUnit1').value;
+      const conversionValue1 = parseFloat(document.getElementById('conversionValue1').value) || 0;
+      const conversionUnit2 = document.getElementById('conversionUnit2').value;
+      const conversionValue2 = parseFloat(document.getElementById('conversionValue2').value) || 0;
+      const resultElement1 = document.getElementById('conversionResult1');
+      const resultElement2 = document.getElementById('conversionResult2');
+
+      // Conversão 1
+      if (!conversionUnit1 || conversionValue1 === 0) {
+        resultElement1.textContent = 'Conversão 1: -';
+      } else {
+        let convertedValue1 = 0;
+        if (conversionUnit1 === mainUnit) {
+          convertedValue1 = conversionValue1; // Sem conversão se for a mesma unidade
+        } else {
+          // Exemplo: 1 unidade principal = conversionValue1 da unidade secundária
+          convertedValue1 = conversionValue1; // Fator já é o valor inserido
+        }
+        resultElement1.textContent = `Conversão 1: 1 ${mainUnit} = ${convertedValue1.toFixed(3)} ${conversionUnit1} (Ex.: 10 ${mainUnit} = ${(10 * convertedValue1).toFixed(3)} ${conversionUnit1})`;
+      }
+
+      // Conversão 2
+      if (!conversionUnit2 || conversionValue2 === 0) {
+        resultElement2.textContent = 'Conversão 2: -';
+      } else {
+        let convertedValue2 = 0;
+        if (conversionUnit2 === mainUnit) {
+          convertedValue2 = conversionValue2; // Sem conversão se for a mesma unidade
+        } else {
+          convertedValue2 = conversionValue2; // Fator já é o valor inserido
+        }
+        resultElement2.textContent = `Conversão 2: 1 ${mainUnit} = ${convertedValue2.toFixed(3)} ${conversionUnit2} (Ex.: 10 ${mainUnit} = ${(10 * convertedValue2).toFixed(3)} ${conversionUnit2})`;
+      }
+    };
+  </script>
+</body>
+</html>

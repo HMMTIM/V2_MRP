@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apontamento de Produção</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --success-color: #107e3e;
+      --danger-color: #bb0000;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      font-size: 13px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    h1 {
+      color: var(--primary-color);
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .search-bar {
+      background-color: white;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-col {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      font-size: 13px;
+      background-color: white;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.2);
+    }
+
+    button {
+      padding: 5px 10px;
+      border: 1px solid var(--primary-color);
+      border-radius: 3px;
+      background-color: white;
+      color: var(--primary-color);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .back-button {
+      background-color: var(--header-bg);
+      color: white;
+      border-color: var(--header-bg);
+    }
+
+    .back-button:hover {
+      background-color: #2a3b4d;
+    }
+
+    .orders-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 15px;
+      font-size: 12px;
+    }
+
+    .orders-table th {
+      background-color: var(--secondary-color);
+      color: var(--primary-color);
+      font-weight: 600;
+      padding: 8px 5px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .orders-table td {
+      padding: 6px 5px;
+      border: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    .orders-table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .orders-table tr:hover {
+      background-color: #e6f2ff;
+    }
+
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .status-pendente { 
+      background-color: #fff4cc; 
+      color: #8c6c00;
+      border: 1px solid #ffd43b;
+    }
+
+    .status-em-producao { 
+      background-color: #e5f2f9; 
+      color: #0854a0;
+      border: 1px solid #0854a0;
+    }
+
+    .status-concluida { 
+      background-color: #e8f3e8; 
+      color: #107e3e;
+      border: 1px solid #107e3e;
+    }
+
+    .status-cancelada { 
+      background-color: #ffeaea; 
+      color: #bb0000;
+      border: 1px solid #bb0000;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      overflow: auto;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 800px;
+      max-height: 85vh;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .modal-header {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-header h2 {
+      color: var(--primary-color);
+      font-size: 16px;
+      margin-bottom: 0;
+    }
+
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px 0;
+      max-height: calc(85vh - 150px);
+    }
+
+    .modal-footer {
+      padding: 15px 0;
+      border-top: 1px solid var(--border-color);
+      text-align: right;
+    }
+
+    .close-button {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+      background: none;
+      border: none;
+      padding: 5px;
+    }
+
+    .close-button:hover {
+      color: var(--danger-color);
+      background: none;
+    }
+
+    .materials-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 15px 0;
+      padding: 10px;
+      background-color: var(--secondary-color);
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .material-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 1px solid var(--border-color);
+      background-color: white;
+      margin-bottom: 5px;
+      border-radius: 3px;
+    }
+
+    .material-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .material-status {
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .status-ok { 
+      background-color: #e8f3e8; 
+      color: #107e3e;
+      border: 1px solid #107e3e;
+    }
+
+    .status-warning { 
+      background-color: #fff4cc; 
+      color: #8c6c00;
+      border: 1px solid #ffd43b;
+    }
+
+    .status-error { 
+      background-color: #ffeaea; 
+      color: #bb0000;
+      border: 1px solid #bb0000;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 16px;
+      background-color: var(--secondary-color);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 5px;
+      border: 1px solid var(--border-color);
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: var(--success-color);
+      transition: width 0.3s ease;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Apontamento de Produção</h1>
+      <button onclick="window.location.href='index.html'" class="back-button">Voltar</button>
+    </div>
+
+    <div class="search-bar">
+      <div class="form-row">
+        <div class="form-col">
+          <input type="text" id="searchInput" placeholder="Buscar por número da ordem ou produto..." oninput="filterOrders()">
+        </div>
+        <div class="form-col">
+          <select id="statusFilter" onchange="filterOrders()">
+            <option value="">Todos os status</option>
+            <option value="Pendente">Pendente</option>
+            <option value="Em Produção">Em Produção</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th>Ordem</th>
+          <th>Produto</th>
+          <th>Quantidade</th>
+          <th>Produzido</th>
+          <th>Status</th>
+          <th>Data Entrega</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTableBody">
+      </tbody>
+    </table>
+  </div>
+
+  <div id="appointmentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Apontamento de Produção</h2>
+        <span class="close-button" onclick="closeModal()">×</span>
+      </div>
+
+      <div class="modal-body">
+        <div id="orderInfo"></div>
+        <div id="materialsList" class="materials-list"></div>
+
+        <form id="appointmentForm" onsubmit="submitAppointment(event)">
+          <div class="form-row">
+            <div class="form-col">
+              <label for="quantity">Quantidade Produzida:</label>
+              <input type="number" id="quantity" min="0.001" step="0.001" required>
+            </div>
+            <div class="form-col">
+              <label for="scrap">Quantidade de Refugo:</label>
+              <input type="number" id="scrap" min="0" step="0.001" value="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-col">
+              <label for="observations">Observações:</label>
+              <textarea id="observations" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" id="submitButton">Confirmar Apontamento</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { doc, getDoc, collection, onSnapshot, updateDoc, Timestamp, addDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let produtos = [];
+    let ordensProducao = [];
+    let estoques = [];
+    let armazens = [];
+    let currentOrder = null;
+    let permitirProducaoSemEstoque = false;
+
+    window.onload = async function() {
+      // Verificar se o usuário está logado
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (!currentUser) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      await loadSystemParameters();
+      setupRealTimeListeners();
+    };
+
+    async function loadSystemParameters() {
+      try {
+        const docSnap = await getDoc(doc(db, "parametros", "sistema"));
+        if (docSnap.exists()) {
+          permitirProducaoSemEstoque = docSnap.data().permitirProducaoSemEstoque || false;
+        }
+      } catch (error) {
+        console.error("Erro ao carregar parâmetros do sistema:", error);
+      }
+    }
+
+    async function setupRealTimeListeners() {
+      try {
+        const promises = [
+          new Promise(resolve => onSnapshot(collection(db, "produtos"), snap => { produtos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); resolve(); })),
+          new Promise(resolve => onSnapshot(collection(db, "ordensProducao"), snap => { ordensProducao = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); loadOrders(); resolve(); })),
+          new Promise(resolve => onSnapshot(collection(db, "estoques"), snap => { estoques = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); resolve(); })),
+          new Promise(resolve => onSnapshot(collection(db, "armazens"), snap => { armazens = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); resolve(); }))
+        ];
+        await Promise.all(promises);
+      } catch (error) {
+        console.error("Erro ao configurar listeners:", error);
+        alert("Erro ao carregar dados: " + error.message);
+      }
+    }
+
+    async function loadOrders() {
+      const tableBody = document.getElementById('ordersTableBody');
+      tableBody.innerHTML = '';
+
+      ordensProducao
+        .filter(op => op.status !== 'Concluída' && op.status !== 'Cancelada')
+        .sort((a, b) => {
+          // Primeiro ordena por nível
+          if (a.nivel !== b.nivel) return a.nivel - b.nivel;
+          // Depois ordena por data de entrega, tratando casos onde dataEntrega pode estar ausente
+          const dateA = a.dataEntrega?.seconds ? new Date(a.dataEntrega.seconds * 1000) : new Date(0);
+          const dateB = b.dataEntrega?.seconds ? new Date(b.dataEntrega.seconds * 1000) : new Date(0);
+          return dateB - dateA;
+        })
+        .forEach(ordem => {
+          const produto = produtos.find(p => p.id === ordem.produtoId);
+          if (!produto) return;
+
+          const row = document.createElement('tr');
+          const progress = ordem.quantidadeProduzida ? 
+            (ordem.quantidadeProduzida / ordem.quantidade * 100).toFixed(1) : 0;
+
+          // Trata a exibição da data de entrega para casos onde pode estar ausente
+          const dataEntrega = ordem.dataEntrega?.seconds 
+            ? new Date(ordem.dataEntrega.seconds * 1000).toLocaleDateString() 
+            : 'Não definida';
+
+          row.innerHTML = `
+            <td>${ordem.numero}</td>
+            <td>${produto.codigo} - ${produto.descricao}</td>
+            <td>${ordem.quantidade} ${produto.unidade}</td>
+            <td>
+              ${ordem.quantidadeProduzida || 0} ${produto.unidade}
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${progress}%"></div>
+              </div>
+            </td>
+            <td><span class="status-badge status-${ordem.status.toLowerCase()}">${ordem.status}</span></td>
+            <td>${dataEntrega}</td>
+            <td>
+              <button onclick="openAppointmentModal('${ordem.id}')">Apontar</button>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+    }
+
+    window.filterOrders = function() {
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+
+      const rows = document.getElementById('ordersTableBody').getElementsByTagName('tr');
+
+      for (const row of rows) {
+        const numero = row.cells[0].textContent.toLowerCase();
+        const produto = row.cells[1].textContent.toLowerCase();
+        const status = row.cells[4].textContent;
+
+        const matchesSearch = numero.includes(searchText) || produto.includes(searchText);
+        const matchesStatus = !statusFilter || status === statusFilter;
+
+        row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+      }
+    };
+
+    window.openAppointmentModal = async function(orderId) {
+      currentOrder = ordensProducao.find(op => op.id === orderId);
+      if (!currentOrder) return;
+
+      const produto = produtos.find(p => p.id === currentOrder.produtoId);
+      let materialsHtml = '<h3>Materiais Necessários</h3>';
+      let canProduce = true;
+
+      // Verifica se o armazém de produção da OP é do tipo PRODUCAO
+      const armazemProducao = armazens.find(a => a.id === currentOrder.armazemProducaoId);
+      if (!armazemProducao || armazemProducao.tipo !== 'PRODUCAO') {
+        alert('A ordem de produção deve estar associada a um armazém do tipo Produção.');
+        return;
+      }
+
+      if (currentOrder.materiaisNecessarios) {
+        for (const material of currentOrder.materiaisNecessarios) {
+          const materialProduto = produtos.find(p => p.id === material.produtoId);
+          const armazemProducaoMateriais = armazens.find(a => a.id === currentOrder.armazemProducaoId && a.tipo === 'PRODUCAO');
+          if (!armazemProducaoMateriais) {
+            canProduce = false;
+            materialsHtml += `
+              <div class="material-item">
+                <div>
+                  <strong>${materialProduto.codigo} - ${materialProduto.descricao}</strong>
+                  <div>Armazém: Não encontrado (necessário tipo Produção)</div>
+                  <div>Necessário Restante: ${material.quantidade.toFixed(3)} ${materialProduto.unidade}</div>
+                  <div>Disponível: 0 ${materialProduto.unidade}</div>
+                </div>
+                <span class="material-status status-error">0%</span>
+              </div>`;
+            continue;
+          }
+
+          const estoque = estoques.find(e => e.produtoId === material.produtoId && e.armazemId === armazemProducaoMateriais.id) || { saldo: 0, saldoReservado: 0 };
+          const saldoDisponivel = estoque.saldo - (estoque.saldoReservado || 0);
+
+          const quantidadeRestante = material.quantidade - (currentOrder.quantidadeProduzida || 0) * (material.quantidade / currentOrder.quantidade);
+          const disponibilidade = saldoDisponivel >= quantidadeRestante ? 100 : (saldoDisponivel / quantidadeRestante * 100).toFixed(1);
+          let statusClass = 'status-ok';
+
+          if (!permitirProducaoSemEstoque && saldoDisponivel < quantidadeRestante) {
+            statusClass = 'status-error';
+            canProduce = false;
+          } else if (saldoDisponivel < quantidadeRestante * 1.2) {
+            statusClass = 'status-warning';
+          }
+
+          materialsHtml += `
+            <div class="material-item">
+              <div>
+                <strong>${materialProduto.codigo} - ${materialProduto.descricao}</strong>
+                <div>Armazém (Produção): ${armazemProducaoMateriais.codigo} - ${armazemProducaoMateriais.nome}</div>
+                <div>Necessário Restante: ${quantidadeRestante.toFixed(3)} ${materialProduto.unidade}</div>
+                <div>Disponível: ${saldoDisponivel.toFixed(3)} ${materialProduto.unidade}</div>
+              </div>
+              <span class="material-status ${statusClass}">
+                ${disponibilidade}%
+              </span>
+            </div>`;
+        }
+      } else {
+        materialsHtml += '<p>Sem materiais necessários registrados.</p>';
+      }
+
+      document.getElementById('orderInfo').innerHTML = `
+        <div style="margin-bottom: 15px;">
+          <p><strong>Ordem:</strong> ${currentOrder.numero}</p>
+          <p><strong>Produto:</strong> ${produto.codigo} - ${produto.descricao}</p>
+          <p><strong>Quantidade Total:</strong> ${currentOrder.quantidade} ${produto.unidade}</p>
+          <p><strong>Quantidade Já Produzida:</strong> ${currentOrder.quantidadeProduzida || 0} ${produto.unidade}</p>
+          <p><strong>Armazém de Produção:</strong> ${armazemProducao.codigo} - ${armazemProducao.nome}</p>
+        </div>
+      `;
+
+      document.getElementById('materialsList').innerHTML = materialsHtml;
+
+      document.getElementById('submitButton').disabled = !canProduce;
+      if (!canProduce && !permitirProducaoSemEstoque) {
+        alert('Não há material suficiente no armazém de produção para realizar o apontamento. Transfira os materiais necessários do armazém tipo Almoxarifado para o armazém tipo Produção usando o módulo de movimentação.');
+      }
+
+      document.getElementById('appointmentModal').style.display = 'block';
+    };
+
+    window.closeModal = function() {
+      document.getElementById('appointmentModal').style.display = 'none';
+      document.getElementById('appointmentForm').reset();
+      currentOrder = null;
+    };
+
+    async function updateInventory(produtoId, armazemId, quantidade, tipo) {
+      const estoque = estoques.find(e => e.produtoId === produtoId && e.armazemId === armazemId);
+      if (estoque) {
+        const novoSaldo = tipo === 'entrada' ? estoque.saldo + quantidade : estoque.saldo - quantidade;
+        if (novoSaldo < 0 && !permitirProducaoSemEstoque) throw new Error(`Saldo insuficiente no armazém ${armazemId}.`);
+        await updateDoc(doc(db, "estoques", estoque.id), {
+          saldo: novoSaldo,
+          ultimaMovimentacao: Timestamp.now()
+        });
+        estoque.saldo = novoSaldo;
+      } else if (tipo === 'entrada') {
+        const novoEstoque = { produtoId, armazemId, saldo: quantidade, ultimaMovimentacao: Timestamp.now() };
+        const docRef = await addDoc(collection(db, "estoques"), novoEstoque);
+        estoques.push({ ...novoEstoque, id: docRef.id });
+      }
+    }
+
+    async function updateInventoryReservation(produtoId, armazemId, quantidade) {
+      const estoque = estoques.find(e => e.produtoId === produtoId && e.armazemId === armazemId);
+      if (estoque) {
+        const novoSaldoReservado = (estoque.saldoReservado || 0) + quantidade;
+        await updateDoc(doc(db, "estoques", estoque.id), {
+          saldoReservado: Math.max(0, novoSaldoReservado),
+          ultimaMovimentacao: Timestamp.now()
+        });
+        estoque.saldoReservado = Math.max(0, novoSaldoReservado);
+      }
+    }
+
+    window.submitAppointment = async function(event) {
+      event.preventDefault();
+      const submitButton = document.getElementById('submitButton');
+      submitButton.disabled = true;
+
+      try {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+          throw new Error('Usuário não está logado');
+        }
+
+        const quantidade = parseFloat(document.getElementById('quantity').value);
+        const refugo = parseFloat(document.getElementById('scrap').value) || 0;
+        const observacoes = document.getElementById('observations').value;
+
+        console.log('[APONTAMENTO] Iniciando submitAppointment', { quantidade, refugo, observacoes, currentOrder });
+
+        if (quantidade <= 0) {
+          throw new Error('A quantidade produzida deve ser maior que zero');
+        }
+
+        if (quantidade + (currentOrder.quantidadeProduzida || 0) > currentOrder.quantidade) {
+          throw new Error('A quantidade total produzida não pode exceder a quantidade da ordem');
+        }
+
+        // Atualizar ordem de produção
+        const orderRef = doc(db, "ordensProducao", currentOrder.id);
+        const novaQuantidadeProduzida = (currentOrder.quantidadeProduzida || 0) + quantidade;
+        const novoRefugo = (currentOrder.refugo || 0) + refugo;
+        let novoStatus = currentOrder.status;
+        if (novaQuantidadeProduzida >= currentOrder.quantidade) {
+          novoStatus = 'Concluída';
+        } else if (novoStatus === 'Pendente') {
+          novoStatus = 'Em Produção';
+        }
+
+        // Baixar materiais do estoque
+        const batch = writeBatch(db);
+        if (currentOrder.materiaisNecessarios) {
+          for (const material of currentOrder.materiaisNecessarios) {
+            const quantidadeNecessaria = (material.quantidade / currentOrder.quantidade) * quantidade;
+            const armazemId = material.armazemId || currentOrder.armazemProducaoId;
+            const estoque = estoques.find(e => 
+              e.produtoId === material.produtoId && 
+              e.armazemId === armazemId
+            );
+            console.log('[APONTAMENTO] Baixando material', { material, quantidadeNecessaria, estoque });
+            if (estoque) {
+              const saldoAtual = estoque.saldo;
+              const saldoReservado = estoque.saldoReservado || 0;
+              if (saldoAtual - saldoReservado < quantidadeNecessaria && !permitirProducaoSemEstoque) {
+                throw new Error(`Saldo insuficiente para o material ${material.codigo}`);
+              }
+              batch.update(doc(db, "estoques", estoque.id), {
+                saldo: saldoAtual - quantidadeNecessaria,
+                ultimaMovimentacao: Timestamp.now()
+              });
+            } else if (!permitirProducaoSemEstoque) {
+              throw new Error(`Estoque não encontrado para o material ${material.codigo}`);
+            }
+          }
+        }
+        batch.update(orderRef, {
+          quantidadeProduzida: novaQuantidadeProduzida,
+          refugo: novoRefugo,
+          status: novoStatus,
+          ultimaAtualizacao: Timestamp.now()
+        });
+        console.log('[APONTAMENTO] Commitando batch de estoque e ordem');
+        await batch.commit();
+        // Registrar apontamento
+        const apontamentoRef = collection(db, "apontamentos");
+        const novoApontamento = {
+          ordemId: currentOrder.id,
+          numeroOrdem: currentOrder.numero,
+          produtoId: currentOrder.produtoId,
+          quantidade: quantidade,
+          refugo: refugo,
+          observacoes: observacoes,
+          usuario: currentUser.email,
+          nomeUsuario: currentUser.nome,
+          dataHora: Timestamp.now(),
+          armazemId: currentOrder.armazemProducaoId
+        };
+        const apontamentoDoc = await addDoc(apontamentoRef, novoApontamento);
+        console.log('[APONTAMENTO] Apontamento registrado', { novoApontamento, apontamentoDoc });
+        // Registrar movimentações de estoque
+        if (!currentOrder.materiaisNecessarios || currentOrder.materiaisNecessarios.length === 0) {
+          alert('Atenção: Esta ordem de produção não possui materiais necessários cadastrados. Nenhuma movimentação de consumo será registrada!');
+        } else {
+          for (const material of currentOrder.materiaisNecessarios) {
+            const quantidadeNecessaria = (material.quantidade / currentOrder.quantidade) * quantidade;
+            const produtoMaterial = produtos.find(p => p.id === material.produtoId);
+            const movMaterial = {
+              produtoId: material.produtoId,
+              tipo: 'SAIDA',
+              quantidade: quantidadeNecessaria,
+              unidade: produtoMaterial?.unidade || '',
+              tipoDocumento: 'PRODUCAO',
+              numeroDocumento: currentOrder.numero,
+              observacoes: `Consumo para OP ${currentOrder.numero}`,
+              dataHora: Timestamp.now(),
+              armazemId: material.armazemId || currentOrder.armazemProducaoId
+            };
+            const movMaterialDoc = await addDoc(collection(db, "movimentacoesEstoque"), movMaterial);
+            console.log('[APONTAMENTO] Movimentação de material registrada', { movMaterial, movMaterialDoc });
+          }
+        }
+        const produtoAcabado = produtos.find(p => p.id === currentOrder.produtoId);
+        const movProduto = {
+          produtoId: currentOrder.produtoId,
+          tipo: 'ENTRADA',
+          quantidade: quantidade,
+          unidade: produtoAcabado?.unidade || '',
+          tipoDocumento: 'PRODUCAO',
+          numeroDocumento: currentOrder.numero,
+          observacoes: `Produção OP ${currentOrder.numero}`,
+          dataHora: Timestamp.now(),
+          armazemId: currentOrder.armazemProducaoId
+        };
+        const movProdutoDoc = await addDoc(collection(db, "movimentacoesEstoque"), movProduto);
+        console.log('[APONTAMENTO] Movimentação de produto acabado registrada', { movProduto, movProdutoDoc });
+        alert('Apontamento registrado com sucesso!');
+        closeModal();
+      } catch (error) {
+        console.error("Erro ao registrar apontamento:", error);
+        alert(error.message || 'Erro ao registrar apontamento');
+      } finally {
+        submitButton.disabled = false;
+      }
+    };
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('appointmentModal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
+  </script>
+</body>
+</html>

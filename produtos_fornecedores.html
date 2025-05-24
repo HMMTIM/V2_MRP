@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produtos x Fornecedores - Sistema MRP</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --header-bg: #354a5f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 { font-size: 24px; font-weight: 500; margin: 0; }
+
+    .form-container {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .form-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    select:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary { background-color: var(--primary-color); color: white; }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .btn-secondary:hover { background-color: #5a6268; }
+    .btn-danger { background-color: var(--danger-color); color: white; }
+    .btn-danger:hover { background-color: var(--danger-hover); }
+
+    .form-row { display: flex; gap: 10px; margin-bottom: 20px; }
+    .form-row > div { flex: 1; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px 15px; border: 1px solid var(--border-color); text-align: left; }
+    th { background-color: var(--secondary-color); font-weight: 600; color: var(--text-secondary); }
+    tr:hover { background-color: #f8f9fa; }
+
+    .access-denied {
+      text-align: center;
+      padding: 50px;
+      background-color: #f8d7da;
+      color: #721c24;
+      border-radius: 8px;
+      margin: 50px auto;
+      max-width: 600px;
+    }
+
+    .action-buttons { display: flex; gap: 5px; }
+    .delete-btn {
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+      background-color: var(--danger-color);
+      color: white;
+    }
+    .delete-btn:hover { background-color: var(--danger-hover); }
+  </style>
+</head>
+<body>
+  <div id="mainContainer" class="container" style="display: none;">
+    <div class="header">
+      <h1>Produtos x Fornecedores</h1>
+      <div>
+        <button class="btn-secondary" onclick="navigateBack()">Voltar</button>
+      </div>
+    </div>
+
+    <div class="form-container">
+      <h2 class="form-title">Vincular Produto e Fornecedor</h2>
+      <div class="form-row">
+        <div>
+          <label for="produtoSelect">Produto:</label>
+          <select id="produtoSelect">
+            <option value="">Selecione um produto</option>
+          </select>
+        </div>
+        <div>
+          <label for="fornecedorSelect">Fornecedor Homologado:</label>
+          <select id="fornecedorSelect">
+            <option value="">Selecione um fornecedor</option>
+          </select>
+        </div>
+        <div>
+          <button class="btn-primary" onclick="vincularProdutoFornecedor()">Vincular</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <h2 class="form-title">Vínculos Cadastrados</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Código Produto</th>
+            <th>Descrição Produto</th>
+            <th>Fornecedor</th>
+            <th>CNPJ</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="vinculosTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="accessDenied" class="access-denied" style="display: none;">
+    <h2>Acesso Negado</h2>
+    <p>Você não possui permissão para acessar esta funcionalidade.</p>
+    <button class="btn-secondary" onclick="navigateBack()">Voltar</button>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      getDocs, 
+      addDoc, 
+      deleteDoc, 
+      doc,
+      query, 
+      where,
+      getDoc 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let currentUser = null;
+    let produtos = [];
+    let fornecedores = [];
+    let vinculos = [];
+
+    window.onload = async function() {
+      const userSession = localStorage.getItem('currentUser');
+      if (!userSession) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      currentUser = JSON.parse(userSession);
+      await checkUserPermissions();
+      await loadData();
+      displayVinculos();
+    };
+
+    async function checkUserPermissions() {
+      if (currentUser.nivel === 9) {
+        document.getElementById('mainContainer').style.display = 'block';
+        return;
+      }
+
+      const permissionsDoc = await getDoc(doc(db, "permissoes", currentUser.id));
+      if (permissionsDoc.exists() && permissionsDoc.data().permissoes?.includes('produtos_fornecedores') && currentUser.nivel >= 3) {
+        document.getElementById('mainContainer').style.display = 'block';
+      } else {
+        document.getElementById('accessDenied').style.display = 'block';
+      }
+    }
+
+    async function loadData() {
+      try {
+        const [produtosSnap, fornecedoresSnap, vinculosSnap] = await Promise.all([
+          getDocs(collection(db, "produtos")),
+          getDocs(query(collection(db, "fornecedores"), 
+            where("statusHomologacao", "in", requiresHomologation ? ["Homologado"] : ["Homologado", "Pendente", "Não Homologado"]))),
+          getDocs(collection(db, "produtos_fornecedores"))
+        ]);
+
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        fornecedores = fornecedoresSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        vinculos = vinculosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        console.log("Fornecedores homologados:", fornecedores); // Para depuração
+
+        populateSelect('produtoSelect', produtos, 'codigo', 'descricao');
+        populateSelect('fornecedorSelect', fornecedores, 'razaoSocial', 'cnpj');
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados.");
+      }
+    }
+
+    function populateSelect(selectId, items, valueField, textField) {
+      const select = document.getElementById(selectId);
+      select.innerHTML = '<option value="">Selecione</option>';
+      if (items.length === 0 && selectId === 'fornecedorSelect') {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Nenhum fornecedor homologado disponível';
+        option.disabled = true;
+        select.appendChild(option);
+      } else {
+        items.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.id;
+          option.textContent = `${item[valueField]} - ${item[textField]}`;
+          select.appendChild(option);
+        });
+      }
+    }
+
+    async function vincularProdutoFornecedor() {
+      const produtoId = document.getElementById('produtoSelect').value;
+      const fornecedorId = document.getElementById('fornecedorSelect').value;
+
+      if (!produtoId || !fornecedorId) {
+        alert("Selecione um produto e um fornecedor!");
+        return;
+      }
+
+      try {
+        const vinculoExistente = vinculos.find(v => v.produtoId === produtoId && v.fornecedorId === fornecedorId);
+        if (vinculoExistente) {
+          alert("Este produto já está vinculado a este fornecedor!");
+          return;
+        }
+
+        const novoVinculo = {
+          produtoId,
+          fornecedorId,
+          dataVinculo: new Date().toISOString()
+        };
+
+        const docRef = await addDoc(collection(db, "produtos_fornecedores"), novoVinculo);
+        vinculos.push({ id: docRef.id, ...novoVinculo });
+        displayVinculos();
+        alert("Vínculo criado com sucesso!");
+      } catch (error) {
+        console.error("Erro ao vincular:", error);
+        alert("Erro ao criar vínculo.");
+      }
+    }
+
+    function displayVinculos() {
+  const tbody = document.getElementById('vinculosTableBody');
+  tbody.innerHTML = '';
+
+  vinculos.forEach(vinculo => {
+    const produto = produtos.find(p => p.id === vinculo.produtoId);
+    const fornecedor = fornecedores.find(f => f.id === vinculo.fornecedorId);
+
+    if (produto && fornecedor) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${produto.codigo}</td>
+        <td>${produto.descricao}</td>
+        <td>${fornecedor.razaoSocial}</td>
+        <td>${fornecedor.cnpjCpf || 'N/A'}</td> <!-- Alterado de cnpj para cnpjCpf -->
+        <td class="action-buttons"><button class="delete-btn" onclick="removerVinculo('${vinculo.id}')">Remover</button></td>
+      `;
+      tbody.appendChild(tr);
+    } else {
+      console.warn("Vínculo inválido:", vinculo);
+    }
+  });
+}
+
+    async function removerVinculo(vinculoId) {
+      if (!confirm("Deseja remover este vínculo?")) return;
+
+      try {
+        await deleteDoc(doc(db, "produtos_fornecedores", vinculoId));
+        vinculos = vinculos.filter(v => v.id !== vinculoId);
+        displayVinculos();
+        alert("Vínculo removido com sucesso!");
+      } catch (error) {
+        console.error("Erro ao remover vínculo:", error);
+        alert("Erro ao remover vínculo.");
+      }
+    }
+
+    window.navigateBack = () => {
+      try {
+        window.location.href = 'index.html';
+      } catch (error) {
+        console.warn("Navegação não suportada:", error);
+        alert("Funcionalidade de voltar não disponível no StackBlitz.");
+      }
+    };
+
+    // Expor funções ao escopo global
+    window.vincularProdutoFornecedor = vincularProdutoFornecedor;
+    window.removerVinculo = removerVinculo;
+  </script>
+</body>
+</html>

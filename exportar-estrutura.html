@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exportar Todas as Estruturas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+            color: white;
+        }
+        .export-btn {
+            background-color: #007bff;
+        }
+        .export-btn:hover {
+            background-color: #0056b3;
+        }
+        .back-btn {
+            background-color: #6c757d;
+        }
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+        .status {
+            display: none;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Exportar Todas as Estruturas</h1>
+        <button class="button export-btn" onclick="exportarParaExcel()">Exportar para Excel</button>
+        <button class="button back-btn" onclick="window.location.href='index.html'">Voltar</button>
+        <div id="status" class="status">Carregando...</div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        async function carregarEstruturas() {
+            try {
+                document.getElementById('status').style.display = 'block';
+                document.getElementById('status').textContent = 'Buscando dados...';
+
+                const [produtosSnap, operacoesSnap, recursosSnap, estruturasSnap] = await Promise.all([
+                    getDocs(collection(db, "produtos")),
+                    getDocs(collection(db, "operacoes")),
+                    getDocs(collection(db, "recursos")),
+                    getDocs(collection(db, "estruturas"))
+                ]);
+
+                let produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                let operacoes = operacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                let recursos = recursosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                let estruturas = estruturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                document.getElementById('status').textContent = 'Processando dados...';
+
+                let componentesData = [];
+                let operacoesData = [];
+
+                estruturas.forEach(estrutura => {
+                    let produtoPai = produtos.find(p => p.id === estrutura.produtoPaiId);
+                    if (!produtoPai) return;
+
+                    estrutura.componentes.forEach(comp => {
+                        let componente = produtos.find(p => p.id === comp.componentId);
+                        if (componente) {
+                            componentesData.push({
+                                "Produto Pai": produtoPai.descricao,
+                                "Código Pai": produtoPai.codigo,
+                                "Tipo Pai": produtoPai.tipo,
+                                "Componente": componente.descricao,
+                                "Código Componente": componente.codigo,
+                                "Tipo Componente": componente.tipo,
+                                "Quantidade": comp.quantidade,
+                                "Unidade": componente.unidade
+                            });
+                        }
+                    });
+
+                    estrutura.operacoes.forEach(op => {
+                        let operacao = operacoes.find(o => o.id === op.operacaoId);
+                        let recurso = recursos.find(r => r.id === op.recursoId);
+
+                        operacoesData.push({
+                            "Produto": produtoPai.descricao,
+                            "Código Produto": produtoPai.codigo,
+                            "Sequência": op.sequencia,
+                            "Operação": operacao ? operacao.operacao : "N/D",
+                            "Recurso": recurso ? recurso.maquina : "N/D",
+                            "Setor": recurso ? recurso.setor : "N/D",
+                            "Tempo (min)": op.tempo,
+                            "Descrição": op.descricao || ''
+                        });
+                    });
+                });
+
+                document.getElementById('status').textContent = 'Gerando arquivo...';
+                return { componentesData, operacoesData };
+            } catch (error) {
+                console.error("Erro ao carregar estruturas:", error);
+                document.getElementById('status').textContent = 'Erro ao carregar os dados.';
+                return { componentesData: [], operacoesData: [] };
+            }
+        }
+
+        async function exportarParaExcel() {
+            const { componentesData, operacoesData } = await carregarEstruturas();
+            if (componentesData.length === 0 && operacoesData.length === 0) {
+                alert("Nenhuma estrutura encontrada para exportação.");
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+            wb.Props = { Title: "Estruturas de Produtos", Author: "Sistema" };
+
+            const wsComponentes = XLSX.utils.json_to_sheet(componentesData);
+            const wsOperacoes = XLSX.utils.json_to_sheet(operacoesData);
+
+            XLSX.utils.book_append_sheet(wb, wsComponentes, "Componentes");
+            XLSX.utils.book_append_sheet(wb, wsOperacoes, "Operações");
+
+            XLSX.writeFile(wb, `Estruturas_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+            document.getElementById('status').textContent = 'Exportação concluída!';
+            setTimeout(() => { document.getElementById('status').style.display = 'none'; }, 3000);
+        }
+
+        window.exportarParaExcel = exportarParaExcel;
+    </script>
+</body>
+</html>

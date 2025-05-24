@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fluxo de Caixa</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+
+<div class="dashboard-container">
+  <div class="dashboard-card">
+    <h3>DRE Simplificado</h3>
+    <canvas id="dreChart"></canvas>
+  </div>
+  <div class="dashboard-card">
+    <h3>Indicadores</h3>
+    <div id="indicadoresFinanceiros">
+      <p>Liquidez Corrente: <span id="liquidezCorrente">0</span></p>
+      <p>Ciclo Financeiro: <span id="cicloFinanceiro">0</span> dias</p>
+      <p>Margem EBITDA: <span id="margemEbitda">0</span>%</p>
+    </div>
+  </div>
+</div>
+
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #333;
+    }
+    .filters {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+    .filter-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+    .filter-group {
+      flex: 1;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    select, input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .back-button {
+      background-color: #6c757d;
+
+<div class="projection-controls">
+  <h3>Projeções Avançadas</h3>
+  <div class="form-row">
+    <div class="form-col">
+      <label>Cenário</label>
+      <select id="cenarioProjecao">
+        <option value="otimista">Otimista</option>
+        <option value="realista">Realista</option>
+        <option value="pessimista">Pessimista</option>
+      </select>
+    </div>
+    <div class="form-col">
+      <label>Período</label>
+      <select id="periodoProjecao">
+        <option value="30">30 dias</option>
+        <option value="60">60 dias</option>
+        <option value="90">90 dias</option>
+      </select>
+    </div>
+  </div>
+  <button onclick="calcularProjecoes()" class="btn-primary">Atualizar Projeções</button>
+</div>
+
+    }
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .summary-card {
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .summary-card.positive {
+      border-left: 4px solid #28a745;
+    }
+    .summary-card.negative {
+      border-left: 4px solid #dc3545;
+    }
+    .summary-card.neutral {
+      border-left: 4px solid #17a2b8;
+    }
+    .summary-card h3 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+    .summary-card .value {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .summary-card .value.positive {
+      color: #28a745;
+    }
+    .summary-card .value.negative {
+      color: #dc3545;
+    }
+    .cash-flow-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .cash-flow-table th,
+    .cash-flow-table td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    .cash-flow-table th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+    }
+    .cash-flow-table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .cash-flow-table tr.total-row {
+      font-weight: bold;
+      background-color: #e9ecef;
+    }
+    .cash-flow-table .amount-cell {
+      text-align: right;
+    }
+    .cash-flow-table .amount-cell.positive {
+      color: #28a745;
+    }
+    .cash-flow-table .amount-cell.negative {
+      color: #dc3545;
+    }
+    .chart-container {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .chart-title {
+      margin-bottom: 15px;
+      font-size: 18px;
+      color: #333;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Fluxo de Caixa</h1>
+      <div>
+        <button onclick="exportToExcel()">Exportar Excel</button>
+        <button onclick="window.print()">Imprimir</button>
+        <button onclick="window.location.href='index.html'" class="back-button">Voltar</button>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Período:</label>
+          <select id="periodFilter" onchange="updateReport()">
+            <option value="7">Últimos 7 dias</option>
+            <option value="15">Últimos 15 dias</option>
+            <option value="30" selected>Últimos 30 dias</option>
+            <option value="60">Últimos 60 dias</option>
+            <option value="90">Últimos 90 dias</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Data Inicial:</label>
+          <input type="date" id="startDate" onchange="updateReport()">
+        </div>
+        <div class="filter-group">
+          <label>Data Final:</label>
+          <input type="date" id="endDate" onchange="updateReport()">
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-cards">
+      <div class="summary-card positive">
+        <h3>Total a Receber</h3>
+        <div class="value positive" id="totalReceivable">R$ 0,00</div>
+      </div>
+      <div class="summary-card negative">
+        <h3>Total a Pagar</h3>
+        <div class="value negative" id="totalPayable">R$ 0,00</div>
+      </div>
+      <div class="summary-card neutral">
+        <h3>Saldo Projetado</h3>
+        <div class="value" id="projectedBalance">R$ 0,00</div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h3 class="chart-title">Evolução do Fluxo de Caixa</h3>
+      <canvas id="cashFlowChart"></canvas>
+    </div>
+
+    <table class="cash-flow-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Descrição</th>
+          <th>Tipo</th>
+          <th>Valor</th>
+          <th>Status</th>
+          <th>Saldo</th>
+        </tr>
+      </thead>
+      <tbody id="cashFlowTableBody">
+      </tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      getDocs,
+      query,
+      where,
+      orderBy,
+      Timestamp 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let contasPagar = [];
+    let contasReceber = [];
+    let cashFlowChart = null;
+
+    window.onload = async function() {
+      await loadInitialData();
+      setDefaultDates();
+      await updateReport();
+    };
+
+    function setDefaultDates() {
+      const today = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+      
+      document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+      document.getElementById('endDate').value = today.toISOString().split('T')[0];
+    }
+
+    async function loadInitialData() {
+      try {
+        const [contasPagarSnap, contasReceberSnap] = await Promise.all([
+          getDocs(collection(db, "contasPagar")),
+          getDocs(collection(db, "contasReceber"))
+        ]);
+
+        contasPagar = contasPagarSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        contasReceber = contasReceberSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados iniciais.");
+      }
+    }
+
+    window.updateReport = async function() {
+      const startDate = new Date(document.getElementById('startDate').value);
+      const endDate = new Date(document.getElementById('endDate').value);
+      endDate.setHours(23, 59, 59);
+
+      // Filtrar contas pelo período
+      const filteredPayables = contasPagar.filter(conta => {
+        const vencimento = new Date(conta.dataVencimento.seconds * 1000);
+        return vencimento >= startDate && vencimento <= endDate;
+      });
+
+      const filteredReceivables = contasReceber.filter(conta => {
+        const vencimento = new Date(conta.dataVencimento.seconds * 1000);
+        return vencimento >= startDate && vencimento <= endDate;
+      });
+
+      // Calcular totais
+      const totalPayable = filteredPayables.reduce((sum, conta) => sum + conta.valor, 0);
+      const totalReceivable = filteredReceivables.reduce((sum, conta) => sum + conta.valor, 0);
+      const projectedBalance = totalReceivable - totalPayable;
+
+      // Atualizar cards de resumo
+      document.getElementById('totalPayable').textContent = formatCurrency(totalPayable);
+      document.getElementById('totalReceivable').textContent = formatCurrency(totalReceivable);
+      document.getElementById('projectedBalance').textContent = formatCurrency(projectedBalance);
+      document.getElementById('projectedBalance').className = 
+        projectedBalance >= 0 ? 'value positive' : 'value negative';
+
+      // Gerar dados para a tabela
+      const allTransactions = [
+        ...filteredPayables.map(conta => ({
+          data: new Date(conta.dataVencimento.seconds * 1000),
+          descricao: `Conta a Pagar #${conta.numero}`,
+          tipo: 'SAÍDA',
+          valor: -conta.valor,
+          status: conta.status
+        })),
+        ...filteredReceivables.map(conta => ({
+          data: new Date(conta.dataVencimento.seconds * 1000),
+          descricao: `Conta a Receber #${conta.numero}`,
+          tipo: 'ENTRADA',
+          valor: conta.valor,
+          status: conta.status
+        }))
+      ].sort((a, b) => a.data - b.data);
+
+      // Calcular saldo acumulado
+      let saldoAcumulado = 0;
+      allTransactions.forEach(transaction => {
+        saldoAcumulado += transaction.valor;
+        transaction.saldo = saldoAcumulado;
+      });
+
+      // Atualizar tabela
+      const tableBody = document.getElementById('cashFlowTableBody');
+      tableBody.innerHTML = allTransactions.map(transaction => `
+        <tr>
+          <td>${transaction.data.toLocaleDateString()}</td>
+          <td>${transaction.descricao}</td>
+          <td>${transaction.tipo}</td>
+          <td class="amount-cell ${transaction.valor >= 0 ? 'positive' : 'negative'}">
+            ${formatCurrency(Math.abs(transaction.valor))}
+          </td>
+          <td>${transaction.status}</td>
+          <td class="amount-cell ${transaction.saldo >= 0 ? 'positive' : 'negative'}">
+            ${formatCurrency(transaction.saldo)}
+          </td>
+        </tr>
+      `).join('') + `
+        <tr class="total-row">
+          <td colspan="3">Saldo Final</td>
+          <td colspan="3" class="amount-cell ${saldoAcumulado >= 0 ? 'positive' : 'negative'}">
+            ${formatCurrency(saldoAcumulado)}
+          </td>
+        </tr>
+      `;
+
+      // Atualizar gráfico
+      updateChart(allTransactions);
+    };
+
+    function updateChart(transactions) {
+      const ctx = document.getElementById('cashFlowChart').getContext('2d');
+      
+      if (cashFlowChart) {
+        cashFlowChart.destroy();
+      }
+
+      const dates = transactions.map(t => t.data.toLocaleDateString());
+      const balances = transactions.map(t => t.saldo);
+
+      cashFlowChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [{
+            label: 'Saldo',
+            data: balances,
+            borderColor: '#0854a0',
+            backgroundColor: 'rgba(8, 84, 160, 0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Evolução do Saldo'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return 'Saldo: ' + formatCurrency(context.parsed.y);
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              ticks: {
+                callback: function(value) {
+                  return formatCurrency(value);
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    window.exportToExcel = function() {
+      // Implementar exportação para Excel
+      alert('Funcionalidade em desenvolvimento');
+    };
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(value);
+    }
+  </script>
+</body>
+</html>

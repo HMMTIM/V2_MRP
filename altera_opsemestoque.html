@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alterar Ordem de Produção</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 95%;
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+      color: white;
+    }
+
+    .form-container {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .form-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    input[type="text"], 
+    input[type="number"], 
+    input[type="date"], 
+    select, 
+    textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      font-size: 14px;
+      color: var(--text-color);
+      background-color: #fff;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+
+    .component-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .component-item select {
+      flex: 2;
+    }
+
+    .component-item input[type="number"] {
+      width: 100px;
+    }
+
+    .component-item select.unidade {
+      width: 80px;
+    }
+
+    .remove-btn {
+      background-color: var(--danger-color);
+      color: #fff;
+    }
+
+    .remove-btn:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .back-button {
+      padding: 10px 20px;
+      background-color: #6c757d;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    .back-button:hover {
+      background-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Alterar Ordem de Produção</h1>
+      <button class="btn-secondary" onclick="window.location.href='ordens_producao.html'">Voltar</button>
+    </div>
+
+    <div class="form-container">
+      <h2 class="form-title">Dados da Ordem de Produção</h2>
+      <form id="editOpForm">
+        <div class="form-group">
+          <label for="opSelect">Selecionar Ordem de Produção</label>
+          <select id="opSelect" onchange="loadOpData()" required>
+            <option value="">Selecione uma OP...</option>
+            <!-- Preenchido dinamicamente -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="produto">Produto</label>
+          <select id="produto" required>
+            <option value="">Selecione o produto...</option>
+            <!-- Preenchido dinamicamente -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="quantidade">Quantidade</label>
+          <input type="number" id="quantidade" min="0.001" step="0.001" required>
+        </div>
+
+        <div class="form-group">
+          <label for="dataEntrega">Data de Entrega</label>
+          <input type="date" id="dataEntrega" required>
+        </div>
+
+        <div class="form-group">
+          <label for="prioridade">Prioridade</label>
+          <select id="prioridade" required>
+            <option value="Baixa">Baixa</option>
+            <option value="Média">Média</option>
+            <option value="Alta">Alta</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="observacoes">Observações</label>
+          <textarea id="observacoes"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Componentes</label>
+          <div id="componentesList">
+            <!-- Componentes carregados dinamicamente -->
+          </div>
+          <button type="button" class="btn-primary" onclick="addComponent()">Adicionar Componente</button>
+        </div>
+
+        <div class="action-buttons">
+          <button type="submit" class="btn-success">Salvar Alterações</button>
+        </div>
+      </form>
+
+      <button class="back-button" onclick="window.location.href='ordens_producao.html'">Voltar</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      getDocs, 
+      doc, 
+      updateDoc, 
+      addDoc,
+      query,
+      where,
+      Timestamp
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let ordensProducao = [];
+    let produtos = [];
+    let estoques = [];
+
+    // Carrega dados iniciais
+    window.onload = async function() {
+      try {
+        const [opsSnap, produtosSnap, estoquesSnap] = await Promise.all([
+          getDocs(collection(db, "ordensProducao")),
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "estoques"))
+        ]);
+
+        ordensProducao = opsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        produtos = produtosSnap.docs.reduce((acc, doc) => {
+          acc[doc.id] = doc.data().descricao;
+          return acc;
+        }, {});
+        estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        populateOpSelect();
+        populateProdutoSelect();
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados. Tente novamente.");
+      }
+    };
+
+    // Preenche o select de OPs com número baseado na data
+    function populateOpSelect() {
+      const opSelect = document.getElementById('opSelect');
+      opSelect.innerHTML = '<option value="">Selecione uma OP...</option>';
+
+      // Filtrar OPs que podem ser alteradas
+      const opsValidas = ordensProducao.filter(op => {
+        const statusValido = op.status !== 'Concluída' && op.status !== 'Cancelada';
+        const temEstorno = op.dataEstorno !== undefined;
+        return statusValido || temEstorno;
+      });
+
+      // Ordenar OPs por número
+      opsValidas.sort((a, b) => {
+        // Se a OP tem número definido, usa ele
+        if (a.numeroOP && b.numeroOP) {
+          return a.numeroOP.localeCompare(b.numeroOP);
+        }
+        // Se não tem número definido, usa a data de criação
+        const dataA = a.dataCriacao ? new Date(a.dataCriacao.seconds * 1000) : new Date(0);
+        const dataB = b.dataCriacao ? new Date(b.dataCriacao.seconds * 1000) : new Date(0);
+        return dataA - dataB;
+      });
+
+      // Gerar opções
+      opsValidas.forEach(op => {
+        const produto = produtos[op.produtoId] || 'Produto não encontrado';
+        const status = op.dataEstorno ? 'Estornada' : op.status;
+        const numeroExibicao = op.numeroOP || op.numero || 'Sem número';
+        opSelect.innerHTML += `<option value="${op.id}">${numeroExibicao} - ${produto} (${status})</option>`;
+      });
+    }
+
+    // Preenche o select de produtos
+    function populateProdutoSelect() {
+      const produtoSelect = document.getElementById('produto');
+      produtoSelect.innerHTML = '<option value="">Selecione o produto...</option>';
+      Object.entries(produtos).forEach(([id, descricao]) => {
+        produtoSelect.innerHTML += `<option value="${id}">${descricao}</option>`;
+      });
+    }
+
+    // Carrega os dados da OP selecionada
+    window.loadOpData = function() {
+      const opId = document.getElementById('opSelect').value;
+      if (!opId) return;
+
+      const op = ordensProducao.find(o => o.id === opId);
+      if (!op) return;
+
+      // Atualiza o título com o número correto da OP
+      document.querySelector('.form-title').textContent = `Dados da Ordem de Produção ${op.numeroOP || op.numero || 'Sem número'}`;
+
+      document.getElementById('produto').value = op.produtoId;
+      document.getElementById('quantidade').value = op.quantidade;
+      document.getElementById('dataEntrega').value = new Date(op.dataEntrega.seconds * 1000).toISOString().split('T')[0];
+      document.getElementById('prioridade').value = op.prioridade;
+      document.getElementById('observacoes').value = op.observacoes || '';
+
+      const componentesList = document.getElementById('componentesList');
+      componentesList.innerHTML = '';
+      if (op.materiaisNecessarios) {
+        for (const comp of op.materiaisNecessarios) {
+          const produto = produtos[comp.produtoId];
+          componentesList.innerHTML += `
+            <div class="component-item">
+              <select>
+                ${Object.entries(produtos).map(([id, descricao]) => `<option value="${id}" ${comp.produtoId === id ? 'selected' : ''}>${descricao}</option>`).join('')}
+              </select>
+              <input type="number" value="${comp.quantidade}" min="0.001" step="0.001">
+              <select class="unidade">
+                <option value="PC" ${comp.unidade === 'PC' ? 'selected' : ''}>PC</option>
+                <option value="KG" ${comp.unidade === 'KG' ? 'selected' : ''}>KG</option>
+              </select>
+              <button type="button" class="remove-btn" onclick="removeComponent(this)">Remover</button>
+            </div>
+          `;
+        }
+      }
+    };
+
+    // Adiciona um novo componente
+    window.addComponent = function() {
+      const componentesList = document.getElementById('componentesList');
+      componentesList.innerHTML += `
+        <div class="component-item">
+          <select>
+            ${Object.entries(produtos).map(([id, descricao]) => `<option value="${id}">${descricao}</option>`).join('')}
+          </select>
+          <input type="number" value="1" min="0.001" step="0.001">
+          <select class="unidade">
+            <option value="PC">PC</option>
+            <option value="KG" selected>KG</option>
+          </select>
+          <button type="button" class="remove-btn" onclick="removeComponent(this)">Remover</button>
+        </div>
+      `;
+    };
+
+    // Remove um componente
+    window.removeComponent = function(button) {
+      button.closest('.component-item').remove();
+    };
+
+    // Salva as alterações da OP
+    document.getElementById('editOpForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      const opId = document.getElementById('opSelect').value;
+      const produtoId = document.getElementById('produto').value;
+      const quantidade = parseFloat(document.getElementById('quantidade').value);
+      const dataEntrega = document.getElementById('dataEntrega').value;
+      const prioridade = document.getElementById('prioridade').value;
+      const observacoes = document.getElementById('observacoes').value;
+
+      const componentes = [];
+      const componentIds = new Set();
+      let hasInvalidComponent = false;
+
+      document.querySelectorAll('#componentesList .component-item').forEach(item => {
+        const componentId = item.querySelector('select').value;
+        const quantidadeComponente = parseFloat(item.querySelector('input[type="number"]').value);
+        const unidade = item.querySelector('.unidade').value;
+
+        if (!componentId || !quantidadeComponente || !unidade) {
+          hasInvalidComponent = true;
+          return;
+        }
+
+        if (componentIds.has(componentId)) {
+          alert('Não é permitido usar o mesmo componente mais de uma vez na ordem.');
+          hasInvalidComponent = true;
+          return;
+        }
+
+        componentIds.add(componentId);
+        componentes.push({
+          produtoId: componentId,
+          quantidade: quantidadeComponente,
+          unidade
+        });
+      });
+
+      if (hasInvalidComponent) {
+        alert('Por favor, preencha todos os campos dos componentes corretamente.');
+        return;
+      }
+
+      try {
+        const opRef = doc(db, "ordensProducao", opId);
+        const op = ordensProducao.find(o => o.id === opId);
+
+        // Verificar se OP pode ser alterada
+        if (op.status === 'Concluída' || op.status === 'Cancelada') {
+          throw new Error('Não é possível alterar uma OP concluída ou cancelada');
+        }
+
+        // Reverter empenhos e reservas anteriores
+        if (op.materiaisNecessarios) {
+          for (const material of op.materiaisNecessarios) {
+            if (material.quantidadeReservada) {
+              await updateInventoryReservation(material.produtoId, -material.quantidadeReservada);
+            }
+            await updateInventory(material.produtoId, material.quantidade, 'entrada', material.unidade);
+          }
+        }
+
+        // Cancelar solicitações de compra vinculadas
+        const solicitacoesRef = collection(db, "solicitacoesCompra");
+        const solicitacoesSnap = await getDocs(query(solicitacoesRef, where("opId", "==", opId)));
+        for (const doc of solicitacoesSnap.docs) {
+          await updateDoc(doc.ref, { status: 'Cancelada', motivoCancelamento: 'OP alterada' });
+        }
+
+        // Atualizar a ordem de produção (sem validação de saldo)
+        await updateDoc(opRef, {
+          produtoId,
+          quantidade,
+          unidade: "KG",
+          dataEntrega: new Date(dataEntrega),
+          prioridade,
+          observacoes,
+          materiaisNecessarios: componentes
+        });
+
+        // Aplicar novo empenho
+        for (const componente of componentes) {
+          await updateInventory(componente.produtoId, componente.quantidade, 'saida', componente.unidade);
+        }
+
+        alert('Ordem de produção atualizada com sucesso!');
+        window.location.replace('ordens_producao.html');
+      } catch (error) {
+        console.error("Erro ao atualizar ordem de produção:", error);
+        alert(`Erro: ${error.message}`);
+      }
+    });
+
+    // Atualiza o estoque no Firestore
+    async function updateInventory(produtoId, quantidade, tipo, unidade) {
+      const estoqueRef = estoques.find(e => e.produtoId === produtoId);
+
+      // Conversão para KG (estoque sempre em KG)
+      let quantidadeAjustada = quantidade;
+      if (unidade === "PC") {
+        quantidadeAjustada = quantidade * 0.5; // Fator de conversão
+      }
+
+      if (estoqueRef) {
+        const novoSaldo = tipo === 'entrada' 
+          ? estoqueRef.saldo + quantidadeAjustada 
+          : estoqueRef.saldo - quantidadeAjustada;
+
+        await updateDoc(doc(db, "estoques", estoqueRef.id), {
+          saldo: novoSaldo,
+          unidade: "KG",
+          ultimaMovimentacao: new Date()
+        });
+
+        estoqueRef.saldo = novoSaldo;
+      } else {
+        const novoEstoque = {
+          produtoId,
+          saldo: tipo === 'entrada' ? quantidadeAjustada : -quantidadeAjustada,
+          unidade: "KG",
+          ultimaMovimentacao: new Date()
+        };
+
+        const docRef = await addDoc(collection(db, "estoques"), novoEstoque);
+        novoEstoque.id = docRef.id;
+        estoques.push(novoEstoque);
+      }
+    }
+
+    // Função para atualizar a reserva de estoque
+    async function updateInventoryReservation(produtoId, quantidade) {
+      const estoqueRef = estoques.find(e => e.produtoId === produtoId);
+      if (estoqueRef) {
+        const novoSaldoReservado = estoqueRef.saldoReservado + quantidade;
+        await updateDoc(doc(db, "estoques", estoqueRef.id), { saldoReservado: novoSaldoReservado });
+        estoqueRef.saldoReservado = novoSaldoReservado;
+      }
+    }
+
+    window.estornarApontamento = async function(opId) {
+            if (!confirm('Tem certeza que deseja estornar o último apontamento? Esta ação não pode ser desfeita.')) {
+                return;
+            }
+
+            try {
+                const op = ordensProducao.find(o => o.id === opId);
+                if (!op || !op.ultimoApontamento) {
+                    alert('Nenhum apontamento encontrado para estorno.');
+                    return;
+                }
+
+                // Reverter quantidade produzida
+                const novaQuantidadeProduzida = (op.quantidadeProduzida || 0) - op.ultimoApontamento.quantidade;
+                const novaQuantidadeRefugo = (op.quantidadeRefugo || 0) - (op.ultimoApontamento.refugo || 0);
+
+                // Determinar novo status baseado na quantidade produzida
+                let novoStatus;
+                if (novaQuantidadeProduzida <= 0) {
+                    novoStatus = 'Pendente';
+                } else if (novaQuantidadeProduzida < op.quantidade) {
+                    novoStatus = 'Em Produção';
+                }
+
+                // Se OP estava vinculada a pedido, atualizar status do pedido
+                if (op.pedidoId && op.status === 'Concluída') {
+                    await updateDoc(doc(db, "pedidosVenda", op.pedidoId), {
+                        status: 'Em Produção'
+                    });
+                }
+
+                // Atualizar OP
+                await updateDoc(doc(db, "ordensProducao", opId), {
+                    status: novoStatus,
+                    quantidadeProduzida: novaQuantidadeProduzida,
+                    quantidadeRefugo: novaQuantidadeRefugo,
+                    ultimoApontamento: null,
+                    dataEstorno: Timestamp.now(),
+                    statusAnterior: op.status // Guarda status anterior para referência
+                });
+
+                alert('Apontamento estornado com sucesso!');
+            } catch (error) {
+                console.error("Erro ao estornar apontamento:", error);
+                alert(`Erro: ${error.message}`);
+            }
+        };
+  </script>
+</body>
+</html>

@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Condições de Pagamento</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+    
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+    
+    .search-container {
+      margin-bottom: 20px;
+    }
+    
+    .search-container input {
+      width: 100%;
+      padding: 10px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>');
+      background-repeat: no-repeat;
+      background-position: 10px center;
+      padding-left: 35px;
+    }
+    
+    .form-container {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+    
+    .form-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .form-col {
+      flex: 1;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+    
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+    }
+    
+    .conditions-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    
+    .conditions-table th,
+    .conditions-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+    
+    .conditions-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    
+    .conditions-table tr:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .edit-btn, .delete-btn {
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    
+    .edit-btn {
+      background-color: #ffc107;
+      color: #000;
+    }
+    
+    .delete-btn {
+      background-color: var(--danger-color);
+      color: white;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .status-active {
+      background-color: #e5f2e5;
+      color: var(--success-color);
+    }
+    
+    .status-inactive {
+      background-color: #ffeaea;
+      color: var(--danger-color);
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .required::after {
+      content: "*";
+      color: var(--danger-color);
+      margin-left: 4px;
+    }
+    
+    .info-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    
+    .installments-container {
+      margin-top: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 15px;
+    }
+    
+    .installments-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .installments-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .installments-table th,
+    .installments-table td {
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+    
+    .installments-table th {
+      background-color: var(--secondary-color);
+      font-weight: 500;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 500px;
+      border-radius: 8px;
+      position: relative;
+    }
+    
+    .close-button {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Cadastro de Condições de Pagamento</h1>
+      <div>
+        <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+      </div>
+    </div>
+    
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Buscar condições de pagamento..." oninput="filterConditions()">
+    </div>
+    
+    <div class="form-container">
+      <h2 class="form-title">Cadastrar Nova Condição de Pagamento</h2>
+      
+      <form id="conditionForm">
+        <input type="hidden" id="editingId">
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="codigo" class="required">Código</label>
+            <input type="text" id="codigo" required>
+            <div class="info-text">Código único para a condição de pagamento</div>
+          </div>
+          <div class="form-col">
+            <label for="descricao" class="required">Descrição</label>
+            <input type="text" id="descricao" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="tipo" class="required">Tipo</label>
+            <select id="tipo" required onchange="handleTipoChange()">
+              <option value="A_VISTA">À Vista</option>
+              <option value="PARCELADO">Parcelado</option>
+              <option value="ENTRADA_PARCELADO">Entrada + Parcelado</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="ativo">Status</label>
+            <select id="ativo">
+              <option value="true">Ativo</option>
+              <option value="false">Inativo</option>
+            </select>
+          </div>
+        </div>
+        
+        <div id="parcelamentoContainer" style="display: none;">
+          <div class="form-row">
+            <div class="form-col">
+              <label for="numParcelas" class="required">Número de Parcelas</label>
+              <input type="number" id="numParcelas" min="1" value="1">
+            </div>
+            <div class="form-col">
+              <label for="intervalo" class="required">Intervalo (dias)</label>
+              <input type="number" id="intervalo" min="1" value="30">
+            </div>
+          </div>
+          
+          <div class="form-row" id="entradaRow" style="display: none;">
+            <div class="form-col">
+              <label for="percentualEntrada" class="required">Percentual de Entrada (%)</label>
+              <input type="number" id="percentualEntrada" min="1" max="99" value="30">
+            </div>
+            <div class="form-col">
+              <label for="diasEntrada" class="required">Dias para Entrada</label>
+              <input type="number" id="diasEntrada" min="0" value="0">
+              <div class="info-text">0 = pagamento no ato</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="installments-container" id="parcelasPreviewContainer" style="display: none;">
+          <div class="installments-header">
+            <h3>Simulação de Parcelas</h3>
+            <button type="button" class="btn-primary" onclick="calcularParcelas()">Calcular</button>
+          </div>
+          
+          <table class="installments-table">
+            <thead>
+              <tr>
+                <th>Parcela</th>
+                <th>Dias</th>
+                <th>Percentual</th>
+                <th>Valor (R$ 1.000,00)</th>
+              </tr>
+            </thead>
+            <tbody id="parcelasTableBody">
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="observacoes">Observações</label>
+            <textarea id="observacoes" rows="3"></textarea>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="cancelEdit()">Cancelar</button>
+          <button type="submit" class="btn-success" id="submitButton">Cadastrar</button>
+        </div>
+      </form>
+    </div>
+    
+    <div class="table-container">
+      <h2 class="form-title">Condições de Pagamento Cadastradas</h2>
+      <table class="conditions-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Descrição</th>
+            <th>Tipo</th>
+            <th>Parcelas</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="conditionsTableBody">
+        </tbody>
+      </table>
+    </div>
+    
+    <button onclick="window.location.href='index.html'" class="back-button">Voltar para o Menu</button>
+  </div>
+  
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs, 
+      doc, 
+      getDoc,
+      updateDoc, 
+      deleteDoc,
+      query,
+      where 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let condicoesPagamento = [];
+    let contasAPagar = [];
+    let contasAReceber = [];
+
+    window.onload = async function() {
+      await loadData();
+      displayConditions();
+      setupFormListeners();
+    };
+
+    async function loadData() {
+      try {
+        const [condicoesSnap, contasPagarSnap, contasReceberSnap] = await Promise.all([
+          getDocs(collection(db, "condicoesPagamento")),
+          getDocs(collection(db, "contasAPagar")),
+          getDocs(collection(db, "contasAReceber"))
+        ]);
+
+        condicoesPagamento = condicoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        contasAPagar = contasPagarSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        contasAReceber = contasReceberSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados. Por favor, recarregue a página.");
+      }
+    }
+
+    function setupFormListeners() {
+      document.getElementById('conditionForm').addEventListener('submit', handleFormSubmit);
+    }
+
+    function displayConditions() {
+      const tableBody = document.getElementById('conditionsTableBody');
+      tableBody.innerHTML = '';
+
+      condicoesPagamento.forEach(condicao => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${condicao.codigo}</td>
+          <td>${condicao.descricao}</td>
+          <td>${getTipoDescricao(condicao.tipo)}</td>
+          <td>${getParcelasDescricao(condicao)}</td>
+          <td><span class="status-badge ${condicao.ativo ? 'status-active' : 'status-inactive'}">${condicao.ativo ? 'Ativo' : 'Inativo'}</span></td>
+          <td class="action-buttons">
+            <button class="edit-btn" onclick="editCondition('${condicao.id}')">Editar</button>
+            <button class="delete-btn" onclick="deleteCondition('${condicao.id}')">Excluir</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function getTipoDescricao(tipo) {
+      switch (tipo) {
+        case 'A_VISTA': return 'À Vista';
+        case 'PARCELADO': return 'Parcelado';
+        case 'ENTRADA_PARCELADO': return 'Entrada + Parcelado';
+        default: return tipo;
+      }
+    }
+
+    function getParcelasDescricao(condicao) {
+      if (condicao.tipo === 'A_VISTA') {
+        return 'À Vista';
+      } else if (condicao.tipo === 'PARCELADO') {
+        return `${condicao.numParcelas}x de ${condicao.intervalo} dias`;
+      } else if (condicao.tipo === 'ENTRADA_PARCELADO') {
+        return `Entrada ${condicao.percentualEntrada}% + ${condicao.numParcelas}x`;
+      }
+      return '-';
+    }
+
+    window.handleTipoChange = function() {
+      const tipo = document.getElementById('tipo').value;
+      const parcelamentoContainer = document.getElementById('parcelamentoContainer');
+      const entradaRow = document.getElementById('entradaRow');
+      const parcelasPreviewContainer = document.getElementById('parcelasPreviewContainer');
+      
+      if (tipo === 'A_VISTA') {
+        parcelamentoContainer.style.display = 'none';
+        parcelasPreviewContainer.style.display = 'none';
+      } else {
+        parcelamentoContainer.style.display = 'block';
+        parcelasPreviewContainer.style.display = 'block';
+        
+        if (tipo === 'ENTRADA_PARCELADO') {
+          entradaRow.style.display = 'flex';
+        } else {
+          entradaRow.style.display = 'none';
+        }
+      }
+    };
+
+    window.calcularParcelas = function() {
+      const tipo = document.getElementById('tipo').value;
+      const numParcelas = parseInt(document.getElementById('numParcelas').value) || 1;
+      const intervalo = parseInt(document.getElementById('intervalo').value) || 30;
+      const tableBody = document.getElementById('parcelasTableBody');
+      
+      tableBody.innerHTML = '';
+      
+      // Valor base para simulação
+      const valorBase = 1000;
+      
+      if (tipo === 'A_VISTA') {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>À Vista</td>
+          <td>0</td>
+          <td>100%</td>
+          <td>R$ ${valorBase.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(row);
+      } else if (tipo === 'PARCELADO') {
+        const valorParcela = valorBase / numParcelas;
+        const percentualParcela = 100 / numParcelas;
+        
+        for (let i = 1; i <= numParcelas; i++) {
+          const dias = intervalo * (i - 1);
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${i}/${numParcelas}</td>
+            <td>${dias}</td>
+            <td>${percentualParcela.toFixed(2)}%</td>
+            <td>R$ ${valorParcela.toFixed(2)}</td>
+          `;
+          tableBody.appendChild(row);
+        }
+      } else if (tipo === 'ENTRADA_PARCELADO') {
+        const percentualEntrada = parseFloat(document.getElementById('percentualEntrada').value) || 30;
+        const diasEntrada = parseInt(document.getElementById('diasEntrada').value) || 0;
+        
+        const valorEntrada = valorBase * (percentualEntrada / 100);
+        const valorRestante = valorBase - valorEntrada;
+        const valorParcela = valorRestante / numParcelas;
+        const percentualParcela = (100 - percentualEntrada) / numParcelas;
+        
+        // Entrada
+        const rowEntrada = document.createElement('tr');
+        rowEntrada.innerHTML = `
+          <td>Entrada</td>
+          <td>${diasEntrada}</td>
+          <td>${percentualEntrada.toFixed(2)}%</td>
+          <td>R$ ${valorEntrada.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(rowEntrada);
+        
+        // Parcelas
+        for (let i = 1; i <= numParcelas; i++) {
+          const dias = diasEntrada + (intervalo * i);
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${i}/${numParcelas}</td>
+            <td>${dias}</td>
+            <td>${percentualParcela.toFixed(2)}%</td>
+            <td>R$ ${valorParcela.toFixed(2)}</td>
+          `;
+          tableBody.appendChild(row);
+        }
+      }
+    };
+
+    async function handleFormSubmit(event) {
+      event.preventDefault();
+      
+      const editingId = document.getElementById('editingId').value;
+      const codigo = document.getElementById('codigo').value;
+      const descricao = document.getElementById('descricao').value;
+      const tipo = document.getElementById('tipo').value;
+      const ativo = document.getElementById('ativo').value === 'true';
+      const observacoes = document.getElementById('observacoes').value;
+      
+      // Verificar se já existe uma condição com o mesmo código
+      if (!editingId) {
+        const existingCondition = condicoesPagamento.find(c => c.codigo === codigo);
+        if (existingCondition) {
+          alert('Já existe uma condição de pagamento com este código. Por favor, escolha outro código.');
+          return;
+        }
+      }
+      
+      const condicaoData = {
+        codigo,
+        descricao,
+        tipo,
+        ativo,
+        observacoes
+      };
+      
+      // Adicionar dados de parcelamento se não for à vista
+      if (tipo !== 'A_VISTA') {
+        condicaoData.numParcelas = parseInt(document.getElementById('numParcelas').value) || 1;
+        condicaoData.intervalo = parseInt(document.getElementById('intervalo').value) || 30;
+        
+        if (tipo === 'ENTRADA_PARCELADO') {
+          condicaoData.percentualEntrada = parseFloat(document.getElementById('percentualEntrada').value) || 30;
+          condicaoData.diasEntrada = parseInt(document.getElementById('diasEntrada').value) || 0;
+        }
+      }
+
+      try {
+        if (editingId) {
+          // Atualizar condição existente
+          await updateDoc(doc(db, "condicoesPagamento", editingId), condicaoData);
+          alert('Condição de pagamento atualizada com sucesso!');
+        } else {
+          // Criar nova condição
+          condicaoData.dataCadastro = new Date();
+          await addDoc(collection(db, "condicoesPagamento"), condicaoData);
+          alert('Condição de pagamento cadastrada com sucesso!');
+        }
+        
+        await loadData();
+        displayConditions();
+        cancelEdit();
+      } catch (error) {
+        console.error("Erro ao salvar condição de pagamento:", error);
+        alert("Erro ao salvar condição de pagamento. Por favor, tente novamente.");
+      }
+    }
+
+    window.editCondition = function(conditionId) {
+      const condicao = condicoesPagamento.find(c => c.id === conditionId);
+      if (condicao) {
+        document.getElementById('editingId').value = conditionId;
+        document.getElementById('codigo').value = condicao.codigo;
+        document.getElementById('descricao').value = condicao.descricao;
+        document.getElementById('tipo').value = condicao.tipo;
+        document.getElementById('ativo').value = condicao.ativo.toString();
+        document.getElementById('observacoes').value = condicao.observacoes || '';
+        
+        if (condicao.tipo !== 'A_VISTA') {
+          document.getElementById('numParcelas').value = condicao.numParcelas || 1;
+          document.getElementById('intervalo').value = condicao.intervalo || 30;
+          
+          if (condicao.tipo === 'ENTRADA_PARCELADO') {
+            document.getElementById('percentualEntrada').value = condicao.percentualEntrada || 30;
+            document.getElementById('diasEntrada').value = condicao.diasEntrada || 0;
+          }
+        }
+        
+        handleTipoChange();
+        if (condicao.tipo !== 'A_VISTA') {
+          calcularParcelas();
+        }
+        
+        document.getElementById('submitButton').textContent = 'Atualizar';
+        
+        // Scroll para o formulário
+        document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    window.deleteCondition = async function(conditionId) {
+      // Verificar se a condição está sendo usada em contas a pagar ou receber
+      const usedInContasPagar = contasAPagar.some(conta => conta.condicaoPagamentoId === conditionId);
+      const usedInContasReceber = contasAReceber.some(conta => conta.condicaoPagamentoId === conditionId);
+      
+      if (usedInContasPagar || usedInContasReceber) {
+        alert('Esta condição de pagamento não pode ser excluída pois está sendo utilizada em contas a pagar ou receber.');
+        return;
+      }
+      
+      if (confirm('Tem certeza que deseja excluir esta condição de pagamento?')) {
+        try {
+          await deleteDoc(doc(db, "condicoesPagamento", conditionId));
+          await loadData();
+          displayConditions();
+          alert('Condição de pagamento excluída com sucesso!');
+        } catch (error) {
+          console.error("Erro ao excluir condição de pagamento:", error);
+          alert("Erro ao excluir condição de pagamento. Por favor, tente novamente.");
+        }
+      }
+    };
+
+    window.cancelEdit = function() {
+      document.getElementById('conditionForm').reset();
+      document.getElementById('editingId').value = '';
+      document.getElementById('submitButton').textContent = 'Cadastrar';
+      document.getElementById('parcelamentoContainer').style.display = 'none';
+      document.getElementById('entradaRow').style.display = 'none';
+      document.getElementById('parcelasPreviewContainer').style.display = 'none';
+    };
+
+    window.filterConditions = function() {
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+      const filteredConditions = condicoesPagamento.filter(condicao => 
+        condicao.codigo.toLowerCase().includes(searchText) ||
+        condicao.descricao.toLowerCase().includes(searchText)
+      );
+      
+      const tableBody = document.getElementById('conditionsTableBody');
+      tableBody.innerHTML = '';
+
+      filteredConditions.forEach(condicao => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${condicao.codigo}</td>
+          <td>${condicao.descricao}</td>
+          <td>${getTipoDescricao(condicao.tipo)}</td>
+          <td>${getParcelasDescricao(condicao)}</td>
+          <td><span class="status-badge ${condicao.ativo ? 'status-active' : 'status-inactive'}">${condicao.ativo ? 'Ativo' : 'Inativo'}</span></td>
+          <td class="action-buttons">
+            <button class="edit-btn" onclick="editCondition('${condicao.id}')">Editar</button>
+            <button class="delete-btn" onclick="deleteCondition('${condicao.id}')">Excluir</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    };
+  </script>
+</body>
+</html>

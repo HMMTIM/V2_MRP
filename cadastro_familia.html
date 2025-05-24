@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Família</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    .form-container {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .form-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .families-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .families-table th,
+    .families-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .families-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .families-table th:hover {
+      background-color: #e0e0e0;
+    }
+
+    .families-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+
+    .edit-btn {
+      background-color: #ffc107;
+      color: #000;
+    }
+
+    .delete-btn {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .edit-btn, .delete-btn {
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .search-container {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .search-container input {
+      width: 300px;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .required::after {
+      content: "*";
+      color: var(--danger-color);
+      margin-left: 4px;
+    }
+
+    .sort-indicator {
+      margin-left: 5px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Cadastro de Família</h1>
+      <div>
+        <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+      </div>
+    </div>
+
+    <div class="form-container">
+      <h2 class="form-title">Cadastrar Nova Família</h2>
+      <form id="familyForm">
+        <input type="hidden" id="editingId">
+        
+        <label for="codigoFamilia" class="required">Código da Família</label>
+        <input type="text" id="codigoFamilia" name="codigoFamilia" required>
+
+        <label for="nomeFamilia" class="required">Nome da Família</label>
+        <input type="text" id="nomeFamilia" name="nomeFamilia" required>
+
+        <label for="grupo" class="required">Grupo</label>
+        <select id="grupo" name="grupo" required>
+          <option value="">Selecione um grupo</option>
+        </select>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="cancelEdit()" id="cancelButton" style="display: none;">Cancelar</button>
+          <button type="submit" class="btn-success" id="submitButton">Cadastrar Família</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-container">
+      <h2 class="form-title">Famílias Cadastradas</h2>
+      <div class="search-container">
+        <input type="text" id="searchCodigo" placeholder="Pesquisar por Código" oninput="filterFamilies()">
+        <input type="text" id="searchNome" placeholder="Pesquisar por Nome" oninput="filterFamilies()">
+      </div>
+      <table class="families-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('codigoFamilia')">Código <span id="sortCodigo" class="sort-indicator"></span></th>
+            <th onclick="sortTable('nomeFamilia')">Nome <span id="sortNome" class="sort-indicator"></span></th>
+            <th onclick="sortTable('grupo')">Grupo <span id="sortGrupo" class="sort-indicator"></span></th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="familiesTableBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs, 
+      doc, 
+      updateDoc, 
+      deleteDoc,
+      query,
+      where 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let familias = [];
+    let grupos = [];
+    let sortDirection = 'asc'; // Direção da ordenação
+    let currentSortColumn = ''; // Coluna atual sendo ordenada
+
+    // Função global para ordenação
+    window.sortTable = function(sortBy) {
+      if (sortBy === currentSortColumn) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSortColumn = sortBy;
+        sortDirection = 'asc';
+      }
+
+      if (sortBy === 'codigoFamilia') {
+        familias.sort((a, b) => sortDirection === 'asc'
+          ? a.codigoFamilia.localeCompare(b.codigoFamilia)
+          : b.codigoFamilia.localeCompare(a.codigoFamilia));
+      } else if (sortBy === 'nomeFamilia') {
+        familias.sort((a, b) => sortDirection === 'asc'
+          ? a.nomeFamilia.localeCompare(b.nomeFamilia)
+          : b.nomeFamilia.localeCompare(a.nomeFamilia));
+      } else if (sortBy === 'grupo') {
+        familias.sort((a, b) => sortDirection === 'asc'
+          ? a.grupo.localeCompare(b.grupo)
+          : b.grupo.localeCompare(a.grupo));
+      }
+
+      updateSortIndicators(sortBy, sortDirection);
+      displayFamilies();
+    };
+
+    // Função para atualizar os indicadores visuais
+    function updateSortIndicators(column, direction) {
+      document.getElementById('sortCodigo').innerHTML = '';
+      document.getElementById('sortNome').innerHTML = '';
+      document.getElementById('sortGrupo').innerHTML = '';
+
+      if (column === 'codigoFamilia') {
+        document.getElementById('sortCodigo').innerHTML = direction === 'asc' ? '▲' : '▼';
+      } else if (column === 'nomeFamilia') {
+        document.getElementById('sortNome').innerHTML = direction === 'asc' ? '▲' : '▼';
+      } else if (column === 'grupo') {
+        document.getElementById('sortGrupo').innerHTML = direction === 'asc' ? '▲' : '▼';
+      }
+    }
+
+    window.onload = async function() {
+      await loadData();
+      displayFamilies();
+    };
+
+    async function loadData() {
+      try {
+        const [familiasSnapshot, gruposSnapshot] = await Promise.all([
+          getDocs(collection(db, "familias")),
+          getDocs(collection(db, "grupos"))
+        ]);
+
+        familias = [];
+        familiasSnapshot.forEach((doc) => {
+          familias.push({ id: doc.id, ...doc.data() });
+        });
+
+        grupos = [];
+        gruposSnapshot.forEach((doc) => {
+          grupos.push({ id: doc.id, ...doc.data() });
+        });
+
+        const grupoSelect = document.getElementById('grupo');
+        grupoSelect.innerHTML = '<option value="">Selecione um grupo</option>';
+        grupos.forEach(grupo => {
+          grupoSelect.innerHTML += `<option value="${grupo.codigoGrupo}">${grupo.codigoGrupo} - ${grupo.nomeGrupo}</option>`;
+        });
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados: " + error.message);
+      }
+    }
+
+    function getGrupoNome(codigoGrupo) {
+      const grupo = grupos.find(g => g.codigoGrupo === codigoGrupo);
+      return grupo ? `${grupo.codigoGrupo} - ${grupo.nomeGrupo}` : 'N/A';
+    }
+
+    function displayFamilies(filteredFamilies = familias) {
+      const tableBody = document.getElementById('familiesTableBody');
+      tableBody.innerHTML = '';
+
+      filteredFamilies.forEach(family => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${family.codigoFamilia}</td>
+          <td>${family.nomeFamilia}</td>
+          <td>${getGrupoNome(family.grupo)}</td>
+          <td class="action-buttons">
+            <button class="edit-btn" onclick="editFamily('${family.id}')">Editar</button>
+            <button class="delete-btn" onclick="deleteFamily('${family.id}')">Excluir</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    window.filterFamilies = function() {
+      const searchCodigo = document.getElementById('searchCodigo').value.toLowerCase();
+      const searchNome = document.getElementById('searchNome').value.toLowerCase();
+
+      let filteredFamilies = familias.filter(family => {
+        const matchCodigo = family.codigoFamilia.toLowerCase().includes(searchCodigo);
+        const matchNome = family.nomeFamilia.toLowerCase().includes(searchNome);
+        return matchCodigo && matchNome;
+      });
+
+      // Aplicar ordenação aos dados filtrados, se houver uma coluna ordenada
+      if (currentSortColumn) {
+        if (currentSortColumn === 'codigoFamilia') {
+          filteredFamilies.sort((a, b) => sortDirection === 'asc'
+            ? a.codigoFamilia.localeCompare(b.codigoFamilia)
+            : b.codigoFamilia.localeCompare(a.codigoFamilia));
+        } else if (currentSortColumn === 'nomeFamilia') {
+          filteredFamilies.sort((a, b) => sortDirection === 'asc'
+            ? a.nomeFamilia.localeCompare(b.nomeFamilia)
+            : b.nomeFamilia.localeCompare(a.nomeFamilia));
+        } else if (currentSortColumn === 'grupo') {
+          filteredFamilies.sort((a, b) => sortDirection === 'asc'
+            ? a.grupo.localeCompare(b.grupo)
+            : b.grupo.localeCompare(a.grupo));
+        }
+      }
+
+      displayFamilies(filteredFamilies);
+    };
+
+    window.editFamily = function(familyId) {
+      const family = familias.find(f => f.id === familyId);
+      if (family) {
+        document.getElementById('editingId').value = familyId;
+        document.getElementById('codigoFamilia').value = family.codigoFamilia;
+        document.getElementById('nomeFamilia').value = family.nomeFamilia;
+        document.getElementById('grupo').value = family.grupo;
+        
+        document.getElementById('submitButton').textContent = 'Atualizar Família';
+        document.getElementById('cancelButton').style.display = 'block';
+      }
+    };
+
+    window.cancelEdit = function() {
+      document.getElementById('familyForm').reset();
+      document.getElementById('editingId').value = '';
+      document.getElementById('submitButton').textContent = 'Cadastrar Família';
+      document.getElementById('cancelButton').style.display = 'none';
+    };
+
+    window.deleteFamily = async function(familyId) {
+      if (confirm('Tem certeza que deseja excluir esta família?')) {
+        try {
+          await deleteDoc(doc(db, "familias", familyId));
+          await loadData();
+          displayFamilies();
+          alert('Família excluída com sucesso!');
+        } catch (error) {
+          console.error("Erro ao excluir família:", error);
+          alert("Erro ao excluir família: " + error.message);
+        }
+      }
+    };
+
+    document.getElementById('familyForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      
+      const grupo = document.getElementById('grupo').value;
+      if (!grupo) {
+        alert("Por favor, selecione um grupo.");
+        return;
+      }
+
+      const formData = {
+        codigoFamilia: document.getElementById('codigoFamilia').value,
+        nomeFamilia: document.getElementById('nomeFamilia').value,
+        grupo: grupo,
+        dataCadastro: new Date()
+      };
+
+      const editingId = document.getElementById('editingId').value;
+
+      try {
+        if (editingId) {
+          await updateDoc(doc(db, "familias", editingId), formData);
+          alert("Família atualizada com sucesso!");
+        } else {
+          await addDoc(collection(db, "familias"), formData);
+          alert("Família cadastrada com sucesso!");
+        }
+
+        await loadData();
+        displayFamilies();
+        event.target.reset();
+        cancelEdit();
+      } catch (error) {
+        console.error("Erro ao salvar família:", error);
+        alert("Erro ao salvar família: " + error.message);
+      }
+    });
+  </script>
+</body>
+</html>

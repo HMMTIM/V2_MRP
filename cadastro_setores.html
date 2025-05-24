@@ -1,0 +1,494 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Setores</title>
+    <style>
+        :root {
+            --primary-color: #0854a0;
+            --primary-hover: #0a4d8c;
+            --secondary-color: #f0f3f6;
+            --border-color: #d4d4d4;
+            --text-color: #333;
+            --text-secondary: #666;
+            --success-color: #107e3e;
+            --success-hover: #0d6e36;
+            --danger-color: #bb0000;
+            --danger-hover: #a30000;
+            --warning-color: #e9730c;
+            --header-bg: #354a5f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            color: var(--text-color);
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            margin: -20px -20px 20px -20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .form-container {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        .form-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .form-col {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .required::after {
+            content: "*";
+            color: var(--danger-color);
+            margin-left: 4px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: var(--success-hover);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-hover);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: var(--secondary-color);
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-container input {
+            width: 300px;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: #e8f5e9;
+            color: var(--success-color);
+        }
+
+        .status-inactive {
+            background-color: #ffeaea;
+            color: var(--danger-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .edit-btn, .delete-btn {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .edit-btn {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .delete-btn {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .notification {
+            display: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .notification.success {
+            background-color: var(--success-color);
+        }
+
+        .notification.error {
+            background-color: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cadastro de Setores</h1>
+            <div>
+                <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+            </div>
+        </div>
+
+        <div id="notification" class="notification"></div>
+
+        <div class="form-container">
+            <h2 class="form-title">Cadastrar Novo Setor</h2>
+            <form id="sectorForm" onsubmit="registerSector(event)">
+                <input type="hidden" id="editingId">
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="sectorCode" class="required">Código do Setor</label>
+                        <input type="text" id="sectorCode" required maxlength="10">
+                        <div class="info-text">Código único para identificação do setor</div>
+                    </div>
+                    <div class="form-col">
+                        <label for="sectorName" class="required">Nome do Setor</label>
+                        <input type="text" id="sectorName" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="sectorManager">Responsável</label>
+                        <input type="text" id="sectorManager">
+                        <div class="info-text">Nome do responsável pelo setor</div>
+                    </div>
+                    <div class="form-col">
+                        <label for="sectorStatus" class="required">Status</label>
+                        <select id="sectorStatus" required>
+                            <option value="true">Ativo</option>
+                            <option value="false">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="sectorDescription">Descrição</label>
+                    <textarea id="sectorDescription" rows="3"></textarea>
+                    <div class="info-text">Informações adicionais sobre o setor</div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="cancelEdit()">Cancelar</button>
+                    <button type="submit" class="btn-success" id="submitButton">Cadastrar Setor</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-container">
+            <h2 class="form-title">Setores Cadastrados</h2>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Pesquisar setores..." oninput="filterSectors()">
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Responsável</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="sectorsTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { 
+            collection, 
+            addDoc, 
+            getDocs, 
+            doc, 
+            updateDoc, 
+            deleteDoc 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let setores = [];
+        let editingId = null;
+
+        window.onload = async function() {
+            await loadSectors();
+            displaySectors();
+        };
+
+        async function loadSectors() {
+            try {
+                const snapshot = await getDocs(collection(db, "setores"));
+                setores = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error("Erro ao carregar setores:", error);
+                showNotification("Erro ao carregar setores.", "error");
+            }
+        }
+
+        function displaySectors(filteredSectors = setores) {
+            const tableBody = document.getElementById('sectorsTableBody');
+            tableBody.innerHTML = '';
+
+            filteredSectors.forEach(setor => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${setor.codigo}</td>
+                    <td>${setor.nome}</td>
+                    <td>${setor.responsavel || '-'}</td>
+                    <td><span class="status-badge ${setor.ativo ? 'status-active' : 'status-inactive'}">${setor.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                    <td class="action-buttons">
+                        <button class="edit-btn" onclick="editSector('${setor.id}')">Editar</button>
+                        <button class="delete-btn" onclick="deleteSector('${setor.id}')">Excluir</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        window.showNotification = function(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+            setTimeout(() => notification.style.display = 'none', 3000);
+        };
+
+        window.registerSector = async function(event) {
+            event.preventDefault();
+
+            const codigo = document.getElementById('sectorCode').value.toUpperCase();
+            const nome = document.getElementById('sectorName').value;
+            const responsavel = document.getElementById('sectorManager').value;
+            const ativo = document.getElementById('sectorStatus').value === 'true';
+            const descricao = document.getElementById('sectorDescription').value;
+
+            if (!editingId) {
+                const existingSector = setores.find(s => s.codigo === codigo);
+                if (existingSector) {
+                    showNotification("Já existe um setor com este código.", "error");
+                    return;
+                }
+            }
+
+            try {
+                const setor = {
+                    codigo,
+                    nome,
+                    responsavel,
+                    ativo,
+                    descricao,
+                    dataCadastro: new Date()
+                };
+
+                if (editingId) {
+                    await updateDoc(doc(db, "setores", editingId), setor);
+                    showNotification("Setor atualizado com sucesso!", "success");
+                } else {
+                    await addDoc(collection(db, "setores"), setor);
+                    showNotification("Setor cadastrado com sucesso!", "success");
+                }
+
+                await loadSectors();
+                displaySectors();
+                cancelEdit();
+            } catch (error) {
+                console.error("Erro ao salvar setor:", error);
+                showNotification("Erro ao salvar setor.", "error");
+            }
+        };
+
+        window.editSector = function(sectorId) {
+            const setor = setores.find(s => s.id === sectorId);
+            if (setor) {
+                editingId = sectorId;
+                document.getElementById('sectorCode').value = setor.codigo;
+                document.getElementById('sectorName').value = setor.nome;
+                document.getElementById('sectorManager').value = setor.responsavel || '';
+                document.getElementById('sectorStatus').value = setor.ativo.toString();
+                document.getElementById('sectorDescription').value = setor.descricao || '';
+                document.getElementById('submitButton').textContent = 'Atualizar Setor';
+            }
+        };
+
+        window.deleteSector = async function(sectorId) {
+            if (confirm('Tem certeza que deseja excluir este setor?')) {
+                try {
+                    await deleteDoc(doc(db, "setores", sectorId));
+                    await loadSectors();
+                    displaySectors();
+                    showNotification("Setor excluído com sucesso!", "success");
+                } catch (error) {
+                    console.error("Erro ao excluir setor:", error);
+                    showNotification("Erro ao excluir setor.", "error");
+                }
+            }
+        };
+
+        window.cancelEdit = function() {
+            editingId = null;
+            document.getElementById('sectorForm').reset();
+            document.getElementById('submitButton').textContent = 'Cadastrar Setor';
+        };
+
+        window.filterSectors = function() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const filteredSectors = setores.filter(setor => 
+                setor.codigo.toLowerCase().includes(searchText) ||
+                setor.nome.toLowerCase().includes(searchText) ||
+                (setor.responsavel && setor.responsavel.toLowerCase().includes(searchText))
+            );
+            displaySectors(filteredSectors);
+        };
+    </script>
+</body>
+</html>

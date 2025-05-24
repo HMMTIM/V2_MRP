@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Relatório de Integração MRP e Compras</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        .no-print {
+          display: none;
+        }
+        .report-page {
+          page-break-after: always;
+        }
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #333;
+      }
+
+      .logo {
+        max-width: 150px;
+        height: auto;
+      }
+
+      .filters {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+      }
+
+      .filter-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 10px;
+      }
+
+      .filter-group {
+        flex: 1;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      select,
+      input[type='date'],
+      input[type='checkbox'] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+
+      .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      button {
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+      .back-button {
+        background-color: #6c757d;
+      }
+      .pdf-button {
+        background-color: #007bff;
+      }
+
+      .section {
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .section-title {
+        color: #333;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eee;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+
+      .data-table th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+      }
+
+      .status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .status-pendente {
+        background-color: #ffc107;
+        color: #000;
+      }
+      .status-em-producao {
+        background-color: #17a2b8;
+        color: #fff;
+      }
+      .status-concluida {
+        background-color: #28a745;
+        color: #fff;
+      }
+      .status-aprovada {
+        background-color: #28a745;
+        color: #fff;
+      }
+      .status-rejeitada {
+        background-color: #dc3545;
+        color: #fff;
+      }
+      .status-em-compra {
+        background-color: #007bff;
+        color: #fff;
+      }
+
+      .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .summary-card {
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .summary-card h3 {
+        margin: 0 0 10px 0;
+        color: #333;
+      }
+
+      .summary-card .value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #007bff;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 15px;
+        font-size: 12px;
+      }
+
+      .data-table th {
+        background-color: var(--secondary-color);
+        color: var(--primary-color);
+        font-weight: 600;
+        padding: 8px 5px;
+        border: 1px solid var(--border-color);
+        text-align: left;
+      }
+
+      .data-table td {
+        padding: 6px 5px;
+        border: 1px solid var(--border-color);
+        vertical-align: middle;
+      }
+
+      .data-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      .data-table tr:hover {
+        background-color: #e6f2ff;
+      }
+
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+      }
+
+      .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 20px;
+        width: 80%;
+        max-width: 1000px;
+        border-radius: 8px;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .modal-content table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .modal-content th,
+      .modal-content td {
+        padding: 8px;
+        border: 1px solid #ddd;
+      }
+
+      .modal-content th {
+        background-color: #f8f9fa;
+      }
+
+      .close-button {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        font-size: 24px;
+        cursor: pointer;
+      }
+
+      .modal-footer {
+        margin-top: 20px;
+        text-align: right;
+      }
+
+      /* Adicionar estilos para os cabeçalhos de grupo */
+      .group-header td {
+        background-color: #f0f0f0 !important;
+        font-weight: bold;
+        padding: 10px !important;
+      }
+      .subgroup-header td {
+        background-color: #f8f8f8 !important;
+        font-weight: bold;
+        padding: 8px !important;
+        font-style: italic;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      .data-table td[style*="text-align: right"] {
+        text-align: right;
+      }
+
+      .data-table td[style*="text-align: center"] {
+        text-align: center;
+      }
+
+      .data-table th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <img src="https://www.naliteck.com.br/img/logo.png" alt="Logo" class="logo" />
+        <div class="report-info">
+          <div>Data: <span id="reportDate"></span></div>
+          <div>Hora: <span id="reportTime"></span></div>
+        </div>
+      </div>
+
+      <div class="no-print">
+        <div class="filters">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>Período:</label>
+              <input type="date" id="startDate" />
+            </div>
+            <div class="filter-group">
+              <label>Até:</label>
+              <input type="date" id="endDate" />
+            </div>
+            <div class="filter-group">
+              <label>Status:</label>
+              <select id="statusFilter" onchange="generateReport()">
+                <option value="">Todos Ativos</option>
+                <option value="Pendente">Pendente</option>
+                <option value="Em Produção">Em Produção</option>
+                <option value="Concluída">Concluída</option>
+              </select>
+            </div>
+          </div>
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>Grupo:</label>
+              <select id="grupoFilter" onchange="updateFamiliaFilter(); generateReport();">
+                <option value="">Todos os Grupos</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Família:</label>
+              <select id="familiaFilter" onchange="generateReport()">
+                <option value="">Todas as Famílias</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Agrupar Por:</label>
+              <select id="groupByFilter" onchange="generateReport()">
+                <option value="none">Sem Agrupamento</option>
+                <option value="grupo">Grupo</option>
+                <option value="familia">Família</option>
+                <option value="both">Grupo e Família</option>
+              </select>
+            </div>
+          </div>
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>Seções do Relatório em PDF:</label>
+              <div class="checkbox-group">
+                <label><input type="checkbox" id="includeSummary" checked /> Resumo do Período</label>
+                <label><input type="checkbox" id="includeOrders" checked /> Ordens de Produção</label>
+                <label><input type="checkbox" id="includeRequests" checked /> Solicitações de Compra</label>
+                <label><input type="checkbox" id="includeMaterials" checked /> Materiais Críticos</label>
+                <label><input type="checkbox" id="includePurchaseNeeds" checked /> Necessidades por Grupo</label>
+                <label><input type="checkbox" id="includePurchaseOrders" checked /> Pedidos de Compra</label>
+              </div>
+            </div>
+            <div class="filter-group">
+              <label>Opções de Visualização:</label>
+              <div class="checkbox-group">
+                <label><input type="checkbox" id="considerStock" checked onchange="generateReport()" /> Considerar Estoque Atual</label>
+                <label><input type="checkbox" id="showOnlyDeficit" onchange="generateReport()" /> Mostrar Apenas Itens com Déficit</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button onclick="generateReport()">Gerar Relatório</button>
+        <button onclick="window.print()">Imprimir</button>
+        <button onclick="generatePDF()" class="pdf-button">Gerar PDF</button>
+        <button onclick="openPurchaseOrderModal()">Gerar Pedido de Compra</button>
+        <button onclick="window.location.href='index.html'" class="back-button">Voltar</button>
+      </div>
+
+      <div id="reportContent"></div>
+
+      <!-- Purchase Order Modal -->
+      <div id="purchaseOrderModal" class="modal">
+        <div class="modal-content">
+          <span class="close-button" onclick="closeModal('purchaseOrderModal')">×</span>
+          <h2>Gerar Pedido de Compra por Grupo de Produtos</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Selecionar</th>
+                <th>Grupo</th>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Necessidade Total</th>
+                <th>Estoque Atual</th>
+                <th>Déficit</th>
+                <th>Ordens Relacionadas</th>
+              </tr>
+            </thead>
+            <tbody id="purchaseOrderItems"></tbody>
+          </table>
+          <div class="modal-footer">
+            <button onclick="generatePurchaseOrder()">Gerar Pedido</button>
+            <button onclick="closeModal('purchaseOrderModal')">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { db } from './firebase-config.js';
+      import { collection, onSnapshot, addDoc, updateDoc, doc, Timestamp, getDoc, setDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+      const { jsPDF } = window.jspdf;
+      let produtos = [];
+      let ordensProducao = [];
+      let solicitacoes = [];
+      let estoques = [];
+      let pedidosCompra = [];
+
+      window.onload = async function () {
+        setupRealTimeListeners();
+        updateDateTime();
+        setDefaultDates();
+        await loadGruposEFamilias();
+
+        // Carregar parâmetros do sistema
+        const parametrosRef = doc(db, 'parametros', 'sistema');
+        const parametrosDoc = await getDoc(parametrosRef);
+        if (parametrosDoc.exists()) {
+          window.parametrosSistema = parametrosDoc.data();
+        }
+      };
+
+      function setupRealTimeListeners() {
+        try {
+          onSnapshot(collection(db, 'produtos'), (snapshot) => {
+            produtos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            generateReport();
+          });
+
+          onSnapshot(collection(db, 'ordensProducao'), (snapshot) => {
+            ordensProducao = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            generateReport();
+          });
+
+          onSnapshot(collection(db, 'solicitacoesCompra'), (snapshot) => {
+            solicitacoes = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            generateReport();
+          });
+
+          onSnapshot(collection(db, 'estoques'), (snapshot) => {
+            estoques = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            generateReport();
+          });
+
+          onSnapshot(collection(db, 'pedidosCompra'), (snapshot) => {
+            pedidosCompra = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            generateReport();
+          });
+        } catch (error) {
+          console.error('Erro ao configurar listeners:', error);
+          alert('Erro ao carregar dados iniciais.');
+        }
+      }
+
+      function updateDateTime() {
+        document.getElementById('reportDate').textContent = new Date().toLocaleDateString();
+        document.getElementById('reportTime').textContent = new Date().toLocaleTimeString();
+      }
+
+      function setDefaultDates() {
+        const today = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+        document.getElementById('endDate').value = today.toISOString().split('T')[0];
+      }
+
+      async function loadGruposEFamilias() {
+        // Criar conjuntos únicos de grupos e famílias a partir dos produtos
+        const grupos = new Set();
+        const familias = new Map(); // Map de grupo -> Set de famílias
+
+        produtos.forEach(produto => {
+          // Extrair o grupo principal do produto (ex: "BARRAS DE AÇO")
+          if (produto.grupo) {
+            grupos.add(produto.grupo);
+            if (!familias.has(produto.grupo)) {
+              familias.set(produto.grupo, new Set());
+            }
+
+            // Extrair a família do produto baseado no início da descrição
+            // Ex: "AÇO TREFILADO", "AÇO LAMINADO", "FERRO CHATO", etc.
+            const descricao = produto.descricao.toUpperCase();
+            let familia = '';
+
+            if (descricao.startsWith('AÇO TREFILADO')) {
+              familia = 'AÇO TREFILADO';
+            } else if (descricao.startsWith('AÇO LAMINADO')) {
+              familia = 'AÇO LAMINADO';
+            } else if (descricao.startsWith('FERRO CHATO')) {
+              familia = 'FERRO CHATO';
+            } else if (descricao.startsWith('BARRA')) {
+              familia = descricao.split(' ')[0] + ' ' + descricao.split(' ')[1];
+            }
+
+            if (familia) {
+              familias.get(produto.grupo).add(familia);
+              // Atualizar o produto com a família identificada
+              produto.familia = familia;
+            }
+          }
+        });
+
+        // Preencher select de grupos
+        const grupoSelect = document.getElementById('grupoFilter');
+        grupoSelect.innerHTML = '<option value="">Todos os Grupos</option>';
+        Array.from(grupos).sort().forEach(grupo => {
+          grupoSelect.innerHTML += `<option value="${grupo}">${grupo}</option>`;
+        });
+
+        window.familiasPorGrupo = familias;
+        updateFamiliaFilter();
+      }
+
+      window.updateFamiliaFilter = function() {
+        const grupoSelecionado = document.getElementById('grupoFilter').value;
+        const familiaSelect = document.getElementById('familiaFilter');
+        familiaSelect.innerHTML = '<option value="">Todas as Famílias</option>';
+
+        if (grupoSelecionado && window.familiasPorGrupo.has(grupoSelecionado)) {
+          Array.from(window.familiasPorGrupo.get(grupoSelecionado)).sort().forEach(familia => {
+            familiaSelect.innerHTML += `<option value="${familia}">${familia}</option>`;
+          });
+        }
+      };
+
+      function filterByGrupoEFamilia(produtos) {
+        const grupoSelecionado = document.getElementById('grupoFilter').value;
+        const familiaSelecionada = document.getElementById('familiaFilter').value;
+
+        return produtos.filter(produto => {
+          if (grupoSelecionado && produto.grupo !== grupoSelecionado) return false;
+          if (familiaSelecionada && produto.familia !== familiaSelecionada) return false;
+          return true;
+        });
+      }
+
+      window.generateReport = function () {
+        const startDate = new Date(document.getElementById('startDate').value);
+        const endDate = new Date(document.getElementById('endDate').value);
+        endDate.setHours(23, 59, 59);
+        const statusFilter = document.getElementById('statusFilter').value;
+
+        let filteredOrdens = filterOrders(startDate, endDate, statusFilter);
+        let filteredSolicitacoes = filterRequests(startDate, endDate);
+
+        const reportContent = document.getElementById('reportContent');
+        reportContent.innerHTML = '';
+
+        if (document.getElementById('includeSummary').checked) {
+          reportContent.appendChild(createSummarySection(filteredOrdens, filteredSolicitacoes));
+        }
+        if (document.getElementById('includeOrders').checked) {
+          reportContent.appendChild(createOrdersSection(filteredOrdens));
+        }
+        if (document.getElementById('includeRequests').checked) {
+          reportContent.appendChild(createRequestsSection(filteredSolicitacoes));
+        }
+        if (document.getElementById('includeMaterials').checked) {
+          reportContent.appendChild(createMaterialsSection(filteredOrdens));
+        }
+        if (document.getElementById('includePurchaseNeeds').checked) {
+          reportContent.appendChild(createPurchaseNeedsByGroupSection(filteredOrdens));
+        }
+        if (document.getElementById('includePurchaseOrders').checked) {
+          reportContent.appendChild(createPurchaseOrdersSection());
+        }
+      };
+
+      function filterOrders(startDate, endDate, statusFilter) {
+        let filteredOrdens = ordensProducao;
+        if (startDate && endDate) {
+          filteredOrdens = filteredOrdens.filter((ordem) => {
+            const orderDate = new Date(ordem.dataCriacao.seconds * 1000);
+            return orderDate >= startDate && orderDate <= endDate;
+          });
+        }
+        if (statusFilter) {
+          filteredOrdens = filteredOrdens.filter((ordem) => ordem.status === statusFilter);
+        } else {
+          filteredOrdens = filteredOrdens.filter((ordem) => ordem.status !== 'Concluída');
+        }
+        return filteredOrdens;
+      }
+
+      function filterRequests(startDate, endDate) {
+        let filteredSolicitacoes = solicitacoes;
+        if (startDate && endDate) {
+          filteredSolicitacoes = filteredSolicitacoes.filter((solicitacao) => {
+            const solicitacaoDate = new Date(solicitacao.dataCriacao.seconds * 1000);
+            return solicitacaoDate >= startDate && solicitacaoDate <= endDate;
+          });
+        }
+        return filteredSolicitacoes;
+      }
+
+      function createSummarySection(ordens, solicitacoes) {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+          <h2 class="section-title">Resumo do Período</h2>
+          <div class="summary-cards">
+            <div class="summary-card">
+              <h3>Ordens de Produção</h3>
+              <div class="value">${ordens.length}</div>
+            </div>
+            <div class="summary-card">
+              <h3>Solicitações de Compra</h3>
+              <div class="value">${solicitacoes.length}</div>
+            </div>
+            <div class="summary-card">
+              <h3>Materiais em Falta</h3>
+              <div class="value">${countMaterialsInNeed(ordens)}</div>
+            </div>
+            <div class="summary-card">
+              <h3>Pedidos de Compra</h3>
+              <div class="value">${pedidosCompra.length}</div>
+            </div>
+          </div>
+        `;
+        return section;
+      }
+
+      function createOrdersSection(ordens) {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+          <h2 class="section-title">Ordens de Produção</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Número</th>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Data Criação</th>
+                <th>Status</th>
+                <th>Materiais em Falta</th>
+              </tr>
+            </thead>
+            <tbody>${generateOrdersTableContent(ordens)}</tbody>
+          </table>
+        `;
+        return section;
+      }
+
+      function createRequestsSection(solicitacoes) {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+          <h2 class="section-title">Solicitações de Compra</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Número</th>
+                <th>Data</th>
+                <th>Solicitante</th>
+                <th>Itens</th>
+                <th>Status</th>
+                <th>Ordem Relacionada</th>
+                <th>Status Pedido</th>
+              </tr>
+            </thead>
+            <tbody>${generateRequestsTableContent(solicitacoes)}</tbody>
+          </table>
+        `;
+        return section;
+      }
+
+      function createMaterialsSection(ordens) {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+          <h2 class="section-title">Materiais Críticos</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Estoque Atual</th>
+                <th>Necessidade Total</th>
+                <th>Déficit</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>${generateMaterialsTableContent(ordens)}</tbody>
+          </table>
+        `;
+        return section;
+      }
+
+      function createPurchaseNeedsByGroupSection(ordens) {
+        const considerStock = document.getElementById('considerStock').checked;
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+          <h2 class="section-title">Necessidades de Compras por Grupo de Produtos</h2>
+          <p class="info-text" style="margin-bottom: 15px; color: #666;">
+            Nota: Produtos do tipo Sub Produto (SP) e Produto Acabado (PA) são excluídos deste relatório.
+          </p>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Cód. Grupo</th>
+                <th>Grupo</th>
+                <th>Cód. Família</th>
+                <th>Família</th>
+                <th>Necessidade Total</th>
+                ${considerStock ? '<th>Estoque Atual</th><th>Déficit</th>' : ''}
+                <th>Status do Processo</th>
+                <th>OPs Relacionadas</th>
+                <th>Documentos</th>
+              </tr>
+            </thead>
+            <tbody>${generatePurchaseNeedsTableContent(ordens, considerStock)}</tbody>
+          </table>
+        `;
+        return section;
+      }
+
+      function createPurchaseOrdersSection() {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+          <h2 class="section-title">Pedidos de Compra</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Número</th>
+                <th>Data Criação</th>
+                <th>Itens</th>
+                <th>Solicitações Relacionadas</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>${generatePurchaseOrdersTableContent()}</tbody>
+          </table>
+        `;
+        return section;
+      }
+
+      function countMaterialsInNeed(ordens) {
+        const materiaisNecessarios = new Set();
+        const ordensAtivas = ordens.filter(ordem => ordem.status !== 'Cancelada');
+
+        ordensAtivas.forEach(ordem => {
+          if (!ordem.materiaisNecessarios) return;
+
+          ordem.materiaisNecessarios.forEach(material => {
+            const estoque = estoques.find(e => e.produtoId === material.produtoId) || { saldo: 0 };
+            if ((material.quantidade * ordem.quantidade) > estoque.saldo) {
+              materiaisNecessarios.add(material.produtoId);
+            }
+          });
+        });
+
+        return materiaisNecessarios.size;
+      }
+
+      function calculatePurchaseNeedsByGroup(ordens, considerStock) {
+        const grupos = new Map();
+        const ordensAtivas = ordens.filter(ordem => ordem.status !== 'Cancelada');
+
+        // Primeiro, aglutinar ordens do mesmo produto
+        const ordensAgrupadas = ordensAtivas.reduce((acc, ordem) => {
+          if (!acc[ordem.produtoId]) {
+            acc[ordem.produtoId] = {
+              quantidade: 0,
+              ordens: []
+            };
+          }
+          acc[ordem.produtoId].quantidade += ordem.quantidade;
+          acc[ordem.produtoId].ordens.push(ordem);
+          return acc;
+        }, {});
+
+        // Processar cada grupo de ordens
+        Object.entries(ordensAgrupadas).forEach(([produtoId, dadosOrdem]) => {
+          const ordemPrincipal = dadosOrdem.ordens[0]; // Usamos a primeira ordem como referência
+          if (!ordemPrincipal.materiaisNecessarios) return;
+
+          ordemPrincipal.materiaisNecessarios.forEach(material => {
+            const produto = produtos.find(p => p.id === material.produtoId);
+            // Filtra produtos que são SP (Sub Produto) ou PA (Produto Acabado)
+            if (!produto || !produto.grupo || produto.tipo === 'SP' || produto.tipo === 'PA') return;
+
+            const grupo = produto.grupo;
+            const estoque = estoques.find(e => e.produtoId === material.produtoId) || { saldo: 0 };
+            const grupoData = grupos.get(grupo) || new Map();
+            const materialData = grupoData.get(material.produtoId) || {
+              quantidade: 0,
+              saldoEstoque: estoque.saldo,
+              produto: produto,
+              ordens: new Set()
+            };
+
+            // Calcular a necessidade total considerando todas as ordens do mesmo produto
+            const necessidadeTotal = material.quantidade * dadosOrdem.quantidade;
+            materialData.quantidade += necessidadeTotal;
+            dadosOrdem.ordens.forEach(ordem => materialData.ordens.add(ordem.numero));
+
+            grupoData.set(material.produtoId, materialData);
+            grupos.set(grupo, grupoData);
+          });
+        });
+
+        return grupos;
+      }
+
+      function calculateMaterialsNeeded(ordens) {
+        const materiaisNecessarios = new Map();
+        const ordensAtivas = ordens.filter(ordem => ordem.status !== 'Cancelada');
+
+        ordensAtivas.forEach(ordem => {
+          if (!ordem.materiaisNecessarios) return;
+
+          ordem.materiaisNecessarios.forEach(material => {
+            const estoque = estoques.find(e => e.produtoId === material.produtoId) || { saldo: 0 };
+            const atual = materiaisNecessarios.get(material.produtoId) || {
+              quantidade: 0,
+              saldoEstoque: estoque.saldo,
+              necessidade: 0
+            };
+            // MODIFICAÇÃO AQUI: multiplicar pela quantidade da ordem de produção
+            atual.quantidade += material.quantidade * ordem.quantidade;
+            atual.necessidade += Math.max(0, (material.quantidade * ordem.quantidade) - estoque.saldo);
+            materiaisNecessarios.set(material.produtoId, atual);
+          });
+        });
+        return materiaisNecessarios;
+      }
+
+      function verificarBloqueioImpressao(ordem) {
+        if (!window.parametrosSistema?.bloquearImpressaoSemEstoque) {
+          return true; // Se o parâmetro não estiver ativo, permite impressão
+        }
+
+        if (!ordem.materiaisNecessarios) {
+          return true; // Se não há materiais necessários, permite impressão
+        }
+
+        // Verifica se todos os materiais têm estoque suficiente
+        return ordem.materiaisNecessarios.every(material => {
+          const estoque = estoques.find(e => e.produtoId === material.produtoId);
+          if (!estoque) return false;
+          return estoque.saldo >= (material.quantidade * ordem.quantidade);
+        });
+      }
+
+      function generateOrdersTableContent(ordens) {
+        const ordensAtivas = ordens.filter(ordem => ordem.status !== 'Cancelada');
+
+        return ordensAtivas
+          .map((ordem) => {
+            const produto = produtos.find((p) => p.id === ordem.produtoId);
+            const materiaisEmFalta = ordem.materiaisNecessarios
+              ? ordem.materiaisNecessarios.filter((m) => {
+                  const estoque = estoques.find((e) => e.produtoId === m.produtoId) || { saldo: 0 };
+                  return m.quantidade > estoque.saldo;
+                }).length
+              : 0;
+
+            return `
+              <tr>
+                <td>${ordem.numero}</td>
+                <td>${produto ? `${produto.codigo} - ${produto.descricao}` : 'N/A'}</td>
+                <td>${ordem.quantidade} ${produto ? produto.unidade : ''}</td>
+                <td>${new Date(ordem.dataCriacao.seconds * 1000).toLocaleDateString()}</td>
+                <td><span class="status-badge status-${ordem.status.toLowerCase()}">${ordem.status}</span></td>
+                <td>${materiaisEmFalta} item(s)</td>
+              </tr>
+            `;
+          })
+          .join('');
+      }
+
+      function generateRequestsTableContent(solicitacoes) {
+        return solicitacoes
+          .map((solicitacao) => {
+            const pedido = pedidosCompra.find(p => p.id === solicitacao.pedidoCompraId);
+            return `
+              <tr>
+                <td>${solicitacao.numero}</td>
+                <td>${new Date(solicitacao.dataCriacao.seconds * 1000).toLocaleDateString()}</td>
+                <td>${solicitacao.solicitante}</td>
+                <td>${solicitacao.itens.length} itens</td>
+                <td><span class="status-badge status-${solicitacao.status.toLowerCase()}">${solicitacao.status}</span></td>
+                <td>${solicitacao.ordemProducao || 'N/A'}</td>
+                <td>${pedido ? `<span class="status-badge status-${pedido.status.toLowerCase()}">${pedido.status}</span>` : 'N/A'}</td>
+              </tr>
+            `;
+          })
+          .join('');
+      }
+
+      function generateMaterialsTableContent(ordens) {
+        const materiaisNecessarios = new Map();
+        const ordensAtivas = ordens.filter(ordem => ordem.status !== 'Cancelada');
+
+        ordensAtivas.forEach(ordem => {
+          if (!ordem.materiaisNecessarios) return;
+
+          ordem.materiaisNecessarios.forEach(material => {
+            const estoque = estoques.find(e => e.produtoId === material.produtoId) || { saldo: 0 };
+            const atual = materiaisNecessarios.get(material.produtoId) || {
+              quantidade: 0,
+              saldoEstoque: estoque.saldo,
+              necessidade: 0
+            };
+
+            atual.quantidade += material.quantidade;
+            atual.necessidade += Math.max(0, material.quantidade - estoque.saldo);
+            materiaisNecessarios.set(material.produtoId, atual);
+          });
+        });
+
+        return Array.from(materiaisNecessarios.entries())
+          .map(([produtoId, dados]) => {
+            const produto = produtos.find(p => p.id === produtoId);
+            if (!produto) return '';
+
+            const deficit = dados.necessidade;
+            let statusClass = 'pendente';
+            if (deficit <= 0) statusClass = 'concluida';
+            else if (deficit > dados.quantidade * 0.5) statusClass = 'rejeitada';
+
+            return `
+              <tr>
+                <td>${produto.codigo}</td>
+                <td>${produto.descricao}</td>
+                <td>${dados.saldoEstoque} ${produto.unidade}</td>
+                <td>${dados.quantidade} ${produto.unidade}</td>
+                <td>${deficit} ${produto.unidade}</td>
+                <td><span class="status-badge status-${statusClass}">
+                  ${deficit <= 0 ? 'OK' : deficit > dados.quantidade * 0.5 ? 'Crítico' : 'Atenção'}
+                </span></td>
+              </tr>
+            `;
+          })
+          .join('');
+      }
+
+      function generatePurchaseNeedsTableContent(ordens, considerStock) {
+        const grupos = calculatePurchaseNeedsByGroup(ordens, considerStock);
+        const groupByOption = document.getElementById('groupByFilter').value;
+        const showOnlyDeficit = document.getElementById('showOnlyDeficit').checked;
+        let rows = '';
+        let currentGroup = '';
+        let currentFamilia = '';
+
+        // Função auxiliar para criar cabeçalho de grupo
+        function createGroupHeader(grupo, isMainGroup = true) {
+          const style = isMainGroup ? 
+            'background-color: #e3f2fd; font-weight: bold; font-size: 1.1em;' : 
+            'background-color: #f5f5f5; font-weight: bold; font-style: italic;';
+
+          return `
+            <tr class="${isMainGroup ? 'group-header' : 'subgroup-header'}">
+              <td colspan="${considerStock ? '8' : '6'}" style="${style}">
+                ${isMainGroup ? grupo : `Família: ${grupo}`}
+              </td>
+            </tr>
+          `;
+        }
+
+        // Organizar os materiais por grupo e família
+        const materiaisOrganizados = new Map();
+
+        Array.from(grupos.entries()).forEach(([grupo, materiais]) => {
+          Array.from(materiais.entries()).forEach(([produtoId, dados]) => {
+            const produto = dados.produto;
+            const grupoSelecionado = document.getElementById('grupoFilter').value;
+            const familiaSelecionada = document.getElementById('familiaFilter').value;
+
+            if (grupoSelecionado && produto.grupo !== grupoSelecionado) return;
+            if (familiaSelecionada && produto.familia !== familiaSelecionada) return;
+
+            const grupoKey = produto.grupo || 'Sem Grupo';
+            const familiaKey = produto.familia || 'Outros';
+
+            if (!materiaisOrganizados.has(grupoKey)) {
+              materiaisOrganizados.set(grupoKey, new Map());
+            }
+            if (!materiaisOrganizados.get(grupoKey).has(familiaKey)) {
+              materiaisOrganizados.get(grupoKey).set(familiaKey, []);
+            }
+            materiaisOrganizados.get(grupoKey).get(familiaKey).push({produtoId, dados});
+          });
+        });
+
+        // Gerar o conteúdo organizado
+        materiaisOrganizados.forEach((familias, grupo) => {
+          let hasItemsInGroup = false;
+          const grupoRows = [];
+
+          familias.forEach((produtos, familia) => {
+            let hasItemsInFamilia = false;
+            const familiaRows = [];
+
+            produtos.forEach(({produtoId, dados}) => {
+              const produto = dados.produto;
+              const necessidade = dados.quantidade;
+              const estoque = dados.saldoEstoque;
+              const deficit = considerStock ? Math.max(0, necessidade - estoque) : necessidade;
+
+              // Verificar se deve mostrar este item baseado nas opções selecionadas
+              if (showOnlyDeficit && deficit <= 0) {
+                return;
+              }
+
+              hasItemsInGroup = true;
+              hasItemsInFamilia = true;
+
+              // Buscar informações de compra
+              const solicitacao = solicitacoes.find(s => 
+                s.itens.some(item => item.produtoId === produtoId && s.status !== 'CANCELADA')
+              );
+              const pedido = pedidosCompra.find(p => 
+                p.itens.some(item => item.produtoId === produtoId && p.status !== 'CANCELADA')
+              );
+
+              // Determinar status e classe
+              let statusCompra = 'Pendente';
+              let statusClass = 'pendente';
+              let statusDetalhado = '';
+
+              if (solicitacao) {
+                if (solicitacao.status === 'APROVADA') {
+                  statusCompra = 'Solicitação Aprovada';
+                  statusClass = 'aprovada';
+                  statusDetalhado = `SC ${solicitacao.numero} aprovada em ${new Date(solicitacao.dataAprovacao.seconds * 1000).toLocaleDateString()}`;
+                } else if (solicitacao.status === 'EM_COTACAO') {
+                  statusCompra = 'Em Cotação';
+                  statusClass = 'em-producao';
+                  statusDetalhado = `SC ${solicitacao.numero} em cotação`;
+                }
+              }
+
+              if (pedido) {
+                if (pedido.status === 'PENDENTE') {
+                  statusCompra = 'Pedido Pendente';
+                  statusClass = 'pendente';
+                  statusDetalhado = `PC ${pedido.numero} aguardando aprovação`;
+                } else if (pedido.status === 'APROVADO') {
+                  statusCompra = 'Pedido Aprovado';
+                  statusClass = 'aprovada';
+                  statusDetalhado = `PC ${pedido.numero} aprovado em ${new Date(pedido.dataAprovacao.seconds * 1000).toLocaleDateString()}`;
+                } else if (pedido.status === 'EM_TRANSITO') {
+                  statusCompra = 'Em Trânsito';
+                  statusClass = 'em-compra';
+                  statusDetalhado = `PC ${pedido.numero} em trânsito desde ${new Date(pedido.dataEnvio.seconds * 1000).toLocaleDateString()}`;
+                } else if (pedido.status === 'RECEBIDO') {
+                  statusCompra = 'Material Recebido';
+                  statusClass = 'concluida';
+                  statusDetalhado = `PC ${pedido.numero} recebido em ${new Date(pedido.dataRecebimento.seconds * 1000).toLocaleDateString()}`;
+                }
+              }
+
+              const ordensRelacionadas = Array.from(dados.ordens).join(', ');
+
+              familiaRows.push(`
+                <tr>
+                  <td style="text-align: left">${produto.codigo}</td>
+                  <td style="text-align: left">${produto.descricao}</td>
+                  <td style="text-align: left">${produto.grupoCodigo || 'N/A'}</td>
+                  <td style="text-align: left">${produto.grupo || 'N/A'}</td>
+                  <td style="text-align: left">${produto.familiaCodigo || 'N/A'}</td>
+                  <td style="text-align: left">${produto.familia || 'N/A'}</td>
+                  <td style="text-align: right">${necessidade} ${produto.unidade}</td>
+                  ${considerStock ? `
+                    <td style="text-align: right">${estoque} ${produto.unidade}</td>
+                    <td style="text-align: right">${deficit} ${produto.unidade}</td>
+                  ` : ''}
+                  <td style="text-align: center"><span class="status-badge status-${statusClass}" title="${statusDetalhado}">${statusCompra}</span></td>
+                  <td style="text-align: center" title="${ordensRelacionadas}">OPs: ${dados.ordens.size}</td>
+                  <td style="text-align: left">
+                    ${solicitacao ? `SC: ${solicitacao.numero}<br>` : ''}
+                    ${pedido ? `PC: ${pedido.numero}` : ''}
+                  </td>
+                </tr>
+              `);
+            });
+
+            if (hasItemsInFamilia) {
+              if (groupByOption !== 'none') {
+                if (groupByOption === 'familia') {
+                  grupoRows.push(createGroupHeader(familia));
+                } else if (groupByOption === 'both') {
+                  grupoRows.push(createGroupHeader(familia, false));
+                }
+              }
+              grupoRows.push(...familiaRows);
+            }
+          });
+
+          if (hasItemsInGroup) {
+            if (groupByOption !== 'familia') {
+              rows += createGroupHeader(grupo);
+            }
+            rows += grupoRows.join('');
+          }
+        });
+
+        return rows;
+      }
+
+      function generatePurchaseOrdersTableContent() {
+        return pedidosCompra
+          .map(pedido => {
+            const solicitacoesRelacionadas = pedido.solicitacoes ? pedido.solicitacoes.map(id => {
+              const solicitacao = solicitacoes.find(s => s.id === id);
+              return solicitacao ? solicitacao.numero : 'N/A';
+            }).join(', ') : 'N/A';
+            return `
+              <tr>
+                <td>${pedido.numero}</td>
+                <td>${new Date(pedido.dataCriacao.seconds * 1000).toLocaleDateString()}</td>
+                <td>${pedido.itens.length} itens</td>
+                <td>${solicitacoesRelacionadas}</td>
+                <td><span class="status-badge status-${pedido.status.toLowerCase()}">${pedido.status}</span></td>
+              </tr>
+            `;
+          })
+          .join('');
+      }
+
+      window.closeModal = function(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+      };
+
+      window.openPurchaseOrderModal = function() {
+        const startDate = new Date(document.getElementById('startDate').value);
+        const endDate = new Date(document.getElementById('endDate').value);
+        endDate.setHours(23, 59, 59);
+        const statusFilter = document.getElementById('statusFilter').value;
+        const considerStock = document.getElementById('considerStock').checked;
+        const filteredOrdens = filterOrders(startDate, endDate, statusFilter);
+        const grupos = calculatePurchaseNeedsByGroup(filteredOrdens, considerStock);
+        const tableBody = document.getElementById('purchaseOrderItems');
+        tableBody.innerHTML = '';
+
+        Array.from(grupos.entries()).forEach(([grupo, materiais]) => {
+          Array.from(materiais.entries()).forEach(([produtoId, dados]) => {
+            const produto = dados.produto;
+            const necessidade = dados.quantidade;
+            const estoque = dados.saldoEstoque;
+            const deficit = considerStock ? Math.max(0, necessidade - estoque) : necessidade;
+            const ordensRelacionadas = Array.from(dados.ordens).join(', ');
+
+            tableBody.innerHTML += `
+              <tr>
+                <td><input type="checkbox" class="item-select" data-produto-id="${produtoId}" data-grupo="${grupo}"></td>
+                <td>${grupo}</td>
+                <td>${produto.codigo}</td>
+                <td>${produto.descricao}</td>
+                <td>${necessidade} ${produto.unidade}</td>
+                <td>${estoque} ${produto.unidade}</td>
+                <td>${deficit} ${produto.unidade}</td>
+                <td title="${ordensRelacionadas}">OPs: ${dados.ordens.size}</td>
+              </tr>
+            `;
+          });
+        });
+
+        document.getElementById('purchaseOrderModal').style.display = 'block';
+      };
+
+      async function generatePurchaseNumber() {
+        const counterRef = doc(db, "contadores", "pedidosCompra");
+        const counterDoc = await getDoc(counterRef);
+        let newValue = 1;
+        if (counterDoc.exists()) {
+          newValue = counterDoc.data().valor + 1;
+        }
+        await setDoc(counterRef, { valor: newValue });
+        return `PC2504-${newValue.toString().padStart(5, '0')}`;
+      }
+
+      window.generatePurchaseOrder = async function() {
+        const selectedItems = Array.from(document.querySelectorAll('.item-select:checked'));
+        if (selectedItems.length === 0) {
+          alert('Selecione pelo menos um item.');
+          return;
+        }
+
+        try {
+          const itens = selectedItems.map(item => {
+            const row = item.closest('tr');
+            const produtoId = item.dataset.produtoId;
+            const grupo = item.dataset.grupo;
+            const produto = produtos.find(p => p.id === produtoId);
+            const necessidade = parseFloat(row.cells[4].textContent);
+            const estoque = parseFloat(row.cells[5].textContent);
+            const deficit = parseFloat(row.cells[6].textContent);
+            return { produtoId, grupo, codigo: produto.codigo, descricao: produto.descricao, quantidade: deficit, unidade: produto.unidade };
+          });
+
+          const relatedSolicitacoes = solicitacoes.filter(s => 
+            s.itens.some(item => itens.some(i => i.produtoId === item.produtoId)) && s.status === 'APROVADA'
+          );
+
+          const pedidoData = {
+            numero: await generatePurchaseNumber(),
+            itens,
+            solicitacoes: relatedSolicitacoes.map(s => s.id),
+            status: 'PENDENTE',
+            dataCriacao: Timestamp.now()
+          };
+
+          const pedidoRef = await addDoc(collection(db, 'pedidosCompra'), pedidoData);
+
+          for (const solicitacao of relatedSolicitacoes) {
+            await updateDoc(doc(db, 'solicitacoesCompra', solicitacao.id), {
+              status: 'EM_COMPRA',
+              pedidoCompraId: pedidoRef.id,
+              pedidoCompraStatus: 'PENDENTE'
+            });
+          }
+
+          alert('Pedido de compra gerado com sucesso!');
+          closeModal('purchaseOrderModal');
+          generateReport();
+        } catch (error) {
+          console.error('Erro ao gerar pedido de compra:', error);
+          alert('Erro ao gerar pedido de compra.');
+        }
+      };
+
+      window.generatePDF = function () {
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        const considerStock = document.getElementById('considerStock').checked;
+        let filteredOrdens = filterOrders(new Date(startDate), new Date(endDate + ' 23:59:59'), statusFilter);
+        let filteredSolicitacoes = filterRequests(new Date(startDate), new Date(endDate + ' 23:59:59'));
+
+        let y = 20;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 10;
+
+        doc.setFontSize(16);
+        doc.text('Relatório de Integração MRP e Compras', pageWidth / 2, y, { align: 'center' });
+        doc.text(`Data: ${new Date().toLocaleDateString()} | Hora: ${new Date().toLocaleTimeString()}`, pageWidth / 2, y + 5, { align: 'center' });
+        doc.text(`Período: ${startDate} a ${endDate}`, pageWidth / 2, y + 15, { align: 'center' });
+        y += 20;
+
+        // Gerar PDF com os dados organizados por grupo e família
+        if (document.getElementById('includePurchaseNeeds').checked) {
+          if (y > 250) { doc.addPage(); y = 20; }
+          doc.setFontSize(14);
+          doc.text('Necessidades de Compras por Grupo de Produtos', margin, y);
+          y += 10;
+
+          const materiaisOrganizados = new Map();
+          Array.from(grupos.entries()).forEach(([grupo, materiais]) => {
+            Array.from(materiais.entries()).forEach(([produtoId, dados]) => {
+              const produto = dados.produto;
+              const grupoKey = produto.grupo || 'Sem Grupo';
+              const familiaKey = produto.familia || 'Outros';
+
+              if (!materiaisOrganizados.has(grupoKey)) {
+                materiaisOrganizados.set(grupoKey, new Map());
+              }
+              if (!materiaisOrganizados.get(grupoKey).has(familiaKey)) {
+                materiaisOrganizados.get(grupoKey).set(familiaKey, []);
+              }
+              materiaisOrganizados.get(grupoKey).get(familiaKey).push({produtoId, dados});
+            });
+          });
+
+          const tableData = [];
+          materiaisOrganizados.forEach((familias, grupo) => {
+            // Adicionar cabeçalho do grupo
+            tableData.push([{ content: `Grupo: ${grupo}`, colSpan: considerStock ? 9 : 7, styles: { fillColor: [227, 242, 253], fontStyle: 'bold' } }]);
+
+            familias.forEach((produtos, familia) => {
+              // Adicionar cabeçalho da família
+              tableData.push([{ content: `Família: ${familia}`, colSpan: considerStock ? 9 : 7, styles: { fillColor: [245, 245, 245], fontStyle: 'italic' } }]);
+
+              // Ordenar produtos por código
+              produtos.sort((a, b) => {
+                const codA = a.dados.produto.codigo || '';
+                const codB = b.dados.produto.codigo || '';
+                return codA.localeCompare(codB);
+              });
+
+              produtos.forEach(({produtoId, dados}) => {
+                const produto = dados.produto;
+                const necessidade = dados.quantidade;
+                const estoque = dados.saldoEstoque;
+                const deficit = considerStock ? Math.max(0, necessidade - estoque) : necessidade;
+                const pedido = pedidosCompra.find(p => p.itens.some(item => item.produtoId === produtoId && p.status !== 'RECEBIDA'));
+
+                const row = [
+                  produto.codigo,
+                  produto.descricao,
+                  produto.grupoCodigo || 'N/A',
+                  produto.grupo || 'N/A',
+                  produto.familiaCodigo || 'N/A',
+                  produto.familia || 'N/A',
+                  `${necessidade} ${produto.unidade}`
+                ];
+
+                if (considerStock) {
+                  row.push(
+                    `${estoque} ${produto.unidade}`,
+                    `${deficit} ${produto.unidade}`
+                  );
+                }
+
+                row.push(pedido ? pedido.status : 'N/A');
+                tableData.push(row);
+              });
+            });
+          });
+
+          doc.autoTable({
+            startY: y,
+            head: [considerStock
+              ? ['Código', 'Descrição', 'Cód. Grupo', 'Grupo', 'Cód. Família', 'Família', 'Necessidade Total', 'Estoque Atual', 'Déficit', 'Status Pedido']
+              : ['Código', 'Descrição', 'Cód. Grupo', 'Grupo', 'Cód. Família', 'Família', 'Necessidade Total', 'Status Pedido']],
+            body: tableData,
+            theme: 'grid',
+            styles: { fontSize: 8, cellPadding: 2 },
+            columnStyles: { 1: { cellWidth: 60 } }
+          });
+          y = doc.lastAutoTable.finalY + 10;
+        }
+
+        doc.save(`Relatorio_MRP_Compras_${startDate}_a_${endDate}.pdf`);
+      };
+    </script>
+  </body>
+</html>

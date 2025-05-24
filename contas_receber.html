@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contas a Receber</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+    
+    .container {
+      width: 95%;
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+    
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 10px;
+      background-color: var(--secondary-color);
+      border-radius: 4px;
+    }
+    
+    .search-box {
+      flex: 1;
+      max-width: 400px;
+      position: relative;
+    }
+    
+    .search-box input {
+      width: 100%;
+      padding: 8px 10px 8px 35px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>');
+      background-repeat: no-repeat;
+      background-position: 8px center;
+    }
+    
+    .filter-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .filter-group select {
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .summary-card {
+      background-color: white;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    .summary-card.overdue {
+      border-left-color: var(--danger-color);
+    }
+    
+    .summary-card.pending {
+      border-left-color: var(--warning-color);
+    }
+    
+    .summary-card.received {
+      border-left-color: var(--success-color);
+    }
+    
+    .summary-card h3 {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+    
+    .summary-card .value {
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--text-color);
+    }
+    
+    .summary-card .overdue-value {
+      color: var(--danger-color);
+    }
+    
+    .summary-card .pending-value {
+      color: var(--warning-color);
+    }
+    
+    .summary-card .received-value {
+      color: var(--success-color);
+    }
+    
+    .tab-container {
+      margin-bottom: 20px;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 2px;
+      background-color: #f8f9fa;
+      padding: 5px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: #666;
+      font-size: 14px;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 20px 0;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .receivables-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    .receivables-table th,
+    .receivables-table td {
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+    
+    .receivables-table th {
+      background-color: var(--secondary-color);
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    
+    .receivables-table tr:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .status-received {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .status-overdue {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .status-partial {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .btn-view, .btn-receive, .btn-edit, .btn-delete {
+      padding: 5px 8px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .btn-view {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-receive {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    .btn-edit {
+      background-color: #ffc107;
+      color: #000;
+    }
+    
+    .btn-delete {
+      background-color: var(--danger-color);
+      color: white;
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 800px;
+      border-radius: 8px;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .modal-header h2 {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--primary-color);
+      margin: 0;
+    }
+    
+    .close-button {
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .form-col {
+      flex: 1;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .required::after {
+      content: "*";
+      color: var(--danger-color);
+      margin-left: 4px;
+    }
+    
+    .info-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    
+    .installments-container {
+      margin-top: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 15px;
+    }
+    
+    .installments-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .installments-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .installments-table th,
+    .installments-table td {
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+    
+    .installments-table th {
+      background-color: var(--secondary-color);
+      font-weight: 500;
+    }
+    
+    .payment-history {
+      margin-top: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 15px;
+    }
+    
+    .payment-history h3 {
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: var(--text-color);
+    }
+    
+    .payment-history-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .payment-history-table th,
+    .payment-history-table td {
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+    
+    .payment-history-table th {
+      background-color: var(--secondary-color);
+      font-weight: 500;
+    }
+    
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Contas a Receber</h1>
+      <div>
+        <button class="btn-primary" onclick="openNewReceivableModal()">Nova Conta</button>
+        <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+          
+      
+      </div>
+    </div>
+    
+    <div class="summary-cards">
+      <div class="summary-card">
+        <h3>Total a Receber</h3>
+        <div class="value" id="totalValue">R$ 0,00</div>
+      </div>
+      <div class="summary-card overdue">
+        <h3>Vencidas</h3>
+        <div class="value overdue-value" id="overdueValue">R$ 0,00</div>
+      </div>
+      <div class="summary-card pending">
+        <h3>A Vencer (30 dias)</h3>
+        <div class="value pending-value" id="pendingValue">R$ 0,00</div>
+      </div>
+      <div class="summary-card received">
+        <h3>Recebidas (30 dias)</h3>
+        <div class="value received-value" id="receivedValue">R$ 0,00</div>
+      </div>
+    </div>
+    
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Buscar por cliente, número..." oninput="filterReceivables()">
+      </div>
+      <div class="filter-group">
+        <select id="statusFilter" onchange="filterReceivables()">
+          <option value="">Todos os Status</option>
+          <option value="PENDENTE">Pendente</option>
+          <option value="RECEBIDO">Recebido</option>
+          <option value="VENCIDO">Vencido</option>
+          <option value="PARCIAL">Parcialmente Recebido</option>
+        </select>
+        <select id="periodFilter" onchange="filterReceivables()">
+          <option value="30">Últimos 30 dias</option>
+          <option value="60">Últimos 60 dias</option>
+          <option value="90">Últimos 90 dias</option>
+          <option value="180">Últimos 180 dias</option>
+          <option value="365">Último ano</option>
+          <option value="all">Todos</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="tab-container">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('all')">Todas</button>
+        <button class="tab" onclick="switchTab('pending')">Pendentes</button>
+        <button class="tab" onclick="switchTab('overdue')">Vencidas</button>
+        <button class="tab" onclick="switchTab('received')">Recebidas</button>
+      </div>
+      
+      <div id="allTab" class="tab-content active">
+        <table class="receivables-table">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Cliente</th>
+              <th>Documento</th>
+              <th>Emissão</th>
+              <th>Vencimento</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="allReceivablesTableBody">
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="pendingTab" class="tab-content">
+        <table class="receivables-table">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Cliente</th>
+              <th>Documento</th>
+              <th>Emissão</th>
+              <th>Vencimento</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="pendingReceivablesTableBody">
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="overdueTab" class="tab-content">
+        <table class="receivables-table">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Cliente</th>
+              <th>Documento</th>
+              <th>Emissão</th>
+              <th>Vencimento</th>
+              <th>Valor</th>
+              <th>Dias Vencidos</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="overdueReceivablesTableBody">
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="receivedTab" class="tab-content">
+        <table class="receivables-table">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Cliente</th>
+              <th>Documento</th>
+              <th>Emissão</th>
+              <th>Vencimento</th>
+              <th>Recebimento</th>
+              <th>Valor</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="receivedReceivablesTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <button onclick="window.location.href='index.html'" class="back-button">Voltar para o Menu</button>
+  </div>
+  
+  <!-- Modal Nova Conta -->
+  <div id="receivableModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Nova Conta a Receber</h2>
+        <button class="close-button" onclick="closeModal()">&times;</button>
+      </div>
+      
+      <form id="receivableForm">
+        <input type="hidden" id="editingId">
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="cliente" class="required">Cliente</label>
+            <select id="cliente" required>
+              <option value="">Selecione o cliente</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="tipoDocumento" class="required">Tipo de Documento</label>
+            <select id="tipoDocumento" required>
+              <option value="NF">Nota Fiscal</option>
+              <option value="BOLETO">Boleto</option>
+              <option value="RECIBO">Recibo</option>
+              <option value="FATURA">Fatura</option>
+              <option value="DUPLICATA">Duplicata</option>
+              <option value="OUTROS">Outros</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="numeroDocumento" class="required">Número do Documento</label>
+            <input type="text" id="numeroDocumento" required>
+          </div>
+          <div class="form-col">
+            <label for="dataEmissao" class="required">Data de Emissão</label>
+            <input type="date" id="dataEmissao" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="valorTotal" class="required">Valor Total</label>
+            <input type="number" id="valorTotal" min="0.01" step="0.01" required onchange="updateInstallments()">
+          </div>
+          <div class="form-col">
+            <label for="condicaoPagamento" class="required">Condição de Pagamento</label>
+            <select id="condicaoPagamento" required onchange="updateInstallments()">
+              <option value="">Selecione a condição</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="centroCusto">Centro de Custo</label>
+            <select id="centroCusto">
+              <option value="">Selecione o centro de custo</option>
+              <option value="ADMINISTRATIVO">Administrativo</option>
+              <option value="COMERCIAL">Comercial</option>
+              <option value="FINANCEIRO">Financeiro</option>
+              <option value="PRODUCAO">Produção</option>
+              <option value="LOGISTICA">Logística</option>
+              <option value="TI">TI</option>
+              <option value="RH">Recursos Humanos</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="contaContabil">Conta Contábil</label>
+            <select id="contaContabil">
+              <option value="">Selecione a conta contábil</option>
+              <option value="CLIENTES">Clientes</option>
+              <option value="VENDAS">Vendas</option>
+              <option value="SERVICOS">Serviços</option>
+              <option value="OUTROS">Outros</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="observacoes">Observações</label>
+            <textarea id="observacoes" rows="3"></textarea>
+          </div>
+        </div>
+        
+        <div class="installments-container">
+          <div class="installments-header">
+            <h3>Parcelas</h3>
+          </div>
+          
+          <table class="installments-table">
+            <thead>
+              <tr>
+                <th>Parcela</th>
+                <th>Vencimento</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody id="installmentsTableBody">
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-success" id="submitButton">Cadastrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Modal de Recebimento -->
+  <div id="receiveModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Registrar Recebimento</h2>
+        <button class="close-button" onclick="closeReceiveModal()">&times;</button>
+      </div>
+      
+      <form id="receiveForm">
+        <input type="hidden" id="receiveReceivableId">
+        <input type="hidden" id="receiveInstallmentId">
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="receiveDate" class="required">Data do Recebimento</label>
+            <input type="date" id="receiveDate" required>
+          </div>
+          <div class="form-col">
+            <label for="receiveValue" class="required">Valor Recebido</label>
+            <input type="number" id="receiveValue" min="0.01" step="0.01" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="receiveMethod" class="required">Forma de Recebimento</label>
+            <select id="receiveMethod" required>
+              <option value="PIX">PIX</option>
+              <option value="TRANSFERENCIA">Transferência Bancária</option>
+              <option value="BOLETO">Boleto</option>
+              <option value="CARTAO">Cartão de Crédito</option>
+              <option value="DINHEIRO">Dinheiro</option>
+              <option value="CHEQUE">Cheque</option>
+              <option value="OUTROS">Outros</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="receiveReference">Referência/Comprovante</label>
+            <input type="text" id="receiveReference">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="receiveNotes">Observações</label>
+            <textarea id="receiveNotes" rows="3"></textarea>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closeReceiveModal()">Cancelar</button>
+          <button type="submit" class="btn-success">Confirmar Recebimento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Modal de Detalhes -->
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Detalhes da Conta</h2>
+        <button class="close-button" onclick="closeDetailsModal()">&times;</button>
+      </div>
+      
+      <div id="receivableDetails">
+        <div class="form-row">
+          <div class="form-col">
+            <label>Cliente</label>
+            <div id="detailCliente" class="info-text"></div>
+          </div>
+          <div class="form-col">
+            <label>Documento</label>
+            <div id="detailDocumento" class="info-text"></div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label>Emissão</label>
+            <div id="detailEmissao" class="info-text"></div>
+          </div>
+          <div class="form-col">
+            <label>Valor Total</label>
+            <div id="detailValor" class="info-text"></div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label>Centro de Custo</label>
+            <div id="detailCentroCusto" class="info-text"></div>
+          </div>
+          <div class="form-col">
+            <label>Conta Contábil</label>
+            <div id="detailContaContabil" class="info-text"></div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label>Observações</label>
+            <div id="detailObservacoes" class="info-text"></div>
+          </div>
+        </div>
+        
+        <div class="installments-container">
+          <h3>Parcelas</h3>
+          <table class="installments-table">
+            <thead>
+              <tr>
+                <th>Parcela</th>
+                <th>Vencimento</th>
+                <th>Valor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="detailInstallmentsTableBody">
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="payment-history">
+          <h3>Histórico de Recebimentos</h3>
+          <table class="payment-history-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Valor</th>
+                <th>Forma</th>
+                <th>Referência</th>
+                <th>Observações</th>
+              </tr>
+            </thead>
+            <tbody id="receiveHistoryTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs, 
+      doc, 
+      getDoc,
+      updateDoc, 
+      deleteDoc,
+      query,
+      where,
+      Timestamp 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let contasAReceber = [];
+    let clientes = [];
+    let condicoesPagamento = [];
+    let currentUser = null;
+
+    window.onload = async function() {
+      // Verificar autenticação
+      const userSession = localStorage.getItem('currentUser');
+      if (userSession) {
+        currentUser = JSON.parse(userSession);
+      }
+      
+      await loadData();
+      updateSummary();
+      displayReceivables();
+      updateSelects();
+    };
+
+    async function loadData() {
+      try {
+        const [contasSnap, clientesSnap, condicoesSnap] = await Promise.all([
+          getDocs(collection(db, "contasAReceber")),
+          getDocs(collection(db, "clientes")),
+          getDocs(collection(db, "condicoesPagamento"))
+        ]);
+
+        contasAReceber = contasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        clientes = clientesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        condicoesPagamento = condicoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados. Por favor, recarregue a página.");
+      }
+    }
+
+    function updateSelects() {
+      const clienteSelect = document.getElementById('cliente');
+      const condicaoSelect = document.getElementById('condicaoPagamento');
+      
+      // Atualizar select de clientes
+      clienteSelect.innerHTML = '<option value="">Selecione o cliente</option>';
+      clientes.forEach(cliente => {
+        clienteSelect.innerHTML += `
+          <option value="${cliente.id}">
+            ${cliente.codigo} - ${cliente.nome}
+          </option>`;
+              });
+      
+      // Atualizar select de condições de pagamento
+      condicaoSelect.innerHTML = '<option value="">Selecione a condição</option>';
+      condicoesPagamento
+        .filter(condicao => condicao.ativo)
+        .forEach(condicao => {
+          condicaoSelect.innerHTML += `
+            <option value="${condicao.id}">
+              ${condicao.codigo} - ${condicao.descricao}
+            </option>`;
+        });
+    }
+
+    function updateSummary() {
+      const today = new Date();
+      
+      // Total a receber (pendente + vencido)
+      const totalValue = contasAReceber.reduce((total, conta) => {
+        if (!conta.parcelas) return total;
+        
+        const valorPendente = conta.parcelas.reduce((sum, parcela) => {
+          if (parcela.status !== 'RECEBIDO') {
+            return sum + (parcela.valor - (parcela.valorRecebido || 0));
+          }
+          return sum;
+        }, 0);
+        
+        return total + valorPendente;
+      }, 0);
+      
+      // Vencidas
+      const overdueValue = contasAReceber.reduce((total, conta) => {
+        if (!conta.parcelas) return total;
+        
+        const valorVencido = conta.parcelas.reduce((sum, parcela) => {
+          const dataVencimento = new Date(parcela.dataVencimento.seconds * 1000);
+          if (dataVencimento < today && parcela.status !== 'RECEBIDO') {
+            return sum + (parcela.valor - (parcela.valorRecebido || 0));
+          }
+          return sum;
+        }, 0);
+        
+        return total + valorVencido;
+      }, 0);
+      
+      // A vencer nos próximos 30 dias
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(today.getDate() + 30);
+      
+      const pendingValue = contasAReceber.reduce((total, conta) => {
+        if (!conta.parcelas) return total;
+        
+        const valorAVencer = conta.parcelas.reduce((sum, parcela) => {
+          const dataVencimento = new Date(parcela.dataVencimento.seconds * 1000);
+          if (dataVencimento >= today && dataVencimento <= thirtyDaysFromNow && parcela.status !== 'RECEBIDO') {
+            return sum + (parcela.valor - (parcela.valorRecebido || 0));
+          }
+          return sum;
+        }, 0);
+        
+        return total + valorAVencer;
+      }, 0);
+      
+      // Recebidas nos últimos 30 dias
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+      
+      const receivedValue = contasAReceber.reduce((total, conta) => {
+        if (!conta.parcelas) return total;
+        
+        const valorRecebido = conta.parcelas.reduce((sum, parcela) => {
+          if (parcela.recebimentos && parcela.recebimentos.length > 0) {
+            return parcela.recebimentos.reduce((receivedSum, recebimento) => {
+              const dataRecebimento = new Date(recebimento.dataRecebimento.seconds * 1000);
+              if (dataRecebimento >= thirtyDaysAgo && dataRecebimento <= today) {
+                return receivedSum + recebimento.valor;
+              }
+              return receivedSum;
+            }, sum);
+          }
+          return sum;
+        }, 0);
+        
+        return total + valorRecebido;
+      }, 0);
+      
+      // Atualizar os valores no DOM
+      document.getElementById('totalValue').textContent = `R$ ${totalValue.toFixed(2)}`;
+      document.getElementById('overdueValue').textContent = `R$ ${overdueValue.toFixed(2)}`;
+      document.getElementById('pendingValue').textContent = `R$ ${pendingValue.toFixed(2)}`;
+      document.getElementById('receivedValue').textContent = `R$ ${receivedValue.toFixed(2)}`;
+    }
+
+    function displayReceivables() {
+      const allTableBody = document.getElementById('allReceivablesTableBody');
+      const pendingTableBody = document.getElementById('pendingReceivablesTableBody');
+      const overdueTableBody = document.getElementById('overdueReceivablesTableBody');
+      const receivedTableBody = document.getElementById('receivedReceivablesTableBody');
+      
+      allTableBody.innerHTML = '';
+      pendingTableBody.innerHTML = '';
+      overdueTableBody.innerHTML = '';
+      receivedTableBody.innerHTML = '';
+      
+      const today = new Date();
+      
+      contasAReceber.forEach(conta => {
+        const cliente = clientes.find(c => c.id === conta.clienteId);
+        const clienteNome = cliente ? cliente.nome : 'N/A';
+        
+        // Determinar o status geral da conta
+        let statusGeral = 'PENDENTE';
+        let valorPendente = 0;
+        let valorRecebido = 0;
+        let proximoVencimento = null;
+        let parcelaVencida = false;
+        
+        if (conta.parcelas && conta.parcelas.length > 0) {
+          // Calcular valores e verificar status
+          conta.parcelas.forEach(parcela => {
+            const dataVencimento = new Date(parcela.dataVencimento.seconds * 1000);
+            
+            if (parcela.status === 'RECEBIDO') {
+              valorRecebido += parcela.valor;
+            } else {
+              valorPendente += parcela.valor - (parcela.valorRecebido || 0);
+              
+              // Verificar se está vencida
+              if (dataVencimento < today) {
+                parcelaVencida = true;
+              }
+              
+              // Determinar o próximo vencimento
+              if (!proximoVencimento || dataVencimento < proximoVencimento) {
+                proximoVencimento = dataVencimento;
+              }
+            }
+          });
+          
+          // Determinar status geral
+          if (valorPendente === 0) {
+            statusGeral = 'RECEBIDO';
+          } else if (parcelaVencida) {
+            statusGeral = 'VENCIDO';
+          } else if (valorRecebido > 0 && valorPendente > 0) {
+            statusGeral = 'PARCIAL';
+          }
+        }
+        
+        // Adicionar à tabela geral
+        const allRow = document.createElement('tr');
+        allRow.innerHTML = `
+          <td>${conta.numeroDocumento}</td>
+          <td>${clienteNome}</td>
+          <td>${conta.tipoDocumento}</td>
+          <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+          <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+          <td>R$ ${conta.valorTotal.toFixed(2)}</td>
+          <td><span class="status-badge status-${statusGeral.toLowerCase()}">${statusGeral}</span></td>
+          <td class="action-buttons">
+            <button class="btn-view" onclick="viewReceivableDetails('${conta.id}')">Detalhes</button>
+            ${statusGeral !== 'RECEBIDO' ? `<button class="btn-receive" onclick="openReceiveModal('${conta.id}')">Receber</button>` : ''}
+            <button class="btn-edit" onclick="editReceivable('${conta.id}')">Editar</button>
+            <button class="btn-delete" onclick="deleteReceivable('${conta.id}')">Excluir</button>
+          </td>
+        `;
+        allTableBody.appendChild(allRow);
+        
+        // Adicionar às tabelas específicas
+        if (statusGeral === 'PENDENTE' || statusGeral === 'PARCIAL') {
+          const pendingRow = document.createElement('tr');
+          pendingRow.innerHTML = `
+            <td>${conta.numeroDocumento}</td>
+            <td>${clienteNome}</td>
+            <td>${conta.tipoDocumento}</td>
+            <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+            <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+            <td>R$ ${valorPendente.toFixed(2)}</td>
+            <td><span class="status-badge status-${statusGeral.toLowerCase()}">${statusGeral}</span></td>
+            <td class="action-buttons">
+              <button class="btn-view" onclick="viewReceivableDetails('${conta.id}')">Detalhes</button>
+              <button class="btn-receive" onclick="openReceiveModal('${conta.id}')">Receber</button>
+              <button class="btn-edit" onclick="editReceivable('${conta.id}')">Editar</button>
+            </td>
+          `;
+          pendingTableBody.appendChild(pendingRow);
+        } else if (statusGeral === 'VENCIDO') {
+          // Calcular dias vencidos
+          const diasVencidos = Math.floor((today - proximoVencimento) / (1000 * 60 * 60 * 24));
+          
+          const overdueRow = document.createElement('tr');
+          overdueRow.innerHTML = `
+            <td>${conta.numeroDocumento}</td>
+            <td>${clienteNome}</td>
+            <td>${conta.tipoDocumento}</td>
+            <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+            <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+            <td>R$ ${valorPendente.toFixed(2)}</td>
+            <td>${diasVencidos} dias</td>
+            <td class="action-buttons">
+              <button class="btn-view" onclick="viewReceivableDetails('${conta.id}')">Detalhes</button>
+              <button class="btn-receive" onclick="openReceiveModal('${conta.id}')">Receber</button>
+              <button class="btn-edit" onclick="editReceivable('${conta.id}')">Editar</button>
+            </td>
+          `;
+          overdueTableBody.appendChild(overdueRow);
+        } else if (statusGeral === 'RECEBIDO') {
+          // Encontrar a data do último recebimento
+          let ultimoRecebimento = null;
+          
+          conta.parcelas.forEach(parcela => {
+            if (parcela.recebimentos && parcela.recebimentos.length > 0) {
+              parcela.recebimentos.forEach(recebimento => {
+                const dataRecebimento = new Date(recebimento.dataRecebimento.seconds * 1000);
+                if (!ultimoRecebimento || dataRecebimento > ultimoRecebimento) {
+                  ultimoRecebimento = dataRecebimento;
+                }
+              });
+            }
+          });
+          
+          const receivedRow = document.createElement('tr');
+          receivedRow.innerHTML = `
+            <td>${conta.numeroDocumento}</td>
+            <td>${clienteNome}</td>
+            <td>${conta.tipoDocumento}</td>
+            <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+            <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+            <td>${ultimoRecebimento ? ultimoRecebimento.toLocaleDateString() : 'N/A'}</td>
+            <td>R$ ${conta.valorTotal.toFixed(2)}</td>
+            <td class="action-buttons">
+              <button class="btn-view" onclick="viewReceivableDetails('${conta.id}')">Detalhes</button>
+              <button class="btn-edit" onclick="editReceivable('${conta.id}')">Editar</button>
+            </td>
+          `;
+          receivedTableBody.appendChild(receivedRow);
+        }
+      });
+    }
+
+    window.switchTab = function(tab) {
+      document.querySelectorAll('.tab').forEach(t => {
+        t.classList.remove('active');
+      });
+      document.querySelectorAll('.tab-content').forEach(c => {
+        c.classList.remove('active');
+      });
+
+      document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+      
+      if (tab === 'all') {
+        document.getElementById('allTab').classList.add('active');
+      } else if (tab === 'pending') {
+        document.getElementById('pendingTab').classList.add('active');
+      } else if (tab === 'overdue') {
+        document.getElementById('overdueTab').classList.add('active');
+      } else if (tab === 'received') {
+        document.getElementById('receivedTab').classList.add('active');
+      }
+    };
+
+    window.filterReceivables = function() {
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+      const periodFilter = parseInt(document.getElementById('periodFilter').value) || 0;
+      
+      const today = new Date();
+      const startDate = new Date();
+      
+      if (periodFilter > 0) {
+        startDate.setDate(today.getDate() - periodFilter);
+      } else {
+        // Se for "all", definir uma data bem antiga
+        startDate.setFullYear(2000);
+      }
+      
+      // Filtrar contas
+      const filteredReceivables = contasAReceber.filter(conta => {
+        const cliente = clientes.find(c => c.id === conta.clienteId);
+        const clienteNome = cliente ? cliente.nome.toLowerCase() : '';
+        
+        // Filtro de texto
+        const matchesText = 
+          conta.numeroDocumento.toLowerCase().includes(searchText) ||
+          clienteNome.includes(searchText);
+        
+        if (!matchesText) return false;
+        
+        // Filtro de período
+        const dataEmissao = new Date(conta.dataEmissao.seconds * 1000);
+        const matchesPeriod = dataEmissao >= startDate && dataEmissao <= today;
+        
+        if (!matchesPeriod) return false;
+        
+        // Filtro de status
+        if (statusFilter) {
+          // Determinar o status geral da conta
+          let statusGeral = 'PENDENTE';
+          let valorPendente = 0;
+          let parcelaVencida = false;
+          
+          if (conta.parcelas && conta.parcelas.length > 0) {
+            // Calcular valores e verificar status
+            conta.parcelas.forEach(parcela => {
+              const dataVencimento = new Date(parcela.dataVencimento.seconds * 1000);
+              
+              if (parcela.status !== 'RECEBIDO') {
+                valorPendente += parcela.valor - (parcela.valorRecebido || 0);
+                
+                // Verificar se está vencida
+                if (dataVencimento < today) {
+                  parcelaVencida = true;
+                }
+              }
+            });
+            
+            // Determinar status geral
+            if (valorPendente === 0) {
+              statusGeral = 'RECEBIDO';
+            } else if (parcelaVencida) {
+              statusGeral = 'VENCIDO';
+            } else if (conta.parcelas.some(p => p.status === 'RECEBIDO') && valorPendente > 0) {
+              statusGeral = 'PARCIAL';
+            }
+          }
+          
+          return statusGeral === statusFilter;
+        }
+        
+        return true;
+      });
+      
+      // Atualizar tabelas
+      displayFilteredReceivables(filteredReceivables);
+    };
+
+    function displayFilteredReceivables(receivables) {
+      const allTableBody = document.getElementById('allReceivablesTableBody');
+      const pendingTableBody = document.getElementById('pendingReceivablesTableBody');
+      const overdueTableBody = document.getElementById('overdueReceivablesTableBody');
+      const receivedTableBody = document.getElementById('receivedReceivablesTableBody');
+      
+      allTableBody.innerHTML = '';
+      pendingTableBody.innerHTML = '';
+      overdueTableBody.innerHTML = '';
+      receivedTableBody.innerHTML = '';
+      
+      const today = new Date();
+      
+      receivables.forEach(conta => {
+        const cliente = clientes.find(c => c.id === conta.clienteId);
+        const clienteNome = cliente ? cliente.nome : 'N/A';
+        
+        // Determinar o status geral da conta
+        let statusGeral = 'PENDENTE';
+        let valorPendente = 0;
+        let valorRecebido = 0;
+        let proximoVencimento = null;
+        let parcelaVencida = false;
+        
+        if (conta.parcelas && conta.parcelas.length > 0) {
+          // Calcular valores e verificar status
+          conta.parcelas.forEach(parcela => {
+            const dataVencimento = new Date(parcela.dataVencimento.seconds * 1000);
+            
+            if (parcela.status === 'RECEBIDO') {
+              valorRecebido += parcela.valor;
+            } else {
+              valorPendente += parcela.valor - (parcela.valorRecebido || 0);
+              
+              // Verificar se está vencida
+              if (dataVencimento < today) {
+                parcelaVencida = true;
+              }
+              
+              // Determinar o próximo vencimento
+          if (!proximoVencimento || dataVencimento < proximoVencimento) {
+            proximoVencimento = dataVencimento;
+          }
+        }
+      });
+
+      // Determinar status geral
+      if (valorPendente === 0) {
+        statusGeral = 'RECEBIDO';
+      } else if (parcelaVencida) {
+        statusGeral = 'VENCIDO';
+      } else if (valorRecebido > 0 && valorPendente > 0) {
+        statusGeral = 'PARCIAL';
+      }
+    }
+
+    // Adicionar à tabela geral
+    const allRow = document.createElement('tr');
+    allRow.innerHTML = `
+      <td>${conta.numeroDocumento}</td>
+      <td>${clienteNome}</td>
+      <td>${conta.tipoDocumento}</td>
+      <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+      <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+      <td>R$ ${conta.valorTotal.toFixed(2)}</td>
+      <td><span class="status-badge status-${statusGeral.toLowerCase()}">${statusGeral}</span></td>
+      <td class="action-buttons">
+        <button class="btn-view" onclick="viewReceivableDetails('${conta.id}')">Detalhes</button>
+        ${statusGeral !== 'RECEBIDO' ? `<button class="btn-receive" onclick="openReceiveModal('${conta.id}')">Receber</button>` : ''}
+        <button class="btn-edit" onclick="editReceivable('${conta.id}')">Editar</button>
+        <button class="btn-delete" onclick="deleteReceivable('${conta.id}')">Excluir</button>
+      </td>
+    `;
+    allTableBody.appendChild(allRow);
+
+    // Adicionar às tabelas específicas
+    if (statusGeral === 'PENDENTE' || statusGeral === 'PARCIAL') {
+      const pendingRow = document.createElement('tr');
+      pendingRow.innerHTML = `
+        <td>${conta.numeroDocumento}</td>
+        <td>${clienteNome}</td>
+        <td>${conta.tipoDocumento}</td>
+        <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+        <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+        <td>R$ ${valorPendente.toFixed(2)}</td>
+        <td><span class="status-badge status-${statusGeral.toLowerCase()}">${statusGeral}</span></td>
+        <td class="action-buttons">
+          <button class="btn-view" onclick="viewReceivableDetails('${conta.id}')">Detalhes</button>
+          <button class="btn-receive" onclick="openReceiveModal('${conta.id}')">Receber</button>
+          <button class="btn-edit" onclick="editReceivable('${conta.id}')">Editar</button>
+        </td>
+      `;
+      pendingTableBody.appendChild(pendingRow);
+    } else if (statusGeral === 'VENCIDO') {
+      // Calcular dias vencidos
+      const diasVencidos = Math.floor((today - proximoVencimento) / (1000 * 60 * 60 * 24));
+
+      const overdueRow = document.createElement('tr');
+      overdueRow.innerHTML = `
+        <td>${conta.numeroDocumento}</td>
+        <td>${clienteNome}</td>
+        <td>${conta.tipoDocumento}</td>
+        <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+        <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+        <td>R$ ${valorPendente.toFixed(2)}</td>
+        <td>${diasVencidos} dias</td>
+        <td class="action-buttons">
+          <button class="btn-view" onclick="viewReceivableDetails('${conta.id}')">Detalhes</button>
+          <button class="btn-receive" onclick="openReceiveModal('${conta.id}')">Receber</button>
+          <button class="btn-edit" onclick="editReceivable('${conta.id}')">Editar</button>
+        </td>
+      `;
+      overdueTableBody.appendChild(overdueRow);
+    } else if (statusGeral === 'RECEBIDO') {
+      // Encontrar a data do último recebimento
+      let ultimoRecebimento = null;
+
+      conta.parcelas.forEach(parcela => {
+        if (parcela.recebimentos && parcela.recebimentos.length > 0) {
+          parcela.recebimentos.forEach(recebimento => {
+            const dataRecebimento = new Date(recebimento.dataRecebimento.seconds * 1000);
+            if (!ultimoRecebimento || dataRecebimento > ultimoRecebimento) {
+              ultimoRecebimento = dataRecebimento;
+            }
+          });
+        }
+      });
+
+      const receivedRow = document.createElement('tr');
+      receivedRow.innerHTML = `
+        <td>${conta.numeroDocumento}</td>
+        <td>${clienteNome}</td>
+        <td>${conta.tipoDocumento}</td>
+        <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+        <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+        <td>${ultimoRecebimento ? ultimoRecebimento.toLocaleDateString() : 'N/A'}</td>
+        <td>R$ ${conta.valorTotal.toFixed(2)}</td>
+        <td class="action-buttons">
+          <button class="btn-view" onclick="viewReceivableDetails('${conta.id}')">Detalhes</button>
+          <button class="btn-edit" onclick="editReceivable('${conta.id}')">Editar</button>
+        </td>
+      `;
+      receivedTableBody.appendChild(receivedRow);
+    }
+  });
+}
+
+window.switchTab = function(tab) {
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.remove('active');
+  });
+  document.querySelectorAll('.tab-content').forEach(c => {
+    c.classList.remove('active');
+  });
+
+  document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+
+  if (tab === 'all') {
+    document.getElementById('allTab').classList.add('active');
+  } else if (tab === 'pending') {
+    document.getElementById('pendingTab').classList.add('active');
+  } else if (tab === 'overdue') {
+    document.getElementById('overdueTab').classList.add('active');
+  } else if (tab === 'received') {
+    document.getElementById('receivedTab').classList.add('active');
+  }
+};
+
+window.filterReceivables = function() {
+  const searchText = document.getElementById('searchInput').value.toLowerCase();
+  const statusFilter = document.getElementById('statusFilter').value;
+  const periodFilter = parseInt(document.getElementById('periodFilter').value) || 0;
+
+  const today = new Date();
+  const startDate = new Date();
+
+  if (periodFilter > 0) {
+    startDate.setDate(today.getDate() - periodFilter);
+  } else {
+    // Se for "all", definir uma data bem antiga
+    startDate.setFullYear(2000);
+  }
+
+  // Filtrar contas
+  const filteredReceivables = contasAReceber.filter(conta => {
+    const cliente = clientes.find(c => c.id === conta.clienteId);
+    const clienteNome = cliente ? cliente.nome.toLowerCase() : '';
+
+    // Filtro de texto
+    const matchesText = 
+      conta.numeroDocumento.toLowerCase().includes(searchText) ||
+      clienteNome.includes(searchText);
+
+    if (!matchesText) return false;
+
+    // Filtro de período
+    const dataEmissao = new Date(conta.dataEmissao.seconds * 1000);
+    const matchesPeriod = dataEmissao >= startDate && dataEmissao <= today;
+
+    if (!matchesPeriod) return false;
+
+    // Filtro de status
+    if (statusFilter) {
+      // Determinar o status geral da conta
+      let statusGeral = 'PENDENTE';
+      let valorPendente = 0;
+      let parcelaVencida = false;
+
+      if (conta.parcelas && conta.parcelas.length > 0) {
+        // Calcular valores e verificar status
+        conta.parcelas.forEach(parcela => {
+          const dataVencimento = new Date(parcela.dataVencimento.seconds * 1000);
+
+          if (parcela.status !== 'RECEBIDO') {
+            valorPendente += parcela.valor - (parcela.valorRecebido || 0);
+
+            // Verificar se está vencida
+            if (dataVencimento < today) {
+              parcelaVencida = true;
+            }
+          }
+        });
+
+        // Determinar status geral
+        if (valorPendente === 0) {
+          statusGeral = 'RECEBIDO';
+        } else if (parcelaVencida) {
+          statusGeral = 'VENCIDO';
+        } else if (conta.parcelas.some(p => p.status === 'RECEBIDO') && valorPendente > 0) {
+          statusGeral = 'PARCIAL';
+        }
+      }
+
+      return statusGeral === statusFilter;
+    }
+
+    return true;
+  });
+
+  // Atualizar tabelas
+  displayFilteredReceivables(filteredReceivables);
+};
+
+
+
+window.openNewReceivableModal = function() {
+  document.getElementById('editingId').value = '';
+  document.getElementById('receivableForm').reset();
+  document.getElementById('installmentsTableBody').innerHTML = '';
+  document.getElementById('modalTitle').textContent = 'Nova Conta a Receber';
+  document.getElementById('submitButton').textContent = 'Cadastrar';
+  document.getElementById('receivableModal').style.display = 'block';
+};
+
+window.closeModal = function() {
+  document.getElementById('receivableModal').style.display = 'none';
+};
+
+window.openReceiveModal = function(receivableId) {
+  document.getElementById('receiveReceivableId').value = receivableId;
+  document.getElementById('receiveInstallmentId').value = '';
+  document.getElementById('receiveForm').reset();
+  document.getElementById('receiveModal').style.display = 'block';
+};
+
+window.closeReceiveModal = function() {
+  document.getElementById('receiveModal').style.display = 'none';
+};
+
+window.viewReceivableDetails = async function(receivableId) {
+  const conta = contasAReceber.find(c => c.id === receivableId);
+  if (!conta) return;
+
+  const cliente = clientes.find(c => c.id === conta.clienteId);
+  const clienteNome = cliente ? cliente.nome : 'N/A';
+
+  document.getElementById('detailCliente').textContent = clienteNome;
+  document.getElementById('detailDocumento').textContent = `${conta.tipoDocumento} - ${conta.numeroDocumento}`;
+  document.getElementById('detailEmissao').textContent = new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString();
+  document.getElementById('detailValor').textContent = `R$ ${conta.valorTotal.toFixed(2)}`;
+  document.getElementById('detailCentroCusto').textContent = conta.centroCusto || 'N/A';
+  document.getElementById('detailContaContabil').textContent = conta.contaContabil || 'N/A';
+  document.getElementById('detailObservacoes').textContent = conta.observacoes || 'N/A';
+
+  const installmentsTableBody = document.getElementById('detailInstallmentsTableBody');
+  installmentsTableBody.innerHTML = '';
+
+  if (conta.parcelas && conta.parcelas.length > 0) {
+    conta.parcelas.forEach((parcela, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${new Date(parcela.dataVencimento.seconds * 1000).toLocaleDateString()}</td>
+        <td>R$ ${parcela.valor.toFixed(2)}</td>
+        <td><span class="status-badge status-${parcela.status.toLowerCase()}">${parcela.status}</span></td>
+      `;
+      installmentsTableBody.appendChild(row);
+    });
+  }
+
+  const receiveHistoryTableBody = document.getElementById('receiveHistoryTableBody');
+  receiveHistoryTableBody.innerHTML = '';
+
+  if (conta.parcelas && conta.parcelas.length > 0) {
+    conta.parcelas.forEach(parcela => {
+      if (parcela.recebimentos && parcela.recebimentos.length > 0) {
+        parcela.recebimentos.forEach(recebimento => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${new Date(recebimento.dataRecebimento.seconds * 1000).toLocaleDateString()}</td>
+            <td>R$ ${recebimento.valor.toFixed(2)}</td>
+            <td>${recebimento.formaRecebimento}</td>
+            <td>${recebimento.referencia || 'N/A'}</td>
+            <td>${recebimento.observacoes || 'N/A'}</td>
+          `;
+          receiveHistoryTableBody.appendChild(row);
+        });
+      }
+    });
+  }
+
+  document.getElementById('detailsModal').style.display = 'block';
+};
+
+window.closeDetailsModal = function() {
+  document.getElementById('detailsModal').style.display = 'none';
+};
+
+window.editReceivable = function(receivableId) {
+  const conta = contasAReceber.find(c => c.id === receivableId);
+  if (!conta) return;
+
+  document.getElementById('editingId').value = conta.id;
+  document.getElementById('cliente').value = conta.clienteId;
+  document.getElementById('tipoDocumento').value = conta.tipoDocumento;
+  document.getElementById('numeroDocumento').value = conta.numeroDocumento;
+  document.getElementById('dataEmissao').value = new Date(conta.dataEmissao.seconds * 1000).toISOString().split('T')[0];
+  document.getElementById('valorTotal').value = conta.valorTotal;
+  document.getElementById('condicaoPagamento').value = conta.condicaoPagamentoId;
+  document.getElementById('centroCusto').value = conta.centroCusto || '';
+  document.getElementById('contaContabil').value = conta.contaContabil || '';
+  document.getElementById('observacoes').value = conta.observacoes || '';
+
+  const installmentsTableBody = document.getElementById('installmentsTableBody');
+  installmentsTableBody.innerHTML = '';
+
+  if (conta.parcelas && conta.parcelas.length > 0) {
+    conta.parcelas.forEach((parcela, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${new Date(parcela.dataVencimento.seconds * 1000).toISOString().split('T')[0]}</td>
+        <td>R$ ${parcela.valor.toFixed(2)}</td>
+      `;
+      installmentsTableBody.appendChild(row);
+    });
+  }
+
+  document.getElementById('modalTitle').textContent = 'Editar Conta a Receber';
+  document.getElementById('submitButton').textContent = 'Atualizar';
+  document.getElementById('receivableModal').style.display = 'block';
+};
+
+window.deleteReceivable = async function(receivableId) {
+  if (confirm('Tem certeza que deseja excluir esta conta?')) {
+    try {
+      await deleteDoc(doc(db, "contasAReceber", receivableId));
+      await loadData();
+      displayReceivables();
+      updateSummary();
+      alert('Conta excluída com sucesso!');
+    } catch (error) {
+      console.error("Erro ao excluir conta:", error);
+      alert('Erro ao excluir conta. Por favor, tente novamente.');
+    }
+  }
+};
+
+window.updateInstallments = function() {
+  const valorTotal = parseFloat(document.getElementById('valorTotal').value);
+  const condicaoPagamentoId = document.getElementById('condicaoPagamento').value;
+  const condicaoPagamento = condicoesPagamento.find(c => c.id === condicaoPagamentoId);
+
+  if (!condicaoPagamento || !condicaoPagamento.parcelas) return;
+
+  const installmentsTableBody = document.getElementById('installmentsTableBody');
+  installmentsTableBody.innerHTML = '';
+
+  const valorParcela = valorTotal / condicaoPagamento.parcelas;
+  const dataEmissao = new Date(document.getElementById('dataEmissao').value);
+
+  for (let i = 0; i < condicaoPagamento.parcelas; i++) {
+    const dataVencimento = new Date(dataEmissao);
+    dataVencimento.setMonth(dataEmissao.getMonth() + i);
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${dataVencimento.toISOString().split('T')[0]}</td>
+      <td>R$ ${valorParcela.toFixed(2)}</td>
+    `;
+    installmentsTableBody.appendChild(row);
+  }
+};
+
+document.getElementById('receivableForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const editingId = document.getElementById('editingId').value;
+  const clienteId = document.getElementById('cliente').value;
+  const tipoDocumento = document.getElementById('tipoDocumento').value;
+  const numeroDocumento = document.getElementById('numeroDocumento').value;
+  const dataEmissao = document.getElementById('dataEmissao').value;
+  const valorTotal = parseFloat(document.getElementById('valorTotal').value);
+  const condicaoPagamentoId = document.getElementById('condicaoPagamento').value;
+  const centroCusto = document.getElementById('centroCusto').value;
+  const contaContabil = document.getElementById('contaContabil').value;
+  const observacoes = document.getElementById('observacoes').value;
+
+  const condicaoPagamento = condicoesPagamento.find(c => c.id === condicaoPagamentoId);
+  if (!condicaoPagamento) return;
+
+  const parcelas = [];
+  const valorParcela = valorTotal / condicaoPagamento.parcelas;
+  const dataEmissaoDate = new Date(dataEmissao);
+
+  for (let i = 0; i < condicaoPagamento.parcelas; i++) {
+    const dataVencimento = new Date(dataEmissaoDate);
+    dataVencimento.setMonth(dataEmissaoDate.getMonth() + i);
+
+    parcelas.push({
+      numero: i + 1,
+      dataVencimento: Timestamp.fromDate(dataVencimento),
+      valor: valorParcela,
+      status: 'PENDENTE',
+      valorRecebido: 0,
+      recebimentos: []
+    });
+  }
+
+  const contaData = {
+    clienteId,
+    tipoDocumento,
+    numeroDocumento,
+    dataEmissao: Timestamp.fromDate(new Date(dataEmissao)),
+    valorTotal,
+    condicaoPagamentoId,
+    centroCusto,
+    contaContabil,
+    observacoes,
+    parcelas
+  };
+
+  try {
+    if (editingId) {
+      await updateDoc(doc(db, "contasAReceber", editingId), contaData);
+      alert('Conta atualizada com sucesso!');
+    } else {
+      await addDoc(collection(db, "contasAReceber"), contaData);
+      alert('Conta cadastrada com sucesso!');
+    }
+
+    await loadData();
+    displayReceivables();
+    updateSummary();
+    closeModal();
+  } catch (error) {
+    console.error("Erro ao salvar conta:", error);
+    alert('Erro ao salvar conta. Por favor, tente novamente.');
+  }
+});
+
+document.getElementById('receiveForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const receivableId = document.getElementById('receiveReceivableId').value;
+  const installmentId = document.getElementById('receiveInstallmentId').value;
+  const receiveDate = document.getElementById('receiveDate').value;
+  const receiveValue = parseFloat(document.getElementById('receiveValue').value);
+  const receiveMethod = document.getElementById('receiveMethod').value;
+  const receiveReference = document.getElementById('receiveReference').value;
+  const receiveNotes = document.getElementById('receiveNotes').value;
+
+  const conta = contasAReceber.find(c => c.id === receivableId);
+  if (!conta) return;
+
+  const parcela = conta.parcelas.find(p => p.numero === parseInt(installmentId));
+  if (!parcela) return;
+
+  const recebimento = {
+    dataRecebimento: Timestamp.fromDate(new Date(receiveDate)),
+    valor: receiveValue,
+    formaRecebimento: receiveMethod,
+    referencia: receiveReference,
+    observacoes: receiveNotes
+  };
+
+  parcela.recebimentos.push(recebimento);
+  parcela.valorRecebido += receiveValue;
+
+  if (parcela.valorRecebido >= parcela.valor) {
+    parcela.status = 'RECEBIDO';
+  } else if (parcela.valorRecebido > 0) {
+    parcela.status = 'PARCIAL';
+  }
+
+  try {
+    await updateDoc(doc(db, "contasAReceber", receivableId), {
+      parcelas: conta.parcelas
+    });
+
+    await loadData();
+    displayReceivables();
+    updateSummary();
+    closeReceiveModal();
+    alert('Recebimento registrado com sucesso!');
+  } catch (error) {
+    console.error("Erro ao registrar recebimento:", error);
+    alert('Erro ao registrar recebimento. Por favor, tente novamente.');
+  }
+});
+
+</script>      

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Sistema MRP</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f7f7f7;
+    }
+
+    .login-container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .logo {
+      width: 150px;
+      margin: 0 auto 30px;
+      display: block;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--primary-color);
+      margin-bottom: 30px;
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+      color: var(--text-color);
+      background-color: #fff;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .error-feedback {
+      background-color: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--danger-color);
+      padding: 12px 15px;
+      border-radius: 4px;
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    .version-info {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.8em;
+      margin-top: 20px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <img src="https://www.naliteck.com.br/img/logo.png" alt="Logo" class="logo">
+    <h1>Login</h1>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="nome">Usuário</label>
+        <input type="text" id="nome" required>
+      </div>
+
+      <div class="form-group">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" required>
+      </div>
+
+      <div id="errorMessage" class="error-feedback" style="display: none;">
+        <i class="fas fa-exclamation-circle"></i>
+        <span class="error-text"></span>
+      </div>
+
+      <button type="submit">Entrar</button>
+    </form>
+
+    <div class="version-info">
+      Sistema MRP v1.0.0 - © 2025 Naliteck
+    </div>
+  </div>
+
+  <script type="module">
+    // Limpar sessão ao carregar página de login
+    localStorage.removeItem('currentUser');
+    
+    import { db } from './firebase-config.js';
+    import { collection, query, where, getDocs, addDoc, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // Verificar se já está logado
+    window.onload = async function() {
+      const userSession = localStorage.getItem('currentUser');
+      if (userSession) {
+        window.location.href = 'index.html';
+      } else {
+        // Verificar se existe usuário admin, se não, criar
+        await checkAndCreateAdmin();
+      }
+    };
+
+    async function checkAndCreateAdmin() {
+      try {
+        const q = query(collection(db, "usuarios"), where("nome", "==", "admin"));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          // Criar usuário admin se não existir
+          const adminUser = {
+            nome: "admin",
+            senha: "hmmtim",
+            nomeCompleto: "Administrador do Sistema",
+            email: "admin@sistema.com",
+            nivel: 9, // Nível máximo - Administrador
+            ativo: true,
+            dataCadastro: new Date()
+          };
+
+          await addDoc(collection(db, "usuarios"), adminUser);
+          console.log("Usuário admin criado automaticamente");
+        }
+      } catch (error) {
+        console.error("Erro ao verificar/criar admin:", error);
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      const nome = document.getElementById('nome').value;
+      const senha = document.getElementById('senha').value;
+      const errorMessage = document.getElementById('errorMessage');
+      errorMessage.textContent = ''; // Limpar mensagem de erro anterior
+
+      try {
+        // Buscar o usuário no Firestore
+        const q = query(collection(db, "usuarios"), where("nome", "==", nome));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          throw new Error('Usuário ou senha incorretos.');
+        }
+
+        const userData = querySnapshot.docs[0].data();
+        const userId = querySnapshot.docs[0].id;
+
+        // Verificar senha e status
+        if (userData.senha !== senha || !userData.ativo) {
+          throw new Error('Usuário ou senha incorretos.');
+        }
+
+        // Salvar dados do usuário na sessão
+        const userSession = {
+          id: userId,
+          nome: userData.nome,
+          nivel: userData.nivel,
+          nomeCompleto: userData.nomeCompleto,
+          email: userData.email,
+          departamento: userData.departamento
+        };
+
+        // Adiciona timestamp para controle de sessão
+userSession.lastActivity = new Date().getTime();
+localStorage.setItem('currentUser', JSON.stringify(userSession));
+// Verifica inatividade a cada minuto
+setInterval(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (user && (new Date().getTime() - user.lastActivity > 30 * 60 * 1000)) {
+        alert('Sessão expirada por inatividade');
+        logout();
+    }
+}, 60000);
+
+        // Redirecionar para o index.html
+        window.location.href = 'index.html';
+      } catch (error) {
+        console.error('Erro no login:', error);
+        errorMessage.textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>

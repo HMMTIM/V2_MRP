@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório Onde é Usado e Substituição</title>
+
+  <!-- Estilos CSS -->
+  <style>
+    /* Variáveis CSS para reutilização */
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+      --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.08);
+      --shadow-medium: 0 4px 15px rgba(0, 0, 0, 0.1);
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --font-size-base: 16px;
+      --font-size-sm: 14px;
+      --background-color: #f7f7f7;
+    }
+
+    /* Reset básico */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Estilo do corpo */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    /* Container principal */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: var(--spacing-lg);
+    }
+
+    /* Cabeçalho */
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-radius: 12px 12px 0 0;
+      margin: calc(-1 * var(--spacing-lg)) calc(-1 * var(--spacing-lg)) var(--spacing-lg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      grid-column: 1 / -1; /* Ocupar todas as colunas */
+    }
+
+    .header-title {
+      font-size: 26px;
+      font-weight: 500;
+    }
+
+    .back-button {
+      padding: var(--spacing-sm) var(--spacing-md);
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .back-button:hover {
+      background-color: #5a6268;
+      transform: translateY(-1px);
+    }
+
+    /* Título abaixo do cabeçalho */
+    .title {
+      text-align: center;
+      margin: var(--spacing-md) 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary-color);
+      grid-column: 1 / -1;
+    }
+
+    /* Seção de busca */
+    .search-container {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md);
+      background-color: var(--secondary-color);
+      border-radius: 8px;
+      align-self: start;
+    }
+
+    .search-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .search-label {
+      font-weight: 500;
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+    }
+
+    /* Estilos para os campos de busca */
+    .search-field {
+      position: relative;
+      width: 100%;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: var(--font-size-base);
+      background-color: white;
+    }
+
+    .search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 0 0 6px 6px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+
+    .search-result-item {
+      padding: var(--spacing-sm) var(--spacing-md);
+      cursor: pointer;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .search-result-item:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .selected-product {
+      margin-top: var(--spacing-sm);
+      padding: var(--spacing-sm);
+      background-color: var(--secondary-color);
+      border-radius: 4px;
+      font-size: var(--font-size-sm);
+      display: none;
+    }
+
+    /* Área do relatório */
+    #reportContent {
+      padding: var(--spacing-md);
+      background-color: white;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    /* Botões de ação */
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-md);
+    }
+
+    .button-container button {
+      width: 100%;
+      margin: 0;
+    }
+
+    /* Conteúdo do relatório */
+    .summary-box {
+      background-color: var(--secondary-color);
+      padding: var(--spacing-md);
+      border-radius: 6px;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .summary-box h3 {
+      margin: 0 0 var(--spacing-sm) 0;
+      color: var(--text-color);
+    }
+
+    .summary-info {
+      display: flex;
+      gap: var(--spacing-md);
+    }
+
+    .summary-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .summary-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--success-color);
+    }
+
+    .summary-label {
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+    }
+
+    .usage-tree {
+      margin-top: var(--spacing-md);
+    }
+
+    .usage-item {
+      margin: var(--spacing-sm) 0;
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background-color: #f8f9fa;
+    }
+
+    .usage-details {
+      margin-left: var(--spacing-md);
+      padding: var(--spacing-sm);
+      border-left: 3px solid var(--success-color);
+    }
+
+    /* Responsividade */
+    @media (max-width: 1024px) {
+      .search-container {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+
+      .search-container {
+        width: 100%;
+      }
+
+      .button-container {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+        margin: 5px 0;
+      }
+    }
+
+    /* Estilo para o select de componentes */
+    .select-componente {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    /* Estilos para o indicador de carregamento */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid var(--border-color);
+      border-top: 5px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Estilos para o relatório */
+    .no-results {
+      padding: 20px;
+      text-align: center;
+      color: var(--text-secondary);
+      background-color: var(--secondary-color);
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+
+    .error-message {
+      padding: 20px;
+      text-align: center;
+      color: #dc3545;
+      background-color: #fff3f3;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+
+    .summary-box {
+      background-color: var(--secondary-color);
+      padding: var(--spacing-md);
+      border-radius: 6px;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .usage-info {
+      margin: var(--spacing-sm) 0;
+      line-height: 1.6;
+    }
+
+    .summary-info {
+      display: flex;
+      gap: var(--spacing-md);
+      margin-top: var(--spacing-md);
+    }
+
+    .summary-item {
+      flex: 1;
+      text-align: center;
+      padding: var(--spacing-sm);
+      background-color: white;
+      border-radius: 4px;
+    }
+
+    .summary-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    .summary-label {
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+      margin-top: 4px;
+    }
+
+    .usage-tree {
+      margin-top: var(--spacing-md);
+    }
+
+    .usage-tree h3 {
+      color: var(--text-secondary);
+      margin: var(--spacing-md) 0 var(--spacing-sm);
+      padding-bottom: var(--spacing-sm);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .usage-item {
+      background-color: white;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .usage-item h3 {
+      color: var(--primary-color);
+      margin: 0 0 var(--spacing-sm);
+      padding: 0;
+      border: none;
+    }
+
+    .usage-details {
+      margin-left: var(--spacing-md);
+      padding-left: var(--spacing-md);
+      border-left: 3px solid var(--primary-color);
+    }
+
+    .usage-info {
+      margin: var(--spacing-sm) 0;
+    }
+
+    /* Adicionar estilos para a tabela */
+    .usage-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: var(--spacing-md);
+      background-color: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .usage-table th {
+      background-color: var(--secondary-color);
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .usage-table td {
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    .usage-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .nivel-indicator {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      background-color: var(--secondary-color);
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Container principal -->
+  <div class="container">
+    <!-- Cabeçalho com título e botão Voltar -->
+    <div class="header">
+      <div class="header-title">Substituição de Materiais</div>
+      <button class="back-button" onclick="window.location.href='index.html'">Voltar</button>
+    </div>
+
+    <!-- Título secundário -->
+    <div class="title">Relatório Onde é Usado e Substituição</div>
+
+    <!-- Seção de busca à esquerda -->
+    <div class="search-container">
+      <div class="search-group">
+        <label class="search-label">Digite o Código do Produto</label>
+        <div class="search-field">
+          <input type="text" 
+                 id="productInput" 
+                 class="search-input" 
+                 placeholder="Digite o código do produto..."
+                 oninput="searchProducts(this.value, 'product')"
+                 autocomplete="off">
+          <div id="productResults" class="search-results"></div>
+          <div id="selectedProduct" class="selected-product"></div>
+        </div>
+      </div>
+
+      <div class="search-group">
+        <label class="search-label">Digite o Código do Novo Componente</label>
+        <div class="search-field">
+          <input type="text" 
+                 id="newComponentInput" 
+                 class="search-input" 
+                 placeholder="Digite o código do novo componente..."
+                 oninput="searchProducts(this.value, 'component')"
+                 autocomplete="off">
+          <div id="componentResults" class="search-results"></div>
+          <div id="selectedComponent" class="selected-product"></div>
+        </div>
+      </div>
+
+      <!-- Botões dentro do container de busca -->
+      <div class="button-container">
+        <button onclick="substituirComponente()" class="btn-primary" disabled>Substituir Componente</button>
+      </div>
+    </div>
+
+    <!-- Área do relatório à direita -->
+    <div id="reportContent"></div>
+  </div>
+
+  <!-- Adicionar o overlay de carregamento -->
+  <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- JavaScript -->
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, getDocs, updateDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let produtos = [];
+    let estruturas = [];
+    let produtosMP = []; // Cache para produtos MP e SP
+    let selectedProductId = null;
+    let selectedComponentId = null;
+    let loadingOverlay;
+
+    // Expor funções no escopo global
+    window.searchProducts = searchProducts;
+    window.substituirComponente = substituirComponente;
+
+    // Inicialização
+    async function init() {
+      loadingOverlay = document.getElementById('loadingOverlay');
+
+      const userSession = localStorage.getItem('currentUser');
+      if (!userSession) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      showLoading();
+      try {
+        await loadInitialData();
+      } catch (error) {
+        console.error("Erro na inicialização:", error);
+        alert("Erro ao inicializar a página. Por favor, recarregue.");
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Função para mostrar/ocultar loading
+    function showLoading(show = true) {
+      if (loadingOverlay) {
+        loadingOverlay.style.display = show ? 'flex' : 'none';
+      }
+    }
+
+    // Carregar dados iniciais de forma otimizada
+    async function loadInitialData() {
+      try {
+        // Carregar apenas produtos MP e SP inicialmente
+        const produtosQuery = query(
+          collection(db, "produtos"),
+          where("tipo", "in", ["MP", "SP"])
+        );
+
+        const produtosSnap = await getDocs(produtosQuery);
+        produtosMP = produtosSnap.docs.map(doc => ({ 
+          id: doc.id, 
+          ...doc.data(),
+          displayText: `${doc.data().codigo} - ${doc.data().descricao} (${doc.data().tipo})`
+        }));
+
+        produtos = produtosMP; // Manter referência completa
+
+        // Garantir que os elementos existem antes de atualizar
+        const productSelect = document.getElementById('productInput');
+        const newComponentSelect = document.getElementById('newComponentInput');
+
+        if (productSelect && newComponentSelect) {
+          updateProductSelect();
+          updateReplacementSelect();
+        } else {
+          throw new Error('Elementos de seleção não encontrados no DOM');
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados iniciais:", error);
+        throw error;
+      }
+    }
+
+    // Carregar estruturas apenas quando necessário
+    async function loadEstruturas() {
+      if (estruturas.length === 0) {
+        const estruturasSnap = await getDocs(collection(db, "estruturas"));
+        estruturas = estruturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }
+    }
+
+    // Atualizar select de produtos
+    function updateProductSelect() {
+      const select = document.getElementById('productInput');
+      if (!select) return;
+
+      select.value = '';
+      const selectedProduct = document.getElementById('selectedProduct');
+      if (selectedProduct) {
+        selectedProduct.style.display = 'none';
+      }
+    }
+
+    // Atualizar select de substituição
+    function updateReplacementSelect() {
+      const select = document.getElementById('newComponentInput');
+      if (!select) return;
+
+      select.value = '';
+      const selectedComponent = document.getElementById('selectedComponent');
+      if (selectedComponent) {
+        selectedComponent.style.display = 'none';
+      }
+    }
+
+    // Gerar relatório
+    async function generateReport() {
+      if (!selectedProductId) {
+        document.getElementById('reportContent').innerHTML = '<p class="no-results">Selecione um produto para ver onde é usado.</p>';
+        return;
+      }
+
+      showLoading();
+      try {
+        await loadEstruturas();
+        const produto = produtos.find(p => p.id === selectedProductId);
+        if (!produto) {
+          throw new Error('Produto não encontrado');
+        }
+
+        const usages = findUsages(selectedProductId);
+
+        const reportContent = document.getElementById('reportContent');
+        let html = `
+          <div class="summary-box">
+            <h3>Resumo do Produto</h3>
+            <div class="usage-info">
+              <strong>Código:</strong> ${produto.codigo}<br>
+              <strong>Descrição:</strong> ${produto.descricao}<br>
+              <strong>Tipo:</strong> ${produto.tipo}<br>
+              <strong>Unidade:</strong> ${produto.unidade}
+            </div>
+            <div class="summary-info">
+              <div class="summary-item">
+                <div class="summary-value">${usages.length}</div>
+                <div class="summary-label">Total de Utilizações</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-value">${[...new Set(usages.map(u => u.nivel))].length}</div>
+                <div class="summary-label">Níveis de Utilização</div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        if (usages.length === 0) {
+          html += `<div class="no-results">Este produto não é utilizado em nenhuma estrutura.</div>`;
+        } else {
+          html += `
+            <table class="usage-table">
+              <thead>
+                <tr>
+                  <th>Nível</th>
+                  <th>Código</th>
+                  <th>Descrição</th>
+                  <th>Tipo</th>
+                  <th>Quantidade</th>
+                  <th>Unidade</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+
+          // Ordenar usages por nível e código
+          usages.sort((a, b) => {
+            if (a.nivel !== b.nivel) return a.nivel - b.nivel;
+            return a.produto.codigo.localeCompare(b.produto.codigo);
+          });
+
+          usages.forEach(usage => {
+            html += `
+              <tr>
+                <td><span class="nivel-indicator">Nível ${usage.nivel}</span></td>
+                <td>${usage.produto.codigo}</td>
+                <td>${usage.produto.descricao}</td>
+                <td>${usage.produto.tipo}</td>
+                <td style="text-align: right">${usage.quantidade.toFixed(2)}</td>
+                <td>${usage.unidade}</td>
+              </tr>
+            `;
+          });
+
+          html += `
+              </tbody>
+            </table>
+          `;
+        }
+
+        reportContent.innerHTML = html;
+      } catch (error) {
+        console.error("Erro ao gerar relatório:", error);
+        document.getElementById('reportContent').innerHTML = `
+          <div class="error-message">
+            Erro ao gerar relatório. Por favor, tente novamente.
+          </div>
+        `;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Função para encontrar onde o componente é usado
+    function findUsages(componentId, level = 0, path = []) {
+      const usages = [];
+      if (!estruturas || !componentId) return usages;
+
+      estruturas.forEach(estrutura => {
+        if (estrutura.componentes && estrutura.componentes.some(comp => comp.componentId === componentId)) {
+          const produto = produtos.find(p => p.id === estrutura.produtoPaiId);
+          if (!produto || path.includes(produto.id)) return;
+
+          const componenteNaEstrutura = estrutura.componentes.find(comp => comp.componentId === componentId);
+          const usage = {
+            estruturaId: estrutura.id,
+            produto: produto,
+            nivel: level,
+            quantidade: componenteNaEstrutura.quantidade,
+            unidade: componenteNaEstrutura.unidade
+          };
+          usages.push(usage);
+
+          // Buscar recursivamente onde o produto pai é usado
+          const parentUsages = findUsages(produto.id, level + 1, [...path, produto.id]);
+          usages.push(...parentUsages);
+        }
+      });
+
+      return usages;
+    }
+
+    // Função para buscar produtos
+    async function searchProducts(searchText, type) {
+      const resultsDiv = document.getElementById(type === 'product' ? 'productResults' : 'componentResults');
+      if (!resultsDiv) return;
+
+      if (!searchText || searchText.length < 2) {
+        resultsDiv.style.display = 'none';
+        return;
+      }
+
+      const searchLower = searchText.toLowerCase();
+      const filteredProducts = produtosMP.filter(p => 
+        p.codigo.toLowerCase().includes(searchLower) || 
+        p.descricao.toLowerCase().includes(searchLower)
+      ).slice(0, 10);
+
+      resultsDiv.innerHTML = '';
+
+      if (filteredProducts.length > 0) {
+        filteredProducts.forEach(produto => {
+          const div = document.createElement('div');
+          div.className = 'search-result-item';
+          div.textContent = `${produto.codigo} - ${produto.descricao} (${produto.tipo})`;
+          div.onclick = () => selectProduct(produto, type);
+          resultsDiv.appendChild(div);
+        });
+        resultsDiv.style.display = 'block';
+      } else {
+        resultsDiv.style.display = 'none';
+      }
+    }
+
+    // Função para selecionar um produto
+    function selectProduct(produto, type) {
+      const input = document.getElementById(type === 'product' ? 'productInput' : 'newComponentInput');
+      const results = document.getElementById(type === 'product' ? 'productResults' : 'componentResults');
+      const selected = document.getElementById(type === 'product' ? 'selectedProduct' : 'selectedComponent');
+
+      input.value = produto.codigo;
+      results.style.display = 'none';
+      selected.innerHTML = `<strong>${produto.codigo}</strong> - ${produto.descricao} (${produto.tipo})`;
+      selected.style.display = 'block';
+
+      if (type === 'product') {
+        selectedProductId = produto.id;
+        generateReport();
+      } else {
+        selectedComponentId = produto.id;
+      }
+
+      // Habilitar/desabilitar botão de substituição
+      document.querySelector('.btn-primary').disabled = !(selectedProductId && selectedComponentId);
+    }
+
+    // Substituir componente
+    async function substituirComponente() {
+      if (!selectedProductId || !selectedComponentId) {
+        alert('Por favor, selecione o produto e o novo componente.');
+        return;
+      }
+
+      showLoading();
+      try {
+        await loadEstruturas();
+        const usages = findUsages(selectedProductId);
+        if (usages.length === 0) {
+          alert('Este produto não é utilizado em nenhuma estrutura.');
+          return;
+        }
+
+        const oldProduct = produtos.find(p => p.id === selectedProductId);
+        const newProduct = produtos.find(p => p.id === selectedComponentId);
+
+        const confirmReplace = confirm(
+          `Deseja substituir ${oldProduct.descricao} por ${newProduct.descricao} em ${usages.length} estrutura(s)?`
+        );
+
+        if (!confirmReplace) return;
+
+        for (const usage of usages) {
+          const estruturaRef = doc(db, "estruturas", usage.estruturaId);
+          const estrutura = estruturas.find(e => e.id === usage.estruturaId);
+          const updatedComponents = estrutura.componentes.map(comp => {
+            if (comp.componentId === selectedProductId) {
+              return {
+                componentId: selectedComponentId,
+                quantidade: comp.quantidade,
+                unidade: newProduct.unidade
+              };
+            }
+            return comp;
+          });
+          await updateDoc(estruturaRef, { componentes: updatedComponents });
+        }
+
+        alert('Substituição realizada com sucesso!');
+        await loadInitialData();
+        generateReport();
+
+        // Limpar seleções
+        selectedProductId = null;
+        selectedComponentId = null;
+        document.getElementById('productInput').value = '';
+        document.getElementById('newComponentInput').value = '';
+        document.getElementById('selectedProduct').style.display = 'none';
+        document.getElementById('selectedComponent').style.display = 'none';
+        document.querySelector('.btn-primary').disabled = true;
+
+      } catch (error) {
+        console.error("Erro ao substituir componente:", error);
+        alert("Erro ao realizar substituição. Tente novamente.");
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Inicializar após o DOM estar carregado
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

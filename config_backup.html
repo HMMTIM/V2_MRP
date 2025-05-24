@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HM-SYSTEMS - Backup do Sistema</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --success-color: #107e3e;
+      --danger-color: #bb0000;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      font-size: 13px;
+    }
+
+    .sap-header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sap-logo {
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .sap-title {
+      color: var(--primary-color);
+      font-size: 20px;
+      margin: 0 0 20px 0;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .totvs-form {
+      background-color: white;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .totvs-form h2 {
+      color: var(--primary-color);
+      font-size: 16px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .totvs-select, .totvs-input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      font-size: 13px;
+      background-color: white;
+    }
+
+    .totvs-select:focus, .totvs-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.2);
+    }
+
+    .totvs-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 15px;
+      font-size: 12px;
+    }
+
+    .totvs-table th {
+      background-color: var(--secondary-color);
+      color: var(--primary-color);
+      font-weight: 600;
+      padding: 8px 5px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .totvs-table td {
+      padding: 6px 5px;
+      border: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    .totvs-table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .totvs-table tr:hover {
+      background-color: #e6f2ff;
+    }
+
+    .btn-totvs-primary {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .btn-totvs-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-totvs-secondary {
+      background-color: white;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .btn-totvs-secondary:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-totvs-danger {
+      background-color: var(--danger-color);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .btn-totvs-danger:hover {
+      background-color: #a30000;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      justify-content: flex-end;
+    }
+
+    .notification {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .notification-success {
+      background-color: #d4edda;
+      color: #155724;
+      display: block;
+    }
+
+    .notification-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      display: block;
+    }
+
+    .progress-container {
+      margin-top: 10px;
+      display: none;
+    }
+
+    .progress-container progress {
+      width: 100%;
+      height: 20px;
+      margin-bottom: 5px;
+    }
+
+    .collections-list {
+      margin-top: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 3px;
+    }
+
+    .collections-list label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .collections-list input[type="checkbox"] {
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sap-header">
+    <div class="sap-logo">HM-SYSTEMS</div>
+    <div id="authContainer">Usuário: <span id="userStatus">Não logado</span> | Empresa: 1000</div>
+  </div>
+
+  <div class="container">
+    <div class="sap-title"><i class="fas fa-download"></i> Backup do Sistema</div>
+
+    <div class="totvs-form">
+      <h2>Backup Manual</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Coleções para Backup</label>
+          <div class="collections-list" id="collectionsList"></div>
+        </div>
+        <div class="form-group">
+          <button id="exportButton" class="btn-totvs-primary"><i class="fas fa-download"></i> Exportar Dados</button>
+        </div>
+      </div>
+      <div class="progress-container" id="progressBar">
+        <progress value="0" max="100" id="progress"></progress>
+        <span id="progressText">0%</span>
+      </div>
+    </div>
+
+    <div class="totvs-form">
+      <h2>Backup Automático</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Frequência</label>
+          <select id="frequencia" class="totvs-select">
+            <option value="diario">Diário</option>
+            <option value="semanal">Semanal</option>
+            <option value="mensal">Mensal</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <button id="configButton" class="btn-totvs-primary"><i class="fas fa-save"></i> Salvar Configuração</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="totvs-form">
+      <h2>Histórico de Backups</h2>
+      <table class="totvs-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="historicoBackup"></tbody>
+      </table>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-totvs-secondary" onclick="window.location.href='home.html'"><i class="fas fa-arrow-left"></i> Voltar</button>
+      <button class="btn-totvs-danger" id="logoutButton" style="display: none;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db, storage } from './firebase-config.js';
+    import { collection, getDocs, addDoc, doc, getDoc, Timestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+    const collections = [
+      'acessos', 'armazens', 'avaliacoesFornecedores', 'central', 'centrosCusto',
+      'clientes', 'condicoesPagamento', 'contadores', 'empresa', 'especificacoesInspecao',
+      'estoques', 'estruturas', 'familias', 'fornecedores', 'grupos', 'movimentacoesEstoque',
+      'operacoes', 'ordensProducao', 'parametros', 'permissoes', 'produtos',
+      'produtos_fornecedores', 'recursos', 'sequenciais', 'usuarios'
+    ];
+
+    let usuarioAtual = null;
+
+    window.onload = async function() {
+      usuarioAtual = JSON.parse(localStorage.getItem('currentUser'));
+      if (!usuarioAtual) {
+        showNotification('Por favor, faça login para acessar o backup.', 'error');
+        window.location.href = 'login.html';
+        return;
+      }
+      document.getElementById('userStatus').textContent = usuarioAtual.nome;
+      document.getElementById('logoutButton').style.display = 'inline';
+      await atualizarHistorico();
+      populateCollectionsList();
+
+      // Adicionar ouvintes de eventos
+      document.getElementById('exportButton').addEventListener('click', exportarDados);
+      document.getElementById('configButton').addEventListener('click', configurarBackupAutomatico);
+    };
+
+    function populateCollectionsList() {
+      const collectionsList = document.getElementById('collectionsList');
+      collectionsList.innerHTML = '';
+      collections.forEach(collection => {
+        const label = document.createElement('label');
+        label.innerHTML = `
+          <input type="checkbox" name="collections" value="${collection}" checked>
+          ${collection}
+        `;
+        collectionsList.appendChild(label);
+      });
+    }
+
+    function getSelectedCollections() {
+      const checkboxes = document.querySelectorAll('input[name="collections"]:checked');
+      return Array.from(checkboxes).map(checkbox => checkbox.value);
+    }
+
+    async function exportarDados() {
+      const progressBar = document.getElementById('progressBar');
+      const progress = document.getElementById('progress');
+      const progressText = document.getElementById('progressText');
+      const selectedCollections = getSelectedCollections();
+
+      if (selectedCollections.length === 0) {
+        showNotification('Selecione pelo menos uma coleção para o backup!', 'error');
+        return;
+      }
+
+      progressBar.style.display = 'block';
+      progress.value = 0;
+
+      const backup = {};
+
+      try {
+        for (let i = 0; i < selectedCollections.length; i++) {
+          const collectionName = selectedCollections[i];
+          const snapshot = await getDocs(collection(db, collectionName));
+          backup[collectionName] = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+
+          progress.value = ((i + 1) / selectedCollections.length) * 100;
+          progressText.textContent = Math.round(progress.value) + '%';
+        }
+
+        const backupStr = JSON.stringify(backup, null, 2);
+        const blob = new Blob([backupStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `backup_${new Date().toISOString()}.json`;
+        a.click();
+
+        await registrarBackup('manual', 'concluído');
+        await atualizarHistorico();
+        showNotification('Backup concluído com sucesso!', 'success');
+
+      } catch (error) {
+        console.error('Erro no backup:', error);
+        await registrarBackup('manual', 'erro');
+        showNotification('Erro ao fazer backup: ' + error.message, 'error');
+      }
+    }
+
+    async function backupAutomatico() {
+      const selectedCollections = getSelectedCollections();
+
+      if (selectedCollections.length === 0) {
+        showNotification('Selecione pelo menos uma coleção para o backup automático!', 'error');
+        return;
+      }
+
+      const backup = {};
+      try {
+        for (const collectionName of selectedCollections) {
+          const snapshot = await getDocs(collection(db, collectionName));
+          backup[collectionName] = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+        }
+
+        const backupStr = JSON.stringify(backup, null, 2);
+        const backupRef = ref(storage, `backups/backup_${new Date().toISOString()}.json`);
+        await uploadString(backupRef, backupStr);
+
+        await registrarBackup('automático', 'concluído');
+        await atualizarHistorico();
+        showNotification('Backup automático concluído!', 'success');
+      } catch (error) {
+        console.error('Erro no backup automático:', error);
+        await registrarBackup('automático', 'erro');
+        showNotification('Erro no backup automático: ' + error.message, 'error');
+      }
+    }
+
+    async function configurarBackupAutomatico() {
+      const frequencia = document.getElementById('frequencia').value;
+      const selectedCollections = getSelectedCollections();
+
+      if (selectedCollections.length === 0) {
+        showNotification('Selecione pelo menos uma coleção para o backup automático!', 'error');
+        return;
+      }
+
+      let intervalMs;
+
+      switch (frequencia) {
+        case 'diario':
+          intervalMs = 24 * 60 * 60 * 1000;
+          break;
+        case 'semanal':
+          intervalMs = 7 * 24 * 60 * 60 * 1000;
+          break;
+        case 'mensal':
+          intervalMs = 30 * 24 * 60 * 60 * 1000;
+          break;
+      }
+
+      clearInterval(window.backupInterval);
+      window.backupInterval = setInterval(backupAutomatico, intervalMs);
+
+      await registrarBackup('configuração', `frequência ${frequencia} configurada`);
+      await atualizarHistorico();
+      showNotification(`Backup automático configurado para ${frequencia}!`, 'success');
+    }
+
+    async function registrarBackup(tipo, status) {
+      try {
+        await addDoc(collection(db, 'backups'), {
+          data: Timestamp.now(),
+          tipo: tipo,
+          status: status
+        });
+      } catch (error) {
+        console.error('Erro ao registrar backup:', error);
+      }
+    }
+
+    async function atualizarHistorico() {
+      const tbody = document.getElementById('historicoBackup');
+      const snapshot = await getDocs(collection(db, 'backups'));
+
+      tbody.innerHTML = '';
+      snapshot.docs.forEach(doc => {
+        const backup = doc.data();
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${backup.data.toDate().toLocaleString()}</td>
+          <td>${backup.tipo}</td>
+          <td><span class="totvs-status ${getStatusClass(backup.status)}">${backup.status}</span></td>
+          <td>
+            ${backup.tipo === 'automático' ? `<button class="btn-totvs-secondary download-backup" data-docid="${doc.id}"><i class="fas fa-download"></i> Download</button>` : ''}
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      // Adicionar ouvintes para botões de download
+      document.querySelectorAll('.download-backup').forEach(button => {
+        button.addEventListener('click', () => downloadBackup(button.dataset.docid));
+      });
+    }
+
+    function getStatusClass(status) {
+      switch (status) {
+        case 'concluído':
+          return 'status-active';
+        case 'erro':
+          return 'status-inactive';
+        default:
+          return 'status-pending';
+      }
+    }
+
+    async function downloadBackup(docId) {
+      try {
+        const docRef = doc(db, 'backups', docId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const backupData = docSnap.data();
+          const backupRef = ref(storage, `backups/backup_${backupData.data.toDate().toISOString()}.json`);
+          const url = await getDownloadURL(backupRef);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `backup_${backupData.data.toDate().toISOString()}.json`;
+          a.click();
+          showNotification('Download iniciado!', 'success');
+        }
+      } catch (error) {
+        console.error('Erro ao baixar backup:', error);
+        showNotification('Erro ao baixar backup: ' + error.message, 'error');
+      }
+    }
+
+    window.logout = function() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    };
+
+    function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.textContent = message;
+      notification.className = `notification notification-${type}`;
+      document.querySelector('.container').prepend(notification);
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

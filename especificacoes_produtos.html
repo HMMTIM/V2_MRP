@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerenciar Especificações de Inspeção</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 95%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-col {
+      flex: 1;
+    }
+
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .spec-table th,
+    .spec-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .spec-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .spec-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Gerenciar Especificações de Inspeção</h1>
+      <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+    </div>
+
+    <h2>Especificações de Inspeção por Produto</h2>
+    <div class="form-group">
+      <label>Produto</label>
+      <select id="productSelect" onchange="loadProductSpecs()">
+        <option value="">Selecione o produto...</option>
+      </select>
+    </div>
+    <form id="specForm" onsubmit="saveSpecs(event)">
+      <div class="form-row">
+        <div class="form-col">
+          <label>Critério de Qualidade</label>
+          <input type="text" id="criterio" placeholder="Ex.: Dimensão, Peso" required>
+        </div>
+        <div class="form-col">
+          <label>Valor Esperado</label>
+          <input type="text" id="valorEsperado" placeholder="Ex.: 10mm, 500g" required>
+        </div>
+        <div class="form-col">
+          <label>Tolerância</label>
+          <input type="text" id="tolerancia" placeholder="Ex.: ±0.5mm" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Observações</label>
+        <textarea id="specObservacoes" rows="3" placeholder="Detalhes adicionais"></textarea>
+      </div>
+      <button type="submit" class="btn-success">Salvar Especificação</button>
+    </form>
+    <table class="spec-table">
+      <thead>
+        <tr>
+          <th>Critério</th>
+          <th>Valor Esperado</th>
+          <th>Tolerância</th>
+          <th>Observações</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="specTableBody"></tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs,
+      doc,
+      deleteDoc,
+      Timestamp 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let produtos = [];
+    let especificacoes = [];
+    let currentUser = JSON.parse(localStorage.getItem('currentUser')) || { nome: 'Usuário Atual' };
+    let currentProductId = null;
+
+    window.onload = async () => {
+      await loadInitialData();
+      populateProductSelect();
+    };
+
+    async function loadInitialData() {
+      try {
+        const [produtosSnap, specsSnap] = await Promise.all([
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "especificacoesInspecao"))
+        ]);
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        especificacoes = specsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados iniciais.");
+      }
+    }
+
+    function populateProductSelect() {
+      const select = document.getElementById('productSelect');
+      select.innerHTML = '<option value="">Selecione o produto...</option>';
+      produtos.forEach(produto => {
+        select.innerHTML += `<option value="${produto.id}">${produto.codigo} - ${produto.descricao}</option>`;
+      });
+    }
+
+    window.loadProductSpecs = async function() {
+      currentProductId = document.getElementById('productSelect').value;
+      const tableBody = document.getElementById('specTableBody');
+      tableBody.innerHTML = '';
+      
+      if (currentProductId) {
+        const productSpecs = especificacoes.filter(spec => spec.produtoId === currentProductId);
+        productSpecs.forEach(spec => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${spec.criterio}</td>
+            <td>${spec.valorEsperado}</td>
+            <td>${spec.tolerancia}</td>
+            <td>${spec.observacoes || '-'}</td>
+            <td>
+              <button class="btn-danger" onclick="deleteSpec('${spec.id}')">Excluir</button>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+      }
+    };
+
+    window.saveSpecs = async function(event) {
+      event.preventDefault();
+      if (!currentProductId) {
+        alert('Selecione um produto antes de adicionar especificações.');
+        return;
+      }
+
+      const specData = {
+        produtoId: currentProductId,
+        criterio: document.getElementById('criterio').value,
+        valorEsperado: document.getElementById('valorEsperado').value,
+        tolerancia: document.getElementById('tolerancia').value,
+        observacoes: document.getElementById('specObservacoes').value,
+        dataCriacao: Timestamp.now(),
+        criadoPor: currentUser.nome
+      };
+
+      try {
+        await addDoc(collection(db, "especificacoesInspecao"), specData);
+        alert('Especificação salva com sucesso!');
+        document.getElementById('specForm').reset();
+        await loadInitialData();
+        loadProductSpecs();
+      } catch (error) {
+        console.error("Erro ao salvar especificação:", error);
+        alert("Erro ao salvar especificação.");
+      }
+    };
+
+    window.deleteSpec = async function(specId) {
+      if (confirm('Confirma a exclusão desta especificação?')) {
+        try {
+          await deleteDoc(doc(db, "especificacoesInspecao", specId));
+          await loadInitialData();
+          loadProductSpecs();
+          alert('Especificação excluída com sucesso!');
+        } catch (error) {
+          console.error("Erro ao excluir especificação:", error);
+          alert("Erro ao excluir especificação.");
+        }
+      }
+    };
+  </script>
+</body>
+</html>

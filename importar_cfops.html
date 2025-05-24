@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PLAZHA - SISTEMAS - Preencher CFOPs</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --success-color: #107e3e;
+      --danger-color: #bb0000;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      font-size: 13px;
+    }
+
+    .sap-header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sap-logo {
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .sap-title {
+      color: var(--primary-color);
+      font-size: 20px;
+      margin: 0 0 20px 0;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .totvs-form {
+      background-color: white;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .totvs-form h2 {
+      color: var(--primary-color);
+      font-size: 16px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .btn-totvs-primary {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .btn-totvs-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-totvs-secondary {
+      background-color: white;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .btn-totvs-secondary:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-totvs-danger {
+      background-color: var(--danger-color);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .btn-totvs-danger:hover {
+      background-color: #a30000;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      justify-content: flex-end;
+    }
+
+    .totvs-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 15px;
+      font-size: 12px;
+    }
+
+    .totvs-table th {
+      background-color: var(--secondary-color);
+      color: var(--primary-color);
+      font-weight: 600;
+      padding: 8px 5px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .totvs-table td {
+      padding: 6px 5px;
+      border: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    .totvs-table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .totvs-table tr:hover {
+      background-color: #e6f2ff;
+    }
+
+    .totvs-status {
+      font-size: 11px;
+      padding: 3px 6px;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+
+    .status-active {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .status-inactive {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .notification {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .notification-success {
+      background-color: #d4edda;
+      color: #155724;
+      display: block;
+    }
+
+    .notification-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      display: block;
+    }
+
+    .sap-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--secondary-color);
+      padding: 5px 10px;
+      font-size: 12px;
+      margin-top: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sap-header">
+    <div class="sap-logo">PLAZHA - SISTEMAS</div>
+    <div id="authContainer">Usuário: <span id="userStatus">Não logado</span> | Empresa: 1000</div>
+  </div>
+
+  <div class="container">
+    <div class="sap-title"><i class="fas fa-list-alt"></i> Preencher CFOPs</div>
+
+    <!-- Seção para Preencher CFOPs -->
+    <div class="totvs-form">
+      <h2>Preencher Tabela de CFOPs</h2>
+      <p>Clique no botão abaixo para preencher a coleção de CFOPs com os dados pré-definidos. Isso só adicionará CFOPs que ainda não existem na coleção.</p>
+      <div class="form-actions">
+        <button class="btn-totvs-primary" onclick="preencherCFOPs()"><i class="fas fa-upload"></i> Preencher CFOPs</button>
+      </div>
+    </div>
+
+    <!-- Tabela de CFOPs -->
+    <table class="totvs-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Tipo</th>
+          <th>Ativo</th>
+        </tr>
+      </thead>
+      <tbody id="cfopTableBody"></tbody>
+    </table>
+
+    <div class="form-actions">
+      <button class="btn-totvs-secondary" onclick="window.location.href='gerenciar-cfops.html'">
+        <i class="fas fa-arrow-left"></i> Voltar para Gerenciar CFOPs
+      </button>
+      <button class="btn-totvs-danger" id="logoutButton" style="display: none;" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Sair
+      </button>
+    </div>
+  </div>
+
+  <div class="sap-status">
+    <div>Transação: ZCFOP-PREENCHER - Preencher CFOPs</div>
+    <div>Sistema: PRD | Cliente: 800</div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs,
+      onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import * as Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm';
+
+    let cfops = [];
+    let usuarioAtual = null;
+
+    // Dados pré-definidos de CFOPs
+    const CFOPS_PREDEFINIDOS = [
+      { id: "cfop_1102", codigo: "1102", descricao: "Compra para comercialização dentro do estado", tipo: "Entrada", ativo: true },
+      { id: "cfop_1202", codigo: "1202", descricao: "Devolução de compra para comercialização dentro do estado", tipo: "Entrada", ativo: true },
+      { id: "cfop_2102", codigo: "2102", descricao: "Compra para comercialização interestadual", tipo: "Entrada", ativo: true },
+      { id: "cfop_2202", codigo: "2202", descricao: "Devolução de compra para comercialização interestadual", tipo: "Entrada", ativo: true },
+      { id: "cfop_3102", codigo: "3102", descricao: "Compra para comercialização - importação", tipo: "Entrada", ativo: true },
+      { id: "cfop_5102", codigo: "5102", descricao: "Venda de mercadoria dentro do estado", tipo: "Saída", ativo: true },
+      { id: "cfop_5202", codigo: "5202", descricao: "Devolução de venda dentro do estado", tipo: "Saída", ativo: true },
+      { id: "cfop_6102", codigo: "6102", descricao: "Venda de mercadoria interestadual", tipo: "Saída", ativo: true },
+      { id: "cfop_6202", codigo: "6202", descricao: "Devolução de venda interestadual", tipo: "Saída", ativo: true },
+      { id: "cfop_7101", codigo: "7101", descricao: "Venda de mercadoria para exportação direta", tipo: "Saída", ativo: true },
+      { id: "cfop_5405", codigo: "5405", descricao: "Remessa para conserto dentro do estado", tipo: "Saída", ativo: true },
+      { id: "cfop_6405", codigo: "6405", descricao: "Remessa para conserto interestadual", tipo: "Saída", ativo: true }
+    ];
+
+    window.onload = async function() {
+      usuarioAtual = JSON.parse(localStorage.getItem('currentUser'));
+      if (!usuarioAtual) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      document.getElementById('userStatus').textContent = usuarioAtual.nome;
+      document.getElementById('logoutButton').style.display = 'inline';
+
+      await loadCFOPs();
+
+      onSnapshot(collection(db, "cfops"), (snapshot) => {
+        cfops = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        loadCFOPTable();
+      });
+    };
+
+    async function loadCFOPs() {
+      try {
+        const cfopsSnap = await getDocs(collection(db, "cfops"));
+        cfops = cfopsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        loadCFOPTable();
+      } catch (error) {
+        console.error("Erro ao carregar CFOPs:", error);
+        showNotification("Erro ao carregar CFOPs", "error");
+      }
+    }
+
+    function loadCFOPTable() {
+      const tableBody = document.getElementById('cfopTableBody');
+      tableBody.innerHTML = '';
+
+      cfops.forEach(cfop => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${cfop.id}</td>
+          <td>${cfop.codigo}</td>
+          <td>${cfop.descricao}</td>
+          <td>${cfop.tipo}</td>
+          <td><span class="totvs-status ${cfop.ativo ? 'status-active' : 'status-inactive'}">${cfop.ativo ? 'Ativo' : 'Inativo'}</span></td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    window.preencherCFOPs = async function() {
+      if (!usuarioAtual) {
+        showNotification('Por favor, faça login para preencher CFOPs.', 'error');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      try {
+        const cfopsExistentes = cfops.map(cfop => cfop.codigo);
+        let novosCFOPs = 0;
+
+        for (const cfop of CFOPS_PREDEFINIDOS) {
+          if (!cfopsExistentes.includes(cfop.codigo)) {
+            await addDoc(collection(db, "cfops"), cfop);
+            novosCFOPs++;
+          }
+        }
+
+        if (novosCFOPs > 0) {
+          showNotification(`Foram adicionados ${novosCFOPs} novos CFOPs com sucesso!`, 'success');
+        } else {
+          showNotification('Nenhum novo CFOP foi adicionado. Todos os CFOPs já existem.', 'success');
+        }
+      } catch (error) {
+        console.error("Erro ao preencher CFOPs:", error);
+        showNotification(`Erro ao preencher CFOPs: ${error.message}`, 'error');
+      }
+    };
+
+    window.logout = function() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    };
+
+    function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.textContent = message;
+      notification.className = `notification notification-${type}`;
+      document.querySelector('.container').prepend(notification);
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

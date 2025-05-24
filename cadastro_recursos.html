@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Recursos</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .form-container {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .form-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .resources-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .resources-table th,
+    .resources-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .resources-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .resources-table th:hover {
+      background-color: #e0e0e0;
+    }
+
+    .resources-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+
+    .edit-btn, .delete-btn {
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .edit-btn {
+      background-color: #ffc107;
+      color: #000;
+    }
+
+    .delete-btn {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .required::after {
+      content: "*";
+      color: var(--danger-color);
+      margin-left: 4px;
+    }
+
+    .table-container {
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .search-container {
+      margin-bottom: 20px;
+    }
+
+    .search-container input {
+      width: 300px;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .sort-indicator {
+      margin-left: 5px;
+      font-size: 12px;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 4px;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      transition: opacity 0.3s ease;
+    }
+
+    .notification-success { background-color: var(--success-color); }
+    .notification-error { background-color: var(--danger-color); }
+    .notification-icon { font-weight: bold; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Cadastro de Recursos</h1>
+      <div>
+        <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+      </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <div class="form-container">
+      <h2 class="form-title">Cadastrar Novo Recurso</h2>
+      <form id="resourceForm">
+        <input type="hidden" id="editingId">
+        <label for="codigo" class="required">Código</label>
+        <input type="text" id="codigo" name="codigo" required>
+
+        <label for="maquina" class="required">Máquina</label>
+        <input type="text" id="maquina" name="maquina" required>
+
+        <label for="setor" class="required">Setor</label>
+        <select id="setor" name="setor" required>
+          <option value="">Selecione um setor...</option>
+        </select>
+
+        <label for="centroCusto" class="required">Centro de Custo</label>
+        <select id="centroCusto" name="centroCusto" required>
+          <option value="">Selecione um centro de custo...</option>
+        </select>
+
+        <label for="horasdia" class="required">Horas por Dia</label>
+        <input type="number" id="horasdia" name="horasdia" min="0" max="24" step="0.5" required>
+
+        <label for="custoHora" class="required">Custo por Hora (R$)</label>
+        <input type="number" id="custoHora" name="custoHora" min="0" step="0.01" required>
+
+        <label for="operacoes">Operações Permitidas</label>
+        <select id="operacoes" name="operacoes" multiple>
+          <option value="">Selecione as operações...</option>
+        </select>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="cancelEdit()">Cancelar</button>
+          <button type="submit" class="btn-success" id="submitButton">Cadastrar Recurso</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-container">
+      <h2 class="form-title">Recursos Cadastrados</h2>
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Pesquisar por código, máquina, setor, centro de custo...">
+      </div>
+      <table class="resources-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('codigo')">Código <span id="sortCodigo" class="sort-indicator"></span></th>
+            <th onclick="sortTable('maquina')">Máquina <span id="sortMaquina" class="sort-indicator"></span></th>
+            <th onclick="sortTable('setor')">Setor <span id="sortSetor" class="sort-indicator"></span></th>
+            <th onclick="sortTable('centroCusto')">Centro de Custo <span id="sortCentroCusto" class="sort-indicator"></span></th>
+            <th onclick="sortTable('horasdia')">Horas/Dia <span id="sortHorasDia" class="sort-indicator"></span></th>
+            <th onclick="sortTable('custoHora')">Custo/Hora (R$) <span id="sortCustoHora" class="sort-indicator"></span></th>
+            <th>Data Cadastro</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="resourcesTableBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let recursos = [];
+    let centrosCusto = [];
+    let operacoes = [];
+    let setores = []; // Added to store setores
+    let sortDirection = 'asc';
+    let currentSortColumn = '';
+
+    window.onload = async function() {
+      const userSession = localStorage.getItem('currentUser');
+      if (!userSession) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const currentUser = JSON.parse(userSession);
+      if (currentUser.nivel < 9) {
+        showNotification('Acesso restrito. Apenas administradores podem gerenciar recursos.', 'error');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      await loadCostCenters();
+      await loadOperations();
+      await loadSetores(); // Load setores
+      await loadResources();
+      document.getElementById('searchInput').addEventListener('input', filterTable);
+    };
+
+    async function loadCostCenters() {
+      try {
+        const centrosCustoSnapshot = await getDocs(collection(db, "centrosCusto"));
+        centrosCusto = centrosCustoSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const centroCustoSelect = document.getElementById('centroCusto');
+        centroCustoSelect.innerHTML = '<option value="">Selecione um centro de custo...</option>';
+        centrosCusto
+          .sort((a, b) => a.codigo.localeCompare(b.codigo))
+          .forEach(cc => {
+            centroCustoSelect.innerHTML += `
+              <option value="${cc.id}">
+                ${cc.codigo} - ${cc.descricao}
+              </option>`;
+          });
+      } catch (error) {
+        console.error("Erro ao carregar centros de custo:", error);
+        showNotification("Erro ao carregar centros de custo.", "error");
+      }
+    }
+
+    async function loadSetores() {
+      try {
+        const setoresSnapshot = await getDocs(collection(db, "setores"));
+        setores = setoresSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const setorSelect = document.getElementById('setor');
+        setorSelect.innerHTML = '<option value="">Selecione um setor...</option>';
+        setores
+          .sort((a, b) => a.codigo.localeCompare(b.codigo))
+          .forEach(setor => {
+            setorSelect.innerHTML += `<option value="${setor.codigo}">${setor.codigo} - ${setor.nome}</option>`;
+          });
+      } catch (error) {
+        console.error("Erro ao carregar setores:", error);
+        showNotification("Erro ao carregar setores.", "error");
+      }
+    }
+
+    async function loadOperations() {
+        try {
+            const operacoesSnapshot = await getDocs(collection(db, "operacoes"));
+            operacoes = operacoesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const operacoesSelect = document.getElementById('operacoes');
+            operacoesSelect.innerHTML = ''; // Clear existing options
+            operacoes.forEach(op => {
+                operacoesSelect.innerHTML += `<option value="${op.id}">${op.descricao}</option>`;
+            });
+        } catch (error) {
+            console.error("Erro ao carregar operações:", error);
+            showNotification("Erro ao carregar operações.", "error");
+        }
+    }
+
+    async function loadResources() {
+      try {
+        const recursosSnapshot = await getDocs(collection(db, "recursos"));
+        recursos = [];
+        recursosSnapshot.forEach((doc) => {
+          recursos.push({ id: doc.id, ...doc.data() });
+        });
+        displayResources();
+      } catch (error) {
+        console.error("Erro ao carregar recursos:", error);
+        showNotification("Erro ao carregar recursos. Por favor, recarregue a página.", "error");
+      }
+    }
+
+    function displayResources() {
+      const tableBody = document.getElementById('resourcesTableBody');
+      tableBody.innerHTML = '';
+
+      recursos.forEach(recurso => {
+        const centroCusto = centrosCusto.find(cc => cc.id === recurso.centroCustoId);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${recurso.codigo || ''}</td>
+          <td>${recurso.maquina || ''}</td>
+          <td>${recurso.setor || ''}</td>
+          <td>${centroCusto ? centroCusto.codigo + ' - ' + centroCusto.descricao : '-'}</td>
+          <td>${recurso.horasdia || ''}</td>
+          <td>${recurso.custoHora ? recurso.custoHora.toFixed(2) : '0.00'}</td>
+          <td>${recurso.dataCadastro ? new Date(recurso.dataCadastro.seconds * 1000).toLocaleDateString() : ''}</td>
+          <td class="action-buttons">
+            <button class="edit-btn" onclick="editResource('${recurso.id}')">Editar</button>
+            <button class="delete-btn" onclick="deleteResource('${recurso.id}')">Excluir</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    window.sortTable = function(sortBy) {
+      if (sortBy === currentSortColumn) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSortColumn = sortBy;
+        sortDirection = 'asc';
+      }
+
+      if (sortBy === 'codigo') {
+        recursos.sort((a, b) => sortDirection === 'asc' 
+          ? a.codigo.localeCompare(b.codigo) 
+          : b.codigo.localeCompare(a.codigo));
+      } else if (sortBy === 'maquina') {
+        recursos.sort((a, b) => sortDirection === 'asc' 
+          ? a.maquina.localeCompare(b.maquina) 
+          : b.maquina.localeCompare(a.maquina));
+      } else if (sortBy === 'setor') {
+        recursos.sort((a, b) => sortDirection === 'asc' 
+          ? a.setor.localeCompare(b.setor) 
+          : b.setor.localeCompare(a.setor));
+      } else if (sortBy === 'centroCusto') {
+        recursos.sort((a, b) => {
+          const ccA = centrosCusto.find(cc => cc.id === a.centroCustoId);
+          const ccB = centrosCusto.find(cc => cc.id === b.centroCustoId);
+          const descA = ccA ? ccA.descricao : '';
+          const descB = ccB ? ccB.descricao : '';
+          return sortDirection === 'asc' 
+            ? descA.localeCompare(descB) 
+            : descB.localeCompare(descA);
+        });
+      } else if (sortBy === 'horasdia') {
+        recursos.sort((a, b) => sortDirection === 'asc' 
+          ? a.horasdia - b.horasdia 
+          : b.horasdia - a.horasdia);
+      } else if (sortBy === 'custoHora') {
+        recursos.sort((a, b) => sortDirection === 'asc' 
+          ? a.custoHora - b.custoHora 
+          : b.custoHora - a.custoHora);
+      }
+
+      updateSortIndicators(sortBy, sortDirection);
+      displayResources();
+    };
+
+    function updateSortIndicators(column, direction) {
+      document.getElementById('sortCodigo').innerHTML = '';
+      document.getElementById('sortMaquina').innerHTML = '';
+      document.getElementById('sortSetor').innerHTML = '';
+      document.getElementById('sortCentroCusto').innerHTML = '';
+      document.getElementById('sortHorasDia').innerHTML = '';
+      document.getElementById('sortCustoHora').innerHTML = '';
+
+      if (column === 'codigo') {
+        document.getElementById('sortCodigo').innerHTML = direction === 'asc' ? '▲' : '▼';
+      } else if (column === 'maquina') {
+        document.getElementById('sortMaquina').innerHTML = direction === 'asc' ? '▲' : '▼';
+      } else if (column === 'setor') {
+        document.getElementById('sortSetor').innerHTML = direction === 'asc' ? '▲' : '▼';
+      } else if (column === 'centroCusto') {
+        document.getElementById('sortCentroCusto').innerHTML = direction === 'asc' ? '▲' : '▼';
+      } else if (column === 'horasdia') {
+        document.getElementById('sortHorasDia').innerHTML = direction === 'asc' ? '▲' : '▼';
+      } else if (column === 'custoHora') {
+        document.getElementById('sortCustoHora').innerHTML = direction === 'asc' ? '▲' : '▼';
+      }
+    }
+
+    window.editResource = function(resourceId) {
+      const recurso = recursos.find(r => r.id === resourceId);
+      if (recurso) {
+        document.getElementById('editingId').value = resourceId;
+        document.getElementById('codigo').value = recurso.codigo;
+        document.getElementById('maquina').value = recurso.maquina;
+        document.getElementById('setor').value = recurso.setor;
+        document.getElementById('centroCusto').value = recurso.centroCustoId || '';
+        document.getElementById('horasdia').value = recurso.horasdia;
+        document.getElementById('custoHora').value = recurso.custoHora;
+        document.getElementById('operacoes').value = recurso.operacoes || []; // Set selected operations
+
+        document.getElementById('submitButton').textContent = 'Atualizar Recurso';
+      }
+    };
+
+    window.cancelEdit = function() {
+      document.getElementById('resourceForm').reset();
+      document.getElementById('editingId').value = '';
+      document.getElementById('submitButton').textContent = 'Cadastrar Recurso';
+    };
+
+    window.deleteResource = async function(resourceId) {
+      if (confirm('Tem certeza que deseja excluir este recurso?')) {
+        try {
+          await deleteDoc(doc(db, "recursos", resourceId));
+          showNotification('Recurso excluído com sucesso!', 'success');
+          await loadResources();
+        } catch (error) {
+          console.error("Erro ao excluir recurso:", error);
+          showNotification("Erro ao excluir recurso. Por favor, tente novamente.", "error");
+        }
+      }
+    };
+
+    document.getElementById('resourceForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      
+      const formData = {
+        codigo: document.getElementById('codigo').value,
+        maquina: document.getElementById('maquina').value,
+        setor: document.getElementById('setor').value,
+        centroCustoId: document.getElementById('centroCusto').value,
+        horasdia: parseFloat(document.getElementById('horasdia').value),
+        custoHora: parseFloat(document.getElementById('custoHora').value),
+        dataCadastro: new Date(),
+        operacoes: Array.from(document.getElementById('operacoes').selectedOptions).map(option => option.value) // Get selected operation IDs
+      };
+
+      const editingId = document.getElementById('editingId').value;
+
+      try {
+        if (editingId) {
+          await updateDoc(doc(db, "recursos", editingId), formData);
+          showNotification("Recurso atualizado com sucesso!", "success");
+        } else {
+          await addDoc(collection(db, "recursos"), formData);
+          showNotification("Recurso cadastrado com sucesso!", "success");
+        }
+
+        await loadResources();
+        event.target.reset();
+        cancelEdit();
+      } catch (error) {
+        console.error("Erro ao salvar recurso:", error);
+        showNotification("Erro ao salvar recurso: " + error.message, "error");
+      }
+    });
+
+    function filterTable() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const filteredResources = recursos.filter(recurso => {
+        const centroCusto = centrosCusto.find(cc => cc.id === recurso.centroCustoId);
+        return recurso.codigo.toLowerCase().includes(searchTerm) || 
+               recurso.maquina.toLowerCase().includes(searchTerm) || 
+               recurso.setor.toLowerCase().includes(searchTerm) ||
+               (centroCusto && centroCusto.descricao.toLowerCase().includes(searchTerm));
+      });
+      displayFilteredResources(filteredResources);
+    }
+
+    function displayFilteredResources(filteredResources) {
+      const tableBody = document.getElementById('resourcesTableBody');
+      tableBody.innerHTML = '';
+
+      filteredResources.forEach(recurso => {
+        const centroCusto = centrosCusto.find(cc => cc.id === recurso.centroCustoId);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${recurso.codigo || ''}</td>
+          <td>${recurso.maquina || ''}</td>
+          <td>${recurso.setor || ''}</td>
+          <td>${centroCusto ? centroCusto.codigo + ' - ' + centroCusto.descricao : '-'}</td>
+          <td>${recurso.horasdia || ''}</td>
+          <td>${recurso.custoHora ? recurso.custoHora.toFixed(2) : '0.00'}</td>
+          <td>${recurso.dataCadastro ? new Date(recurso.dataCadastro.seconds * 1000).toLocaleDateString() : ''}</td>
+          <td class="action-buttons">
+            <button class="edit-btn" onclick="editResource('${recurso.id}')">Editar</button>
+            <button class="delete-btn" onclick="deleteResource('${recurso.id}')">Excluir</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function showNotification(message, type = 'success', duration = 3000) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = '';
+      notification.classList.add('notification', `notification-${type}`);
+      notification.style.display = 'block';
+      
+      let icon = '';
+      if (type === 'success') {
+        icon = '✓';
+      } else if (type === 'error') {
+        icon = '✗';
+      }
+      
+      notification.innerHTML = `<span class="notification-icon">${icon}</span> ${message}`;
+      
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.style.display = 'none', 300);
+      }, duration);
+    }
+  </script>
+</body>
+</html>

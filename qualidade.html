@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão da Qualidade</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #f59e0b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+
+    .header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .filters {
+      background-color: var(--secondary-color);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .filter-group {
+      flex: 1;
+    }
+
+    .filter-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .filter-group input,
+    .filter-group select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .quality-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .metric-card {
+      background-color: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .metric-title {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    .quality-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .quality-table th,
+    .quality-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .quality-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .quality-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .status-pendente {
+      background-color: var(--warning-color);
+      color: white;
+    }
+
+    .status-aprovado {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .status-rejeitado {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .status-em-inspecao {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 800px;
+      border-radius: 8px;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .close-button {
+      position: absolute;
+      right: 15px;
+      top: 15px;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    .close-button:hover {
+      color: var(--danger-color);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .chart-container {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    #qualityChart {
+      width: 100%;
+      height: 300px;
+    }
+
+    .inspection-checklist {
+      margin: 15px 0;
+      padding: 15px;
+      background-color: var(--secondary-color);
+      border-radius: 8px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: white;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .photo-upload {
+      margin: 15px 0;
+      padding: 15px;
+      border: 2px dashed var(--border-color);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .photo-preview {
+      max-width: 200px;
+      max-height: 200px;
+      margin: 10px auto;
+      border-radius: 4px;
+    }
+
+    .criteria-group {
+      margin: 15px 0;
+      padding: 15px;
+      background-color: var(--secondary-color);
+      border-radius: 8px;
+    }
+
+    .criteria-item {
+      background-color: white;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .criteria-result {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    .result-indicator {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+    }
+
+    .result-conforme {
+      background-color: var(--success-color);
+    }
+
+    .result-nao-conforme {
+      background-color: var(--danger-color);
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Gestão da Qualidade</h1>
+      <div>
+        <button class="btn btn-primary" onclick="exportToExcel()">Exportar Relatório</button>
+        <button class="btn btn-primary" onclick="window.location.href='index.html'">Voltar</button>
+      </div>
+    </div>
+
+    <div class="quality-metrics">
+      <div class="metric-card">
+        <div class="metric-title">Taxa de Aprovação</div>
+        <div class="metric-value" id="approvalRate">-</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Tempo Médio de Inspeção</div>
+        <div class="metric-value" id="avgInspectionTime">-</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Itens Pendentes</div>
+        <div class="metric-value" id="pendingItems">-</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Rejeições no Mês</div>
+        <div class="metric-value" id="monthlyRejections">-</div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h2>Histórico de Qualidade</h2>
+      <canvas id="qualityChart"></canvas>
+    </div>
+
+    <div class="filters">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Período</label>
+          <input type="date" id="startDate">
+        </div>
+        <div class="filter-group">
+          <label>Até</label>
+          <input type="date" id="endDate">
+        </div>
+        <div class="filter-group">
+          <label>Status</label>
+          <select id="statusFilter">
+            <option value="">Todos</option>
+            <option value="PENDENTE">Pendente</option>
+            <option value="EM_INSPECAO">Em Inspeção</option>
+            <option value="APROVADO">Aprovado</option>
+            <option value="REJEITADO">Rejeitado</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Fornecedor</label>
+          <select id="supplierFilter">
+            <option value="">Todos</option>
+          </select>
+        </div>
+      </div>
+      <div style="text-align: right;">
+        <button class="btn btn-primary" onclick="applyFilters()">Aplicar Filtros</button>
+        <button class="btn btn-primary" onclick="resetFilters()">Limpar Filtros</button>
+      </div>
+    </div>
+
+    <table class="quality-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Nota Fiscal</th>
+          <th>Pedido</th>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Quantidade</th>
+          <th>Unidade</th>
+          <th>Lote</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="qualityTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Modal de Inspeção -->
+  <div id="inspectionModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal()">&times;</span>
+      <h2>Inspeção de Qualidade</h2>
+      <form id="inspectionForm" onsubmit="submitInspection(event)">
+        <div class="form-group">
+          <label>Nota Fiscal</label>
+          <input type="text" id="itemNF" readonly>
+        </div>
+        <div class="form-group">
+          <label>Pedido de Compra</label>
+          <input type="text" id="itemPedido" readonly>
+        </div>
+        <div class="form-group">
+          <label>Item</label>
+          <input type="text" id="itemDescription" readonly>
+        </div>
+        <div class="form-group">
+          <label>Quantidade</label>
+          <input type="text" id="itemQuantity" readonly>
+        </div>
+        <div class="form-group">
+          <label>Lote Fornecedor</label>
+          <input type="text" id="itemLoteFornecedor" readonly>
+        </div>
+        <div class="form-group">
+          <label>Lote Interno</label>
+          <input type="text" id="itemLoteInterno" readonly>
+        </div>
+
+        <div class="inspection-checklist">
+          <h3>Checklist de Inspeção</h3>
+          <div class="checklist-item">
+            <input type="checkbox" id="check_visual" required>
+            <label for="check_visual">Inspeção Visual OK</label>
+          </div>
+          <div class="checklist-item">
+            <input type="checkbox" id="check_dimensoes" required>
+            <label for="check_dimensoes">Dimensões Conformes</label>
+          </div>
+          <div class="checklist-item">
+            <input type="checkbox" id="check_embalagem" required>
+            <label for="check_embalagem">Embalagem Conforme</label>
+          </div>
+          <div class="checklist-item">
+            <input type="checkbox" id="check_documentacao" required>
+            <label for="check_documentacao">Documentação Completa</label>
+          </div>
+        </div>
+
+        <div class="criteria-group">
+          <h3>Critérios de Inspeção</h3>
+          <div id="criteriaContainer"></div>
+        </div>
+
+        <div class="photo-upload">
+          <h3>Fotos da Inspeção</h3>
+          <input type="file" id="inspectionPhotos" multiple accept="image/*" onchange="previewPhotos(event)">
+          <div id="photoPreview"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Observações</label>
+          <textarea id="observations" rows="3" required></textarea>
+        </div>
+
+        <input type="hidden" id="itemId">
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="submit" class="btn btn-success" data-action="approve">Aprovar</button>
+          <button type="submit" class="btn btn-danger" data-action="reject">Rejeitar</button>
+          <button type="button" class="btn btn-primary" onclick="closeModal()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Devolução -->
+  <div id="returnModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeReturnModal()">&times;</span>
+      <h2>Devolução de Material</h2>
+      <form id="returnForm" onsubmit="submitReturn(event)">
+        <div class="form-group">
+          <label>Nota Fiscal de Entrada</label>
+          <input type="text" id="returnNF" readonly>
+        </div>
+        <div class="form-group">
+          <label>Item</label>
+          <input type="text" id="returnDescription" readonly>
+        </div>
+        <div class="form-group">
+          <label>Quantidade a Devolver</label>
+          <input type="number" id="returnQuantity" readonly>
+        </div>
+        <div class="form-group">
+          <label>Motivo da Devolução</label>
+          <select id="returnReason" required>
+            <option value="">Selecione...</option>
+            <option value="FORA_ESPECIFICACAO">Fora de Especificação</option>
+            <option value="DEFEITO">Defeito</option>
+            <option value="DIVERGENCIA">Divergência</option>
+            <option value="OUTRO">Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Documento de Devolução</label>
+          <input type="text" id="returnDocument" placeholder="Número da NF de devolução" required>
+        </div>
+        <div class="form-group">
+          <label>Solicitar Reposição?</label>
+          <select id="requestReplacement" required>
+            <option value="true">Sim</option>
+            <option value="false">Não</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Observações</label>
+          <textarea id="returnObservations" rows="3" required></textarea>
+        </div>
+        <input type="hidden" id="returnItemId">
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="submit" class="btn btn-success">Confirmar Devolução</button>
+          <button type="button" class="btn btn-primary" onclick="closeReturnModal()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      query, 
+      where, 
+      getDocs, 
+      doc, 
+      updateDoc, 
+      addDoc, 
+      Timestamp,
+      orderBy,
+      limit 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let qualityItems = [];
+    let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    let qualityChart = null;
+    let photoFiles = [];
+
+    window.onload = async function() {
+      if (!currentUser) {
+        window.location.href = 'login.html';
+        return;
+      }
+      await loadData();
+      setupChart();
+      updateMetrics();
+      setupDateFilters();
+    };
+
+    function setupDateFilters() {
+      const today = new Date();
+      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      document.getElementById('startDate').value = firstDayOfMonth.toISOString().split('T')[0];
+      document.getElementById('endDate').value = today.toISOString().split('T')[0];
+    }
+
+    async function loadData() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "estoqueQualidade"));
+        qualityItems = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        displayItems();
+        updateSupplierFilter();
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados: " + error.message);
+      }
+    }
+
+    function updateSupplierFilter() {
+      const suppliers = [...new Set(qualityItems.map(item => item.fornecedorId))];
+      const select = document.getElementById('supplierFilter');
+      select.innerHTML = '<option value="">Todos</option>';
+      suppliers.forEach(async (supplierId) => {
+        try {
+          const supplierDoc = await doc(db, "fornecedores", supplierId).get();
+          if (supplierDoc.exists()) {
+            const supplier = supplierDoc.data();
+            select.innerHTML += `<option value="${supplierId}">${supplier.razaoSocial}</option>`;
+          }
+        } catch (error) {
+          console.error("Erro ao carregar fornecedor:", error);
+        }
+      });
+    }
+
+    function displayItems() {
+      const tableBody = document.getElementById('qualityTableBody');
+      tableBody.innerHTML = '';
+
+      qualityItems.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.dataEntrada.toDate().toLocaleString()}</td>
+          <td>${item.notaFiscal?.numero || '-'}</td>
+          <td>${item.pedidoId || '-'}</td>
+          <td>${item.codigo}</td>
+          <td>${item.descricao}</td>
+          <td>${item.quantidade}</td>
+          <td>${item.unidade}</td>
+          <td>${item.loteInterno || '-'}</td>
+          <td><span class="status-badge status-${item.status.toLowerCase()}">${item.status}</span></td>
+          <td>
+            ${item.status === 'PENDENTE' ? 
+              `<button class="btn btn-primary" onclick="startInspection('${item.id}')">Iniciar Inspeção</button>` :
+              item.status === 'EM_INSPECAO' ?
+              `<button class="btn btn-primary" onclick="continueInspection('${item.id}')">Continuar Inspeção</button>` :
+              item.status === 'REJEITADO' ?
+              `<button class="btn btn-danger" onclick="openReturnModal('${item.id}')">Devolver</button>` :
+              `<button class="btn btn-primary" onclick="viewDetails('${item.id}')">Detalhes</button>`
+            }
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    window.startInspection = async function(itemId) {
+      const item = qualityItems.find(i => i.id === itemId);
+      if (!item) return;
+
+      // Atualizar status para EM_INSPECAO
+      await updateDoc(doc(db, "estoqueQualidade", itemId), {
+        status: 'EM_INSPECAO',
+        inicioInspecao: Timestamp.now(),
+        inspetorResponsavel: currentUser.nome
+      });
+
+      openInspectionModal(itemId);
+    };
+
+    window.continueInspection = function(itemId) {
+      openInspectionModal(itemId);
+    };
+
+    async function openInspectionModal(itemId) {
+      const item = qualityItems.find(i => i.id === itemId);
+      if (!item) return;
+
+      document.getElementById('itemId').value = itemId;
+      document.getElementById('itemNF').value = item.notaFiscal?.numero || '-';
+      document.getElementById('itemPedido').value = item.pedidoId || '-';
+      document.getElementById('itemDescription').value = `${item.codigo} - ${item.descricao}`;
+      document.getElementById('itemQuantity').value = `${item.quantidade} ${item.unidade}`;
+      document.getElementById('itemLoteFornecedor').value = item.loteFornecedor || '-';
+      document.getElementById('itemLoteInterno').value = item.loteInterno || '-';
+
+      // Carregar critérios de inspeção
+      await loadInspectionCriteria(item.produtoId);
+
+      document.getElementById('inspectionModal').style.display = 'block';
+    }
+
+    async function loadInspectionCriteria(produtoId) {
+      try {
+        const criteriaSnapshot = await getDocs(
+          query(collection(db, "criteriosInspecao"), where("produtoId", "==", produtoId))
+        );
+        
+        const container = document.getElementById('criteriaContainer');
+        container.innerHTML = '';
+
+        criteriaSnapshot.docs.forEach((doc, index) => {
+          const criteria = doc.data();
+          container.innerHTML += `
+            <div class="criteria-item">
+              <div class="form-group">
+                <label>${criteria.descricao}</label>
+                <div class="criteria-result">
+                  <input type="number" 
+                         class="criteria-input" 
+                         data-criteria-id="${doc.id}"
+                         data-min="${criteria.minimo}"
+                         data-max="${criteria.maximo}"
+                         step="0.001"
+                         required>
+                  <span>${criteria.unidade}</span>
+                  <div class="result-indicator" id="indicator-${doc.id}"></div>
+                </div>
+                <small>Especificação: ${criteria.minimo} - ${criteria.maximo} ${criteria.unidade}</small>
+              </div>
+            </div>
+          `;
+        });
+
+        // Adicionar eventos para atualização dos indicadores
+        document.querySelectorAll('.criteria-input').forEach(input => {
+          input.addEventListener('input', function() {
+            updateCriteriaIndicator(this);
+          });
+        });
+      } catch (error) {
+        console.error("Erro ao carregar critérios:", error);
+        alert("Erro ao carregar critérios de inspeção.");
+      }
+    }
+
+    function updateCriteriaIndicator(input) {
+      const value = parseFloat(input.value);
+      const min = parseFloat(input.dataset.min);
+      const max = parseFloat(input.dataset.max);
+      const indicator = document.getElementById(`indicator-${input.dataset.criteriaId}`);
+      
+      if (value >= min && value <= max) {
+        indicator.className = 'result-indicator result-conforme';
+      } else {
+        indicator.className = 'result-indicator result-nao-conforme';
+      }
+    }
+
+    window.previewPhotos = function(event) {
+      const preview = document.getElementById('photoPreview');
+      preview.innerHTML = '';
+      photoFiles = Array.from(event.target.files);
+
+      photoFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'photo-preview';
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    };
+
+    window.submitInspection = async function(event) {
+      event.preventDefault();
+      const action = event.submitter.dataset.action;
+      const itemId = document.getElementById('itemId').value;
+      const observations = document.getElementById('observations').value;
+      const item = qualityItems.find(i => i.id === itemId);
+
+      try {
+        const criteriaResults = Array.from(document.querySelectorAll('.criteria-input')).map(input => ({
+          criteriaId: input.dataset.criteriaId,
+          value: parseFloat(input.value),
+          min: parseFloat(input.dataset.min),
+          max: parseFloat(input.dataset.max),
+          conformity: parseFloat(input.value) >= parseFloat(input.dataset.min) && 
+                     parseFloat(input.value) <= parseFloat(input.dataset.max)
+        }));
+
+        const checklistResults = {
+          visualOk: document.getElementById('check_visual').checked,
+          dimensoesOk: document.getElementById('check_dimensoes').checked,
+          embalagemOk: document.getElementById('check_embalagem').checked,
+          documentacaoOk: document.getElementById('check_documentacao').checked
+        };
+
+        const allCriteriaConform = criteriaResults.every(result => result.conformity);
+        const allChecklistOk = Object.values(checklistResults).every(result => result);
+
+        if (action === 'approve' && (!allCriteriaConform || !allChecklistOk)) {
+          if (!confirm('Existem critérios não conformes. Deseja aprovar mesmo assim?')) {
+            return;
+          }
+        }
+
+        const status = action === 'approve' ? 'APROVADO' : 'REJEITADO';
+        
+        // Atualizar item no estoque de qualidade
+        await updateDoc(doc(db, "estoqueQualidade", itemId), {
+          status,
+          dataInspecao: Timestamp.now(),
+          inspecionadoPor: currentUser.nome,
+          resultadosInspecao: criteriaResults,
+          checklistInspecao: checklistResults,
+          observacoes: observations,
+          fotosInspecao: photoFiles.length > 0
+        });
+
+        // Registrar inspeção
+        await addDoc(collection(db, "inspecoesQualidade"), {
+          estoqueQualidadeId: itemId,
+          produtoId: item.produtoId,
+          status,
+          dataInspecao: Timestamp.now(),
+          inspecionadoPor: currentUser.nome,
+          resultadosInspecao: criteriaResults,
+          checklistInspecao: checklistResults,
+          observacoes: observations,
+          fotosInspecao: photoFiles.length > 0
+        });
+
+        if (status === 'APROVADO') {
+          // Mover para estoque principal
+          await addDoc(collection(db, "estoque"), {
+            produtoId: item.produtoId,
+            codigo: item.codigo,
+            descricao: item.descricao,
+            quantidade: item.quantidade,
+            unidade: item.unidade,
+            loteInterno: item.loteInterno,
+            loteFornecedor: item.loteFornecedor,
+            dataEntrada: Timestamp.now(),
+            origem: `Inspeção Qualidade - NF ${item.notaFiscal?.numero || 'N/A'}`
+          });
+        }
+
+        await loadData();
+        updateMetrics();
+        closeModal();
+        alert(`Item ${status.toLowerCase()} com sucesso!`);
+      } catch (error) {
+        console.error("Erro ao processar inspe��o:", error);
+        alert("Erro ao processar inspeção: " + error.message);
+      }
+    };
+
+    window.openReturnModal = function(itemId) {
+      const item = qualityItems.find(i => i.id === itemId);
+      if (!item) return;
+
+      document.getElementById('returnItemId').value = itemId;
+      document.getElementById('returnNF').value = item.notaFiscal?.numero || '-';
+      document.getElementById('returnDescription').value = `${item.codigo} - ${item.descricao}`;
+      document.getElementById('returnQuantity').value = item.quantidade;
+
+      document.getElementById('returnModal').style.display = 'block';
+    };
+
+    window.submitReturn = async function(event) {
+      event.preventDefault();
+
+      const itemId = document.getElementById('returnItemId').value;
+      const reason = document.getElementById('returnReason').value;
+      const document = document.getElementById('returnDocument').value;
+      const requestReplacement = document.getElementById('requestReplacement').value === 'true';
+      const observations = document.getElementById('returnObservations').value;
+      const item = qualityItems.find(i => i.id === itemId);
+
+      try {
+        // Atualizar status do item
+        await updateDoc(doc(db, "estoqueQualidade", itemId), {
+          status: 'DEVOLVIDO',
+          dataDevolucao: Timestamp.now(),
+          motivoDevolucao: reason,
+          documentoDevolucao: document,
+          observacoesDevolucao: observations
+        });
+
+        // Registrar devolução
+        await addDoc(collection(db, "devolucoes"), {
+          estoqueQualidadeId: itemId,
+          produtoId: item.produtoId,
+          notaFiscalOrigem: item.notaFiscal,
+          quantidade: item.quantidade,
+          motivo: reason,
+          documentoDevolucao: document,
+          solicitadaReposicao: requestReplacement,
+          dataDevolucao: Timestamp.now(),
+          registradoPor: currentUser.nome,
+          observacoes: observations
+        });
+
+        if (requestReplacement) {
+          // Criar novo pedido de compra para reposição
+          const pedidoReposicao = {
+            tipo: 'REPOSICAO',
+            pedidoOriginalId: item.pedidoId,
+            fornecedorId: item.fornecedorId,
+            status: 'PENDENTE',
+            dataCriacao: Timestamp.now(),
+            criadoPor: currentUser.nome,
+            itens: [{
+              produtoId: item.produtoId,
+              codigo: item.codigo,
+              descricao: item.descricao,
+              quantidade: item.quantidade,
+              unidade: item.unidade
+            }],
+            observacoes: `Reposição referente à devolução - NF Original: ${item.notaFiscal?.numero}`
+          };
+
+          await addDoc(collection(db, "pedidosCompra"), pedidoReposicao);
+        }
+
+        await loadData();
+        updateMetrics();
+        closeReturnModal();
+        alert("Devolução registrada com sucesso!" + (requestReplacement ? " Pedido de reposição criado." : ""));
+      } catch (error) {
+        console.error("Erro ao registrar devolução:", error);
+        alert("Erro ao registrar devolução: " + error.message);
+      }
+    };
+
+    window.closeModal = function() {
+      document.getElementById('inspectionModal').style.display = 'none';
+      document.getElementById('inspectionForm').reset();
+      document.getElementById('photoPreview').innerHTML = '';
+      photoFiles = [];
+    };
+
+    window.closeReturnModal = function() {
+      document.getElementById('returnModal').style.display = 'none';
+      document.getElementById('returnForm').reset();
+    };
+
+    window.applyFilters = function() {
+      const startDate = new Date(document.getElementById('startDate').value);
+      const endDate = new Date(document.getElementById('endDate').value);
+      endDate.setHours(23, 59, 59);
+      const status = document.getElementById('statusFilter').value;
+      const fornecedorId = document.getElementById('supplierFilter').value;
+
+      const filtered = qualityItems.filter(item => {
+        const itemDate = item.dataEntrada.toDate();
+        const matchesDate = itemDate >= startDate && itemDate <= endDate;
+        const matchesStatus = !status || item.status === status;
+        const matchesFornecedor = !fornecedorId || item.fornecedorId === fornecedorId;
+        return matchesDate && matchesStatus && matchesFornecedor;
+      });
+
+      qualityItems = filtered;
+      displayItems();
+      updateMetrics();
+    };
+
+    window.resetFilters = function() {
+      setupDateFilters();
+      document.getElementById('statusFilter').value = '';
+      document.getElementById('supplierFilter').value = '';
+      loadData();
+    };
+
+    function updateMetrics() {
+      const total = qualityItems.length;
+      const approved = qualityItems.filter(item => item.status === 'APROVADO').length;
+      const pending = qualityItems.filter(item => item.status === 'PENDENTE').length;
+      const rejected = qualityItems.filter(item => item.status === 'REJEITADO').length;
+
+      document.getElementById('approvalRate').textContent = 
+        total > 0 ? `${((approved / total) * 100).toFixed(1)}%` : '0%';
+      
+      document.getElementById('pendingItems').textContent = pending;
+      document.getElementById('monthlyRejections').textContent = rejected;
+
+      const inspectedItems = qualityItems.filter(item => item.dataInspecao);
+      const avgTime = inspectedItems.reduce((acc, item) => {
+        const inspectionTime = item.dataInspecao.toDate() - item.dataEntrada.toDate();
+        return acc + inspectionTime;
+      }, 0) / (inspectedItems.length || 1);
+
+      document.getElementById('avgInspectionTime').textContent = 
+        `${Math.round(avgTime / (1000 * 60 * 60))}h`;
+
+      updateChart();
+    }
+
+    function setupChart() {
+      const ctx = document.getElementById('qualityChart').getContext('2d');
+      qualityChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Aprovados',
+              data: [],
+              borderColor: '#107e3e',
+              backgroundColor: '#107e3e20',
+              fill: true
+            },
+            {
+              label: 'Rejeitados',
+              data: [],
+              borderColor: '#bb0000',
+              backgroundColor: '#bb000020',
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            title: {
+              display: true,
+              text: 'Histórico de Inspeções'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    function updateChart() {
+      const monthlyData = getMonthlyData();
+      qualityChart.data.labels = monthlyData.labels;
+      qualityChart.data.datasets[0].data = monthlyData.approved;
+      qualityChart.data.datasets[1].data = monthlyData.rejected;
+      qualityChart.update();
+    }
+
+    function getMonthlyData() {
+      const months = [];
+      const approved = [];
+      const rejected = [];
+      
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthYear = date.toLocaleString('pt-BR', { month: 'short', year: '2-digit' });
+        months.push(monthYear);
+
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+        const monthItems = qualityItems.filter(item => {
+          const itemDate = item.dataInspecao?.toDate() || new Date();
+          return itemDate >= monthStart && itemDate <= monthEnd;
+        });
+
+        approved.push(monthItems.filter(item => item.status === 'APROVADO').length);
+        rejected.push(monthItems.filter(item => item.status === 'REJEITADO').length);
+      }
+
+      return { labels: months, approved, rejected };
+    }
+
+    window.exportToExcel = function() {
+      try {
+        const data = qualityItems.map(item => ({
+          'Data': item.dataEntrada.toDate().toLocaleString(),
+          'Nota Fiscal': item.notaFiscal?.numero || '-',
+          'Pedido': item.pedidoId || '-',
+          'Código': item.codigo,
+          'Descrição': item.descricao,
+          'Quantidade': item.quantidade,
+          'Unidade': item.unidade,
+          'Lote': item.loteInterno || '-',
+          'Status': item.status,
+          'Observações': item.observacoes || '-'
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Controle de Qualidade");
+        XLSX.writeFile(wb, `Qualidade_${new Date().toISOString().split('T')[0]}.xlsx`);
+      } catch (error) {
+        console.error("Erro ao exportar:", error);
+        alert("Erro ao exportar dados: " + error.message);
+      }
+    };
+  </script>
+</body>
+</html>

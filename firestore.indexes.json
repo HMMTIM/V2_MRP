@@ -1,0 +1,23 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "notificacoes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "destinatarios", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "dataEnvio", "order": "ASCENDING" },
+        { "fieldPath": "__name__", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "faturas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "notificacaoEnviada", "order": "ASCENDING" },
+        { "fieldPath": "dataEmissao", "order": "ASCENDING" },
+        { "fieldPath": "__name__", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+} 

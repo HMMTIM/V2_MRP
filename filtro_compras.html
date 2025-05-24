@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Pedidos de Compra</title>
+    <style>
+        :root {
+            --primary-color: #003366;
+            --secondary-color: #f0f3f6;
+            --border-color: #ccc;
+            --header-bg: #003366;
+            --row-hover: #f5f5f5;
+            --status-approved: #28a745;
+            --status-pending: #ffc107;
+            --status-canceled: #dc3545;
+        }
+
+        body {
+            font-family: 'SAP 72', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .filters {
+            background: var(--secondary-color);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .filter-group {
+            flex: 1;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .primary-button {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .secondary-button {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .export-button {
+            background-color: #28a745;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .report-table th {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: normal;
+        }
+
+        .report-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .report-table tr:hover {
+            background-color: var(--row-hover);
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-aprovado {
+            background-color: var(--status-approved);
+            color: white;
+        }
+
+        .status-pendente {
+            background-color: var(--status-pending);
+            color: black;
+        }
+
+        .status-cancelado {
+            background-color: var(--status-canceled);
+            color: white;
+        }
+
+        .details-row {
+            display: none;
+            background-color: #f9f9f9;
+        }
+
+        .details-content {
+            padding: 15px;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .details-table th {
+            background-color: #e9ecef;
+            color: #333;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .details-table td {
+            padding: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .summary-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--secondary-color);
+            border-radius: 4px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-item {
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .summary-item h3 {
+            margin: 0 0 5px 0;
+            color: var(--primary-color);
+            font-size: 14px;
+        }
+
+        .summary-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .pagination button {
+            padding: 5px 10px;
+            background: white;
+            border: 1px solid var(--border-color);
+            color: #333;
+        }
+
+        .pagination button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        @media print {
+            .filters, .button-group, .pagination {
+                display: none;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+
+            .report-table th {
+                background-color: #f0f0f0 !important;
+                color: black !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Relatório de Pedidos de Compra</h1>
+            <div class="button-group">
+                <button class="export-button" onclick="exportToExcel()">Exportar Excel</button>
+                <button class="primary-button" onclick="printReport()">Imprimir</button>
+                <button class="secondary-button" onclick="window.location.href='index.html'">Voltar</button>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Período</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="filter-group">
+                    <label>Até</label>
+                    <input type="date" id="endDate">
+                </div>
+                <div class="filter-group">
+                    <label>Fornecedor</label>
+                    <select id="supplierFilter">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select id="statusFilter">
+                        <option value="">Todos</option>
+                        <option value="ABERTO">Aberto</option>
+                        <option value="APROVADO">Aprovado</option>
+                        <option value="RECEBIDO">Recebido</option>
+                        <option value="CANCELADO">Cancelado</option>
+                    </select>
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="primary-button" onclick="applyFilters()">Aplicar Filtros</button>
+                <button class="secondary-button" onclick="resetFilters()">Limpar Filtros</button>
+            </div>
+        </div>
+
+        <div class="summary-section">
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h3>Total de Pedidos</h3>
+                    <div class="summary-value" id="totalPedidos">0</div>
+                </div>
+                <div class="summary-item">
+                    <h3>Valor Total</h3>
+                    <div class="summary-value" id="valorTotal">R$ 0,00</div>
+                </div>
+                <div class="summary-item">
+                    <h3>Pedidos em Aberto</h3>
+                    <div class="summary-value" id="pedidosAbertos">0</div>
+                </div>
+                <div class="summary-item">
+                    <h3>Média por Pedido</h3>
+                    <div class="summary-value" id="mediaPedido">R$ 0,00</div>
+                </div>
+            </div>
+        </div>
+
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Data</th>
+                    <th>Fornecedor</th>
+                    <th>Itens</th>
+                    <th>Valor Total</th>
+                    <th>Condição Pgto.</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="reportTableBody">
+            </tbody>
+        </table>
+
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { 
+            collection, 
+            getDocs,
+            query,
+            where,
+            Timestamp 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let pedidosCompra = [];
+        let fornecedores = [];
+        let filteredPedidos = [];
+        const itemsPerPage = 20;
+        let currentPage = 1;
+
+        window.onload = async function() {
+            await loadInitialData();
+            setupDateFilters();
+            updateSupplierFilter();
+            applyFilters();
+        };
+
+        async function loadInitialData() {
+            try {
+                const [pedidosSnap, fornecedoresSnap] = await Promise.all([
+                    getDocs(collection(db, "pedidosCompra")),
+                    getDocs(collection(db, "fornecedores"))
+                ]);
+
+                pedidosCompra = pedidosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                fornecedores = fornecedoresSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+                alert("Erro ao carregar dados do relatório.");
+            }
+        }
+
+        function setupDateFilters() {
+            const today = new Date();
+            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+            document.getElementById('startDate').value = firstDayOfMonth.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        }
+
+        function updateSupplierFilter() {
+            const select = document.getElementById('supplierFilter');
+            select.innerHTML = '<option value="">Todos</option>';
+            
+            fornecedores.forEach(fornecedor => {
+                select.innerHTML += `
+                    <option value="${fornecedor.id}">
+                        ${fornecedor.codigo} - ${fornecedor.razaoSocial}
+                    </option>`;
+            });
+        }
+
+        window.applyFilters = function() {
+            const startDate = new Date(document.getElementById('startDate').value);
+            const endDate = new Date(document.getElementById('endDate').value);
+            endDate.setHours(23, 59, 59);
+            
+            const fornecedorId = document.getElementById('supplierFilter').value;
+            const status = document.getElementById('statusFilter').value;
+
+            filteredPedidos = pedidosCompra.filter(pedido => {
+                const pedidoDate = new Date(pedido.dataCriacao.seconds * 1000);
+                const matchesDate = pedidoDate >= startDate && pedidoDate <= endDate;
+                const matchesFornecedor = !fornecedorId || pedido.fornecedorId === fornecedorId;
+                const matchesStatus = !status || pedido.status === status;
+
+                return matchesDate && matchesFornecedor && matchesStatus;
+            });
+
+            currentPage = 1;
+            updateReport();
+            updateSummary();
+            updatePagination();
+        };
+
+        window.resetFilters = function() {
+            setupDateFilters();
+            document.getElementById('supplierFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            applyFilters();
+        };
+
+        function updateReport() {
+            const tableBody = document.getElementById('reportTableBody');
+            tableBody.innerHTML = '';
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageItems = filteredPedidos.slice(startIndex, endIndex);
+
+            pageItems.forEach(pedido => {
+                const fornecedor = fornecedores.find(f => f.id === pedido.fornecedorId);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${pedido.numero}</td>
+                    <td>${new Date(pedido.dataCriacao.seconds * 1000).toLocaleDateString()}</td>
+                    <td>${fornecedor ? fornecedor.razaoSocial : 'N/A'}</td>
+                    <td>${pedido.itens.length}</td>
+                    <td>R$ ${pedido.valorTotal.toFixed(2)}</td>
+                    <td>${pedido.condicaoPagamento || 'N/A'}</td>
+                    <td><span class="status-badge status-${pedido.status.toLowerCase()}">${pedido.status}</span></td>
+                    <td>
+                        <button class="primary-button" onclick="toggleDetails('${pedido.id}')">Detalhes</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+
+                // Linha de detalhes
+                const detailsRow = document.createElement('tr');
+                detailsRow.className = 'details-row';
+                detailsRow.id = `details-${pedido.id}`;
+                detailsRow.innerHTML = `
+                    <td colspan="8">
+                        <div class="details-content">
+                            <h3>Itens do Pedido</h3>
+                            <table class="details-table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Descrição</th>
+                                        <th>Quantidade</th>
+                                        <th>Unidade</th>
+                                        <th>Valor Unit.</th>
+                                        <th>Valor Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${pedido.itens.map(item => `
+                                        <tr>
+                                            <td>${item.codigo}</td>
+                                            <td>${item.descricao}</td>
+                                            <td>${item.quantidade}</td>
+                                            <td>${item.unidade}</td>
+                                            <td>R$ ${item.valorUnitario.toFixed(2)}</td>
+                                            <td>R$ ${item.valorTotal.toFixed(2)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(detailsRow);
+            });
+        }
+
+        function updateSummary() {
+            const totalPedidos = filteredPedidos.length;
+            const valorTotal = filteredPedidos.reduce((sum, pedido) => sum + pedido.valorTotal, 0);
+            const pedidosAbertos = filteredPedidos.filter(p => p.status === 'ABERTO').length;
+            const mediaPedido = totalPedidos > 0 ? valorTotal / totalPedidos : 0;
+
+            document.getElementById('totalPedidos').textContent = totalPedidos;
+            document.getElementById('valorTotal').textContent = `R$ ${valorTotal.toFixed(2)}`;
+            document.getElementById('pedidosAbertos').textContent = pedidosAbertos;
+            document.getElementById('mediaPedido').textContent = `R$ ${mediaPedido.toFixed(2)}`;
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredPedidos.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            if (totalPages > 1) {
+                // Botão Anterior
+                pagination.innerHTML += `
+                    <button onclick="changePage(${currentPage - 1})" 
+                            ${currentPage === 1 ? 'disabled' : ''}>
+                        Anterior
+                    </button>
+                `;
+
+                // Páginas
+                for (let i = 1; i <= totalPages; i++) {
+                    pagination.innerHTML += `
+                        <button onclick="changePage(${i})" 
+                                class="${currentPage === i ? 'active' : ''}">
+                            ${i}
+                        </button>
+                    `;
+                }
+
+                // Botão Próximo
+                pagination.innerHTML += `
+                    <button onclick="changePage(${currentPage + 1})" 
+                            ${currentPage === totalPages ? 'disabled' : ''}>
+                        Próximo
+                    </button>
+                `;
+            }
+        }
+
+        window.changePage = function(page) {
+            if (page >= 1 && page <= Math.ceil(filteredPedidos.length / itemsPerPage)) {
+                currentPage = page;
+                updateReport();
+                updatePagination();
+            }
+        };
+
+        window.toggleDetails = function(pedidoId) {
+            const detailsRow = document.getElementById(`details-${pedidoId}`);
+            const isVisible = detailsRow.style.display === 'table-row';
+            detailsRow.style.display = isVisible ? 'none' : 'table-row';
+        };
+
+        window.exportToExcel = function() {
+            let csv = 'Número;Data;Fornecedor;Itens;Valor Total;Condição Pgto.;Status\n';
+            
+            filteredPedidos.forEach(pedido => {
+                const fornecedor = fornecedores.find(f => f.id === pedido.fornecedorId);
+                const data = new Date(pedido.dataCriacao.seconds * 1000).toLocaleDateString();
+                
+                csv += `${pedido.numero};${data};${fornecedor ? fornecedor.razaoSocial : 'N/A'};` +
+                       `${pedido.itens.length};${pedido.valorTotal.toFixed(2)};` +
+                       `${pedido.condicaoPagamento || 'N/A'};${pedido.status}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'relatorio_pedidos_compra.csv';
+            link.click();
+        };
+
+        window.printReport = function() {
+            window.print();
+        };
+    </script>
+</body>
+</html>

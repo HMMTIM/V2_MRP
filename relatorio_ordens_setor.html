@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Ordens por Setor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 15mm;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .no-print {
+        display: none;
+      }
+      .order-page {
+        page-break-after: always;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+      }
+      .order-page:last-child {
+        page-break-after: avoid;
+      }
+      .order-warning {
+        display: none;
+      }
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      font-size: 12px;
+    }
+
+    .container {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .filters {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+
+    .filter-group {
+      flex: 1;
+    }
+
+    .filter-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .filter-group select,
+    .filter-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .order-page {
+      background-color: white;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #000;
+      padding-bottom: 5px;
+    }
+
+    .logo {
+      width: 100px;
+      height: auto;
+    }
+
+    .order-title {
+      text-align: center;
+      flex-grow: 1;
+      margin: 0 10px;
+    }
+
+    .order-title h1 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .order-title h2 {
+      margin: 3px 0;
+      font-size: 16px;
+    }
+
+    .order-info {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      padding: 5px;
+    }
+
+    .info-item {
+      border: 1px solid #ddd;
+      padding: 3px;
+    }
+
+    .info-item strong {
+      display: block;
+      font-size: 8px;
+      color: #666;
+    }
+
+    .info-item span {
+      display: block;
+      font-size: 12px;
+      margin-top: 1px;
+    }
+
+    .section {
+      margin-bottom: 15px;
+    }
+
+    .section-title {
+      background-color: #f0f0f0;
+      padding: 3px 8px;
+      font-weight: bold;
+      border: 1px solid #ccc;
+      font-size: 11px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 3px;
+      font-size: 11px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 4px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+    }
+
+    .signatures {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .signature {
+      flex: 1;
+      margin: 0 10px;
+      text-align: center;
+    }
+
+    .signature-line {
+      width: 100%;
+      border-top: 1px solid #000;
+      margin-top: 20px;
+      padding-top: 3px;
+      font-size: 10px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 1px 4px;
+      border-radius: 2px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .status-pendente { background-color: #ffc107; color: #000; }
+    .status-em-producao { background-color: #17a2b8; color: #fff; }
+    .status-concluida { background-color: #28a745; color: #fff; }
+    .status-cancelada { background-color: #dc3545; color: #fff; }
+
+    .order-warning {
+      margin: 10px 0;
+    }
+
+    .order-warning strong {
+      color: var(--warning-color);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+
+      <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+    </div>
+    <div class="no-print">
+      <div class="filters">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Buscar por Número/Produto:</label>
+            <input type="text" id="searchInput" placeholder="Digite o número da OP ou código do produto" oninput="generateReport()">
+          </div>
+          <div class="filter-group">
+            <label>Status:</label>
+            <select id="statusFilter" onchange="generateReport()">
+              <option value="">Todos</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Em Produção">Em Produção</option>
+              <option value="Concluída">Concluída</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+          </div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Período Inicial:</label>
+            <input type="date" id="startDate" onchange="generateReport()">
+          </div>
+          <div class="filter-group">
+            <label>Período Final:</label>
+            <input type="date" id="endDate" onchange="generateReport()">
+          </div>
+          <div class="filter-group">
+            <label>Setor:</label>
+            <select id="setorFilter" onchange="generateReport()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="action-buttons">
+        <button class="btn-primary" onclick="generateReport()">Gerar Relatório</button>
+        <button class="btn-primary" onclick="window.print()">Imprimir</button>
+      </div>
+    </div>
+
+    <div id="reportContent"></div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      getDocs,
+      query,
+      where,
+      Timestamp 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let produtos = [];
+    let estruturas = [];
+    let recursos = [];
+    let operacoes = [];
+    let ordensProducao = [];
+    let estoques = [];
+
+    window.onload = async function() {
+      await loadData();
+      updateSetorFilter();
+    };
+
+    async function loadData() {
+      try {
+        const [produtosSnap, estruturasSnap, recursosSnap, operacoesSnap, ordensSnap, estoquesSnap] = await Promise.all([
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "estruturas")),
+          getDocs(collection(db, "recursos")),
+          getDocs(collection(db, "operacoes")),
+          getDocs(collection(db, "ordensProducao")),
+          getDocs(collection(db, "estoques"))
+        ]);
+
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estruturas = estruturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        recursos = recursosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        operacoes = operacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        ordensProducao = ordensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados. Por favor, recarregue a página.");
+      }
+    }
+
+    function updateSetorFilter() {
+      const select = document.getElementById('setorFilter');
+      const setores = new Set();
+
+      recursos.forEach(recurso => {
+        if (recurso.setor) {
+          setores.add(recurso.setor);
+        }
+      });
+
+      Array.from(setores).sort().forEach(setor => {
+        select.innerHTML += `<option value="${setor}">${setor}</option>`;
+      });
+    }
+
+    function createOrderPage(order) {
+      const produto = produtos.find(p => p.id === order.produtoId);
+      const estrutura = estruturas.find(e => e.produtoPaiId === order.produtoId);
+
+      const orderPage = document.createElement('div');
+      orderPage.className = 'order-page';
+
+      orderPage.innerHTML = `
+        <div class="order-header">
+          <img src="https://www.naliteck.com.br/img/logo.png" alt="Logo" class="logo">
+          <div class="order-title">
+            <h1>ORDEM DE PRODUÇÃO</h1>
+            <h2>${order.numero}</h2>
+          </div>
+          <div style="text-align: right; font-size: 10px;">
+            <strong>Data: </strong>${new Date().toLocaleDateString()}<br>
+            <strong>Hora: </strong>${new Date().toLocaleTimeString()}
+          </div>
+        </div>
+
+        <div class="order-info">
+          <div class="info-item">
+            <strong>Produto:</strong>
+            <span>${produto.codigo} - ${produto.descricao}</span>
+          </div>
+          <div class="info-item">
+            <strong>Tipo:</strong>
+            <span>${produto.tipo}</span>
+          </div>
+          <div class="info-item">
+            <strong>Quantidade:</strong>
+            <span>${order.quantidade} ${produto.unidade}</span>
+          </div>
+          <div class="info-item">
+            <strong>Status:</strong>
+            <span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span>
+          </div>
+          <div class="info-item">
+            <strong>Data de Criação:</strong>
+            <span>${new Date(order.dataCriacao.seconds * 1000).toLocaleDateString()}</span>
+          </div>
+          <div class="info-item">
+            <strong>Data de Entrega:</strong>
+            <span>${new Date(order.dataEntrega.seconds * 1000).toLocaleDateString()}</span>
+          </div>
+          <div class="info-item">
+            <strong>Prioridade:</strong>
+            <span>${order.prioridade || 'Normal'}</span>
+          </div>
+        </div>
+
+        ${order.materiaisNecessarios ? `
+          <div class="section">
+            <div class="section-title">LISTA DE MATERIAIS</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Descrição</th>
+                  <th>Tipo</th>
+                  <th>Quantidade</th>
+                  <th>Unidade</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${order.materiaisNecessarios.map(material => {
+                  const materialProduto = produtos.find(p => p.id === material.produtoId);
+                  return `
+                    <tr>
+                      <td>${materialProduto.codigo}</td>
+                      <td>${materialProduto.descricao}</td>
+                      <td>${materialProduto.tipo}</td>
+                      <td>${material.quantidade}</td>
+                      <td>${materialProduto.unidade}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+
+        ${estrutura && estrutura.operacoes ? `
+          <div class="section">
+            <div class="section-title">ROTEIRO DE PRODUÇÃO</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Seq.</th>
+                  <th>Operação</th>
+                  <th>Recurso</th>
+                  <th>Tempo (min)</th>
+                  <th>Descrição</th>
+                  <th>Status</th>
+                  <th>Data Início</th>
+                  <th>Data Fim</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${estrutura.operacoes.sort((a, b) => a.sequencia - b.sequencia).map(op => {
+                  const operacao = operacoes.find(o => o.id === op.operacaoId);
+                  const recurso = recursos.find(r => r.id === op.recursoId);
+                  return `
+                    <tr>
+                      <td>${op.sequencia}</td>
+                      <td>${operacao.operacao}</td>
+                      <td>${recurso.codigo} - ${recurso.maquina}</td>
+                      <td>${op.tempo}</td>
+                      <td>${op.descricao || ''}</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+
+        <div class="signatures">
+          <div class="signature">
+            <div class="signature-line">Produção</div>
+          </div>
+          <div class="signature">
+            <div class="signature-line">Qualidade</div>
+          </div>
+          <div class="signature">
+            <div class="signature-line">Supervisor</div>
+          </div>
+        </div>
+      `;
+
+      return orderPage;
+    }
+
+    window.generateReport = async function() {
+      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const status = document.getElementById('statusFilter').value;
+      const setorFilter = document.getElementById('setorFilter').value;
+
+      let filteredOrders = [...ordensProducao];
+
+      if (searchInput) {
+        filteredOrders = filteredOrders.filter(op => {
+          const produto = produtos.find(p => p.id === op.produtoId);
+          return op.numero.toLowerCase().includes(searchInput) || 
+                 produto.codigo.toLowerCase().includes(searchInput) ||
+                 produto.descricao.toLowerCase().includes(searchInput);
+        });
+      }
+
+      if (startDate) {
+        filteredOrders = filteredOrders.filter(op => 
+          op.dataEntrega.seconds >= new Date(startDate).getTime() / 1000
+        );
+      }
+
+      if (endDate) {
+        filteredOrders = filteredOrders.filter(op => 
+          op.dataEntrega.seconds <= new Date(endDate + 'T23:59:59').getTime() / 1000
+        );
+      }
+
+      if (status) {
+        filteredOrders = filteredOrders.filter(op => op.status === status);
+      }
+
+      const reportContent = document.getElementById('reportContent');
+      reportContent.innerHTML = '';
+
+      filteredOrders.forEach(ordem => {
+        const estrutura = estruturas.find(e => e.produtoPaiId === ordem.produtoId);
+        if (estrutura && estrutura.operacoes && estrutura.operacoes.length > 0) {
+          const operacoes = [...estrutura.operacoes].sort((a, b) => a.sequencia - b.sequencia);
+          const primeiraOperacao = operacoes[0];
+          const recurso = recursos.find(r => r.id === primeiraOperacao.recursoId);
+
+          if (recurso && (!setorFilter || recurso.setor === setorFilter)) {
+            if (verificarSaldoMateriais(ordem)) {
+              reportContent.appendChild(createOrderPage(ordem));
+            } else {
+              const warningDiv = document.createElement('div');
+              warningDiv.className = 'order-warning';
+              warningDiv.innerHTML = `
+                <div style="padding: 10px; margin: 10px 0; background-color: #fff3e5; border: 1px solid #e9730c; border-radius: 4px;">
+                  <strong>OP ${ordem.numero} - Bloqueada para Impressão</strong><br>
+                  Saldo insuficiente de matéria prima
+                </div>
+              `;
+              reportContent.appendChild(warningDiv);
+            }
+          }
+        }
+      });
+    };
+
+    // Função para verificar saldo dos materiais tipo MP
+    function verificarSaldoMateriais(ordem) {
+      if (!ordem.materiaisNecessarios) return true;
+
+      // Verifica apenas materiais do tipo MP
+      for (const material of ordem.materiaisNecessarios) {
+        const produto = produtos.find(p => p.id === material.produtoId);
+
+        // Se não for MP, ignora a verificação
+        if (!produto || produto.tipo !== 'MP') continue;
+
+        const estoque = estoques.find(e => e.produtoId === material.produtoId);
+        const saldoDisponivel = estoque ? estoque.saldo : 0;
+        const quantidadeNecessaria = material.quantidade;
+
+        if (saldoDisponivel < quantidadeNecessaria) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    // Função para verificar se pode imprimir a OP
+    function verificarBloqueioImpressao(ordem) {
+      const temSaldoSuficiente = verificarSaldoMateriais(ordem);
+
+      if (!temSaldoSuficiente) {
+        alert('Não é possível imprimir esta OP pois não há saldo suficiente de matéria prima.');
+        return false;
+      }
+
+      return true;
+    }
+
+    // Modificar a função de impressão para usar a verificação
+    async function imprimirOP(ordem) {
+      if (!verificarBloqueioImpressao(ordem)) {
+        return;
+      }
+
+      // ... resto do código de impressão existente ...
+    }
+  </script>
+</body>
+</html>

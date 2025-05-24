@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dados da Empresa - Sistema MRP</title>
+    <style>
+        :root {
+            --primary-color: #0854a0;
+            --primary-hover: #0a4d8c;
+            --secondary-color: #f0f3f6;
+            --border-color: #d4d4d4;
+            --text-color: #333;
+            --text-secondary: #666;
+            --success-color: #107e3e;
+            --success-hover: #0d6e36;
+            --danger-color: #bb0000;
+            --danger-hover: #a30000;
+            --warning-color: #e9730c;
+            --header-bg: #354a5f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f7f7;
+            color: var(--text-color);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            margin: -20px -20px 20px -20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .form-container {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        .form-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: var(--success-hover);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .required::after {
+            content: "*";
+            color: var(--danger-color);
+            margin-left: 4px;
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .col-md-6 {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .logo-preview, .center-image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            display: none;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        .code-input {
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Dados da Empresa</h1>
+            <div>
+                <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+            </div>
+        </div>
+
+        <form id="companyForm">
+            <!-- Dados Fiscais -->
+            <div class="form-container">
+                <h2 class="form-title">Dados Fiscais</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="cnpj" class="required">CNPJ</label>
+                        <input type="text" id="cnpj" placeholder="00.000.000/0000-00" required>
+                        <div class="info-text">Cadastro Nacional da Pessoa Jurídica</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="razaoSocial" class="required">Razão Social</label>
+                        <input type="text" id="razaoSocial" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="nomeFantasia" class="required">Nome Fantasia</label>
+                        <input type="text" id="nomeFantasia" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="inscricaoEstadual">Inscrição Estadual</label>
+                        <input type="text" id="inscricaoEstadual">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="inscricaoMunicipal">Inscrição Municipal</label>
+                        <input type="text" id="inscricaoMunicipal">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="regimeTributario" class="required">Regime Tributário</label>
+                        <select id="regimeTributario" required>
+                            <option value="">Selecione...</option>
+                            <option value="Simples Nacional">Simples Nacional</option>
+                            <option value="Lucro Presumido">Lucro Presumido</option>
+                            <option value="Lucro Real">Lucro Real</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="cnae">CNAE Principal</label>
+                        <input type="text" id="cnae" placeholder="Ex.: 6201-5/00">
+                        <div class="info-text">Classificação Nacional de Atividades Econômicas</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="classificacaoFiscal">Classificação Fiscal</label>
+                        <input type="text" id="classificacaoFiscal">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados de Contato -->
+            <div class="form-container">
+                <h2 class="form-title">Dados de Contato</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="telefone" class="required">Telefone</label>
+                        <input type="text" id="telefone" placeholder="(00) 0000-0000" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="email" class="required">Email</label>
+                        <input type="email" id="email" placeholder="empresa@exemplo.com" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="site">Site</label>
+                        <input type="url" id="site" placeholder="https://www.exemplo.com">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="contatoEmergencia">Contato de Emergência</label>
+                        <input type="text" id="contatoEmergencia" placeholder="(00) 0000-0000">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="endereco" class="required">Endereço Completo</label>
+                        <textarea id="endereco" rows="3" required></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados Financeiros -->
+            <div class="form-container">
+                <h2 class="form-title">Dados Financeiros</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="banco">Banco</label>
+                        <input type="text" id="banco">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="agencia">Agência</label>
+                        <input type="text" id="agencia">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="conta">Conta</label>
+                        <input type="text" id="conta">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="tipoConta">Tipo de Conta</label>
+                        <select id="tipoConta">
+                            <option value="">Selecione...</option>
+                            <option value="Corrente">Corrente</option>
+                            <option value="Poupança">Poupança</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="chavePix">Chave PIX</label>
+                        <input type="text" id="chavePix" placeholder="Ex.: CNPJ, Email ou Telefone">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados dos Setores -->
+            <div class="form-container">
+                <h2 class="form-title">Dados dos Setores</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="responsavelCompras">Responsável Compras</label>
+                        <input type="text" id="responsavelCompras">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="contatoCompras">Contato Compras</label>
+                        <input type="text" id="contatoCompras" placeholder="(00) 0000-0000">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="emailCompras">Email Compras</label>
+                        <input type="email" id="emailCompras" placeholder="compras@exemplo.com">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="horarioCompras">Horário Atendimento Compras</label>
+                        <input type="text" id="horarioCompras" placeholder="Ex.: 08:00-17:00">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="responsavelVendas">Responsável Vendas</label>
+                        <input type="text" id="responsavelVendas">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="contatoVendas">Contato Vendas</label>
+                        <input type="text" id="contatoVendas" placeholder="(00) 0000-0000">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="emailVendas">Email Vendas</label>
+                        <input type="email" id="emailVendas" placeholder="vendas@exemplo.com">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="horarioVendas">Horário Atendimento Vendas</label>
+                        <input type="text" id="horarioVendas" placeholder="Ex.: 08:00-17:00">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="responsavelQualidade">Responsável Qualidade</label>
+                        <input type="text" id="responsavelQualidade">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="contatoQualidade">Contato Qualidade</label>
+                        <input type="text" id="contatoQualidade" placeholder="(00) 0000-0000">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="emailQualidade">Email Qualidade</label>
+                        <input type="email" id="emailQualidade" placeholder="qualidade@exemplo.com">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="horarioQualidade">Horário Atendimento Qualidade</label>
+                        <input type="text" id="horarioQualidade" placeholder="Ex.: 08:00-17:00">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="responsavelEngenharia">Responsável Engenharia</label>
+                        <input type="text" id="responsavelEngenharia">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="contatoEngenharia">Contato Engenharia</label>
+                        <input type="text" id="contatoEngenharia" placeholder="(00) 0000-0000">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="emailEngenharia">Email Engenharia</label>
+                        <input type="email" id="emailEngenharia" placeholder="engenharia@exemplo.com">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="horarioEngenharia">Horário Atendimento Engenharia</label>
+                        <input type="text" id="horarioEngenharia" placeholder="Ex.: 08:00-17:00">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="responsavelFinanceiro">Responsável Financeiro</label>
+                        <input type="text" id="responsavelFinanceiro">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="contatoFinanceiro">Contato Financeiro</label>
+                        <input type="text" id="contatoFinanceiro" placeholder="(00) 0000-0000">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="emailFinanceiro">Email Financeiro</label>
+                        <input type="email" id="emailFinanceiro" placeholder="financeiro@exemplo.com">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="horarioFinanceiro">Horário Atendimento Financeiro</label>
+                        <input type="text" id="horarioFinanceiro" placeholder="Ex.: 08:00-17:00">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações de Módulos -->
+            <div class="form-container">
+                <h2 class="form-title">Configurações de Módulos</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label>Módulos Ativos</label>
+                        <div class="module-toggle">
+                            <input type="checkbox" id="modulo_armazem" name="modulos" value="armazem">
+                            <label for="modulo_armazem">Gestão de Armazéns</label>
+                        </div>
+                        <div class="module-toggle">
+                            <input type="checkbox" id="modulo_homologacao" name="modulos" value="homologacao">
+                            <label for="modulo_homologacao">Homologação de Fornecedores</label>
+                        </div>
+                        <div class="module-toggle">
+                            <input type="checkbox" id="modulo_qualidade" name="modulos" value="qualidade">
+                            <label for="modulo_qualidade">Controle de Qualidade</label>
+                        </div>
+                        <div class="module-toggle">
+                            <input type="checkbox" id="modulo_custos" name="modulos" value="custos">
+                            <label for="modulo_custos">Centro de Custos</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações do Firebase -->
+            <div class="form-container">
+                <h2 class="form-title">Configurações do Firebase</h2>
+                <div class="row">
+                    <div class="col-md-12">
+                        <label for="firebaseConfig">Configuração do Firebase (JSON)</label>
+                        <textarea id="firebaseConfig" rows="8" class="code-input" placeholder='{
+  
+}'></textarea>
+                        <div class="info-text">Cole aqui as configurações do Firebase específicas desta empresa</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload de Imagens -->
+            <div class="form-container">
+                <h2 class="form-title">Imagens da Empresa</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="logoInput">Logotipo da Empresa</label>
+                        <input type="file" id="logoInput" accept="image/*">
+                        <img id="logoPreview" class="logo-preview" alt="Prévia do Logotipo">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="centerImageInput">Imagem Central do Dashboard</label>
+                        <input type="file" id="centerImageInput" accept="image/*">
+                        <img id="centerImagePreview" class="center-image-preview" alt="Prévia da Imagem Central">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão de Salvar -->
+            <div class="form-actions">
+                <button type="submit" class="btn-success">Salvar Dados</button>
+            </div>
+        </form>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        window.onload = async function() {
+            const userSession = localStorage.getItem('currentUser');
+            if (!userSession) {
+                window.location.href = 'login.html';
+                return;
+            }
+            await loadCompanyData();
+        };
+
+        document.getElementById('logoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('logoPreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('centerImageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('centerImagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        async function loadCompanyData() {
+            try {
+                const docRef = doc(db, "empresa", "config");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const formFields = {
+                        'cnpj': data.cnpj,
+                        'razaoSocial': data.razaoSocial,
+                        'nomeFantasia': data.nomeFantasia,
+                        'inscricaoEstadual': data.inscricaoEstadual,
+                        'inscricaoMunicipal': data.inscricaoMunicipal,
+                        'regimeTributario': data.regimeTributario,
+                        'cnae': data.cnae,
+                        'classificacaoFiscal': data.classificacaoFiscal,
+                        'telefone': data.telefone,
+                        'email': data.email,
+                        'site': data.site,
+                        'contatoEmergencia': data.contatoEmergencia,
+                        'endereco': data.endereco,
+                        'banco': data.banco,
+                        'agencia': data.agencia,
+                        'conta': data.conta
+                    };
+                    // Safely set form field values
+                    Object.entries(formFields).forEach(([id, value]) => {
+                        const element = document.getElementById(id);
+                        if (element) {
+                            element.value = value || '';
+                        } else {
+                            console.warn(`Element with id '${id}' not found.`);
+                        }
+                    });
+                } else {
+                    console.warn("No document found in Firestore.");
+                }
+            } catch (error) {
+                console.error("Erro ao carregar dados da empresa:", error);
+            }
+        }
+        window.onload = loadCompanyData;
+        window.onload = loadCompanyData;
+
+        document.getElementById('companyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const companyData = {
+                cnpj: document.getElementById('cnpj').value,
+                razaoSocial: document.getElementById('razaoSocial').value,
+                nomeFantasia: document.getElementById('nomeFantasia').value,
+                inscricaoEstadual: document.getElementById('inscricaoEstadual').value,
+                inscricaoMunicipal: document.getElementById('inscricaoMunicipal').value,
+                regimeTributario: document.getElementById('regimeTributario').value,
+                cnae: document.getElementById('cnae').value,
+                classificacaoFiscal: document.getElementById('classificacaoFiscal').value,
+                telefone: document.getElementById('telefone').value,
+                email: document.getElementById('email').value,
+                site: document.getElementById('site').value,
+                contatoEmergencia: document.getElementById('contatoEmergencia').value,
+                endereco: document.getElementById('endereco').value,
+                banco: document.getElementById('banco').value,
+                agencia: document.getElementById('agencia').value,
+                conta: document.getElementById('conta').value,
+                tipoConta: document.getElementById('tipoConta').value,
+                chavePix: document.getElementById('chavePix').value,
+                setores: {
+                    compras: {
+                        responsavel: document.getElementById('responsavelCompras').value,
+                        contato: document.getElementById('contatoCompras').value,
+                        email: document.getElementById('emailCompras').value,
+                        horario: document.getElementById('horarioCompras').value
+                    },
+                    vendas: {
+                        responsavel: document.getElementById('responsavelVendas').value,
+                        contato: document.getElementById('contatoVendas').value,
+                        email: document.getElementById('emailVendas').value,
+                        horario: document.getElementById('horarioVendas').value
+                    },
+                    qualidade: {
+                        responsavel: document.getElementById('responsavelQualidade').value,
+                        contato: document.getElementById('contatoQualidade').value,
+                        email: document.getElementById('emailQualidade').value,
+                        horario: document.getElementById('horarioQualidade').value
+                    },
+                    engenharia: {
+                        responsavel: document.getElementById('responsavelEngenharia').value,
+                        contato: document.getElementById('contatoEngenharia').value,
+                        email: document.getElementById('emailEngenharia').value,
+                        horario: document.getElementById('horarioEngenharia').value
+                    },
+                    financeiro: {
+                        responsavel: document.getElementById('responsavelFinanceiro').value,
+                        contato: document.getElementById('contatoFinanceiro').value,
+                        email: document.getElementById('emailFinanceiro').value,
+                        horario: document.getElementById('horarioFinanceiro').value
+                    }
+                },
+                firebaseConfig: document.getElementById('firebaseConfig')?.value ? 
+                    JSON.parse(document.getElementById('firebaseConfig').value) : {},
+                dataFundacao: document.getElementById('dataFundacao')?.value || '',
+                numeroFuncionarios: document.getElementById('numeroFuncionarios')?.value || '',
+                setorAtividade: document.getElementById('setorAtividade')?.value || ''
+            };
+
+            const logoFile = document.getElementById('logoInput').files[0];
+            const centerImageFile = document.getElementById('centerImageInput').files[0];
+
+            if (logoFile) {
+                const logoReader = new FileReader();
+                logoReader.onload = async function(e) {
+                    companyData.logoUrl = e.target.result;
+                    companyData.lastLogoUpdate = Date.now(); // Timestamp para forçar atualização
+                    if (centerImageFile) {
+                        const centerImageReader = new FileReader();
+                        centerImageReader.onload = async function(e) {
+                            companyData.centerImageUrl = e.target.result;
+                            companyData.lastCenterImageUpdate = Date.now(); // Timestamp para forçar atualização
+                            await saveCompanyData(companyData);
+                        };
+                        centerImageReader.readAsDataURL(centerImageFile);
+                    } else {
+                        await saveCompanyData(companyData);
+                    }
+                };
+                logoReader.readAsDataURL(logoFile);
+            } else if (centerImageFile) {
+                const centerImageReader = new FileReader();
+                centerImageReader.onload = async function(e) {
+                    companyData.centerImageUrl = e.target.result;
+                    await saveCompanyData(companyData);
+                };
+                centerImageReader.readAsDataURL(centerImageFile);
+            } else {
+                await saveCompanyData(companyData);
+            }
+        });
+
+        async function saveCompanyData(data) {
+            try {
+                // Adicionar configurações de módulos
+                data.modulos = {
+                    armazem: document.getElementById('modulo_armazem').checked,
+                    homologacao: document.getElementById('modulo_homologacao').checked,
+                    qualidade: document.getElementById('modulo_qualidade').checked,
+                    custos: document.getElementById('modulo_custos').checked
+                };
+
+                await setDoc(doc(db, "empresa", "config"), data, { merge: true });
+                alert("Dados da empresa salvos com sucesso!");
+            } catch (error) {
+                console.error("Erro ao salvar dados da empresa:", error);
+                alert("Erro ao salvar dados da empresa.");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema MRP - Página Inicial</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --accent-color: #ffc107;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--secondary-color);
+            font-weight: 500;
+            padding: 12px 20px;
+            border-radius: 0;
+            border: none;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background-color: transparent;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .nav-tabs .nav-link:hover:not(.active) {
+            border-bottom: 3px solid #dee2e6;
+        }
+
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 20px;
+            border: none;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            font-weight: bold;
+            background-color: rgba(13, 110, 253, 0.1);
+            border-bottom: none;
+            padding: 15px 20px;
+        }
+
+        .btn-module {
+            text-align: left;
+            padding: 12px 15px;
+            margin: 5px 0;
+            border-radius: 6px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-module i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .dashboard-card {
+            height: 100%;
+        }
+
+        .quick-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            margin: 0 10px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+        }
+
+        .sidebar {
+            background-color: white;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .user-profile {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .tab-content {
+            padding: 25px 0;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.7rem;
+        }
+
+        .module-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegação superior -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-industry me-2"></i>MRP System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-search me-1"></i> Pesquisar</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell me-1"></i> Notificações
+                            <span class="badge bg-danger rounded-pill notification-badge">5</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">Ordem de produção #1234 concluída</a></li>
+                            <li><a class="dropdown-item" href="#">Estoque baixo: Item A-123</a></li>
+                            <li><a class="dropdown-item" href="#">Novo pedido de compra aprovado</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Ver todas notificações</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i> Admin
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Perfil</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configurações</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="login.html"><i class="fas fa-sign-out-alt me-2"></i>Sair</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar / Menu lateral -->
+            <div class="col-lg-2 d-none d-lg-block sidebar">
+                <div class="user-profile">
+                    <img src="https://via.placeholder.com/64" alt="User Avatar" class="user-avatar">
+                    <h6 class="mb-1">Administrador</h6>
+                    <p class="text-muted small mb-0"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a4c5c0c9cdcae4c1c9d4d6c1d7c58ac7cbc9">[email protected]</a></p>
+                </div>
+
+                <div class="p-3">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary mb-3" onclick="window.location.href='index.html'">
+                            <i class="fas fa-plus-circle me-2"></i> HOME
+                        </button>
+                    </div>
+
+                    <div class="list-group mt-4">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar-alt me-2"></i> Calendário
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-chart-line me-2"></i> Relatórios
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-cog me-2"></i> Configurações
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-question-circle me-2"></i> Ajuda
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conteúdo principal -->
+            <div class="col-lg-10 col-md-12 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Painel de Controle</h2>
+                    <div>
+                        <button class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-filter me-1"></i> Filtros
+                        </button>
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-download me-1"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cards de estatísticas rápidas -->
+                <div class="row mb-4">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h6 class="card-title">Itens em Estoque</h6>
+                                <h2 class="mb-0">1,254</h2>
+                                <p class="small mb-0">98% disponibilidade</p>
+                                <a href="estoques.html" class="btn btn-sm btn-light mt-2">Ver detalhes</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card bg-warning text-dark">
+                            <div class="card-body">
+                                <h6 class="card-title">Pedidos de Compra</h6>
+                                <h2 class="mb-0">18</h2>
+                                <p class="small mb-0">5 aguardando aprovação</p>
+                                <a href="pedidos_compra.html" class="btn btn-sm btn-light mt-2">Ver detalhes</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h6 class="card-title">Pedidos de Venda</h6>
+                                <h2 class="mb-0">25</h2>
+                                <p class="small mb-0">12 em produção</p>
+                                <a href="pedidos_venda.html" class="btn btn-sm btn-light mt-2">Ver detalhes</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body">
+                                <h6 class="card-title">Alertas</h6>
+                                <h2 class="mb-0">7</h2>
+                                <p class="small mb-0">3 críticos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Abas para diferentes áreas do MRP -->
+                <ul class="nav nav-tabs" id="mrpTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="production-tab" data-bs-toggle="tab" data-bs-target="#production" type="button" role="tab">
+                            <i class="fas fa-industry me-2"></i>Produção
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory" type="button" role="tab">
+                            <i class="fas fa-boxes me-2"></i>Estoque
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="purchasing-tab" data-bs-toggle="tab" data-bs-target="#purchasing" type="button" role="tab">
+                            <i class="fas fa-shopping-cart me-2"></i>Compras
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="planning-tab" data-bs-toggle="tab" data-bs-target="#planning" type="button" role="tab">
+                            <i class="fas fa-chart-line me-2"></i>Planejamento
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab">
+                            <i class="fas fa-file-alt me-2"></i>Relatórios
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab">
+                            <i class="fas fa-cog me-2"></i>Configurações
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Conteúdo das abas -->
+                <div class="tab-content" id="mrpTabsContent">
+                    <!-- Dashboard -->
+                    <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        Pedidos de Compra Pendentes
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Número</th>
+                                                        <th>Fornecedor</th>
+                                                        <th>Status</th>
+                                                        <th>Ações</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="pendingOrdersTableBody">
+                                                    <!-- Dados serão preenchidos dinamicamente pelo JavaScript -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer text-end">
+                                        <a href="pedidos_compra.html" class="btn btn-sm btn-primary">Ver todos</a>
+                                    </div>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-header">
+                                        Ordens de Produção Recentes
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>N° OP</th>
+                                                        <th>Produto</th>
+                                                        <th>Quantidade</th>
+                                                        <th>Prioridade</th>
+                                                        <th>Data Criação</th>
+                                                        <th>Data Entrega</th>
+                                                        <th>Status</th>
+                                                        <th>Ações</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="recentOrdersBody">
+                                                    <!-- As ordens serão inseridas aqui via JavaScript -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer text-end">
+                                        <a href="ordens_producao.html" class="btn btn-sm btn-primary">Ver todas</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        Alertas de Estoque
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <span class="badge bg-danger me-2">Crítico</span>
+                                                    <span>Matéria-prima A123</span>
+                                                </div>
+                                                <span class="badge bg-secondary rounded-pill">2 dias</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <span class="badge bg-warning text-dark me-2">Baixo</span>
+                                                    <span>Componente B456</span>
+                                                </div>
+                                                <span class="badge bg-secondary rounded-pill">5 dias</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <span class="badge bg-warning text-dark me-2">Baixo</span>
+                                                    <span>Embalagem C789</span>
+                                                </div>
+                                                <span class="badge bg-secondary rounded-pill">7 dias</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="card-footer text-end">
+                                        <a href="estoques.html" class="btn btn-sm btn-primary">Ver todos</a>
+                                    </div>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-header">
+                                        Fluxo de Caixa
+                                    </div>
+                                    <div class="card-body">
+                                        <div style="height: 200px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                                            <p class="text-muted">Resumo do fluxo de caixa</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer text-end">
+                                        <a href="fluxo_caixa.html" class="btn btn-sm btn-primary">Ver completo</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Produção -->
+                    <div class="tab-pane fade" id="production" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-clipboard-list module-icon"></i>
+                                        <h5 class="card-title">Ordens de Produção</h5>
+                                        <p class="card-text">Gerenciar ordens de produção e acompanhar status</p>
+                                        <a href="ordens_producao.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-tasks module-icon"></i>
+                                        <h5 class="card-title">Estrutura de Produtos</h5>
+                                        <p class="card-text">Definir e gerenciar estruturas e processos</p>
+                                        <a href="cadastro_estrutura.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-cogs module-icon"></i>
+                                        <h5 class="card-title">Recursos</h5>
+                                        <p class="card-text">Gerenciar máquinas, equipamentos e centros de trabalho</p>
+                                        <a href="cadastro_recursos.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-calendar-alt module-icon"></i>
+                                        <h5 class="card-title">Operações</h5>
+                                        <p class="card-text">Cadastrar e gerenciar operações</p>
+                                        <a href="cadastro_operacoes.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-calendar-alt module-icon"></i>
+                                        <h5 class="card-title">Operações</h5>
+                                        <p class="card-text">Simular Fluxo da Ordem</p>
+                                        <a href="simula_ordem.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-calendar-alt module-icon"></i>
+                                        <h5 class="card-title">Operações</h5>
+                                        <p class="card-text">Simular Ordem de Produção</p>
+                                        <a href="op_preview.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estoque -->
+                    <div class="tab-pane fade" id="inventory" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-boxes module-icon"></i>
+                                        <h5 class="card-title">Itens em Estoque</h5>
+                                        <p class="card-text">Consultar e gerenciar itens em estoque</p>
+                                        <a href="estoques.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-clipboard-list module-icon"></i>
+                                        <h5 class="card-title">Cadastro de Materiais</h5>
+                                        <p class="card-text">Cadastrar e gerenciar materiais no sistema</p>
+                                        <a href="cadastro_produto.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-exchange-alt module-icon"></i>
+                                        <h5 class="card-title">Movimentações</h5>
+                                        <p class="card-text">Registrar entradas, saídas e transferências</p>
+                                        <a href="estoques.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-warehouse module-icon"></i>
+                                        <h5 class="card-title">Fornecedores</h5>
+                                        <p class="card-text">Gerenciar cadastro de fornecedores</p>
+                                        <a href="cadastro_fornecedores.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Compras -->
+                    <div class="tab-pane fade" id="purchasing" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-file-alt module-icon"></i>
+                                        <h5 class="card-title">Solicitações de Compra</h5>
+                                        <p class="card-text">Gerenciar solicitações de compra</p>
+                                        <a href="solicitacao_compras.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-handshake module-icon"></i>
+                                        <h5 class="card-title">Cotações</h5>
+                                        <p class="card-text">Gerenciar cotações com fornecedores</p>
+                                        <a href="cotacoes.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-shopping-cart module-icon"></i>
+                                        <h5 class="card-title">Pedidos de Compra</h5>
+                                        <p class="card-text">Gerenciar pedidos de compra</p>
+                                        <a href="pedidos_compra.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-users module-icon"></i>
+                                        <h5 class="card-title">Clientes</h5>
+                                        <p class="card-text">Gerenciar cadastro de clientes</p>
+                                        <a href="cadastro_clientes.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financeiro -->
+                    <div class="tab-pane fade" id="planning" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-money-bill-wave module-icon"></i>
+                                        <h5 class="card-title">Contas a Pagar</h5>
+                                        <p class="card-text">Gerenciar contas a pagar</p>
+                                        <a href="contas_pagar.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-hand-holding-usd module-icon"></i>
+                                        <h5 class="card-title">Contas a Receber</h5>
+                                        <p class="card-text">Gerenciar contas a receber</p>
+                                        <a href="contas_receber.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-chart-line module-icon"></i>
+                                        <h5 class="card-title">Fluxo de Caixa</h5>
+                                        <p class="card-text">Acompanhar fluxo de caixa</p>
+                                        <a href="fluxo_caixa.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configurações -->
+                    <div class="tab-pane fade" id="settings" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-users-cog module-icon"></i>
+                                        <h5 class="card-title">Usuários</h5>
+                                        <p class="card-text">Gerenciar usuários do sistema</p>
+                                        <a href="cadastro_usuarios.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-sitemap module-icon"></i>
+                                        <h5 class="card-title">Grupos</h5>
+                                        <p class="card-text">Gerenciar grupos de produtos</p>
+                                        <a href="cadastro_grupo.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-folder-tree module-icon"></i>
+                                        <h5 class="card-title">Famílias</h5>
+                                        <p class="card-text">Gerenciar famílias de produtos</p>
+                                        <a href="cadastro_familia.html" class="btn btn-primary">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase SDK e Script Consolidado -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, Timestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// Configuração do Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyD9IGE9oVTKE9kZTaMgmkN9ZmD02ekhos4",
+    authDomain: "naliteck.firebaseapp.com",
+    projectId: "naliteck",
+    storageBucket: "naliteck.appspot.com",
+    messagingSenderId: "866077066540",
+    appId: "1:866077066540:web:b797d4ffed60c30e675889"
+};
+
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let fornecedores = [];
+let pedidosCompra = [];
+let produtos = [];
+let estoques = [];
+let movimentacoes = [];
+let contasPagar = [];
+let contasReceber = [];
+
+// Função para carregar ordens de produção recentes
+async function loadRecentOrders() {
+    try {
+        const q = query(collection(db, "ordensProducao"), orderBy("dataCriacao", "desc"), limit(4));
+        const querySnapshot = await getDocs(q);
+        const produtosSnapshot = await getDocs(collection(db, "produtos"));
+        const produtos = produtosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const ordersBody = document.getElementById('recentOrdersBody');
+        ordersBody.innerHTML = '';
+
+        querySnapshot.forEach((doc) => {
+            const op = doc.data();
+            const produto = produtos.find(p => p.id === op.produtoId);
+            let statusClass;
+            switch (op.status.toLowerCase()) {
+                case 'concluída': statusClass = 'bg-success'; break;
+                case 'em produção': statusClass = 'bg-warning text-dark'; break;
+                case 'pendente': statusClass = 'bg-info'; break;
+                case 'cancelada': statusClass = 'bg-danger'; break;
+                default: statusClass = 'bg-secondary';
+            }
+            const dataCriacao = new Date(op.dataCriacao.seconds * 1000).toLocaleDateString('pt-BR');
+            const dataEntrega = new Date(op.dataEntrega.seconds * 1000).toLocaleDateString('pt-BR');
+
+            const row = `
+                <tr>
+                    <td>${op.numero}</td>
+                    <td>${produto ? `${produto.codigo} - ${produto.descricao}` : 'Produto não encontrado'}</td>
+                    <td>${op.quantidade}</td>
+                    <td>${op.prioridade || 'Normal'}</td>
+                    <td>${dataCriacao}</td>
+                    <td>${dataEntrega}</td>
+                    <td><span class="badge ${statusClass}">${op.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
+                    </td>
+                </tr>
+            `;
+            ordersBody.innerHTML += row;
+        });
+        console.log("Ordens de produção carregadas com sucesso.");
+    } catch (error) {
+        console.error("Erro ao carregar ordens recentes:", error);
+        document.getElementById('recentOrdersBody').innerHTML = `
+            <tr><td colspan="8" class="text-center text-muted">Erro ao carregar ordens recentes</td></tr>
+        `;
+    }
+}
+
+// Função para carregar dados iniciais de pedidos de compra
+async function loadInitialData() {
+    console.log("Iniciando carregamento dos dados...");
+    try {
+        const [fornecedoresSnap, pedidosSnap, produtosSnap, estoquesSnap, movimentacoesSnap, contasPagarSnap, contasReceberSnap] = await Promise.all([
+            getDocs(collection(db, "fornecedores")),
+            getDocs(collection(db, "pedidosCompra")),
+            getDocs(collection(db, "produtos")),
+            getDocs(collection(db, "estoques")),
+            getDocs(collection(db, "movimentacoesEstoque")),
+            getDocs(collection(db, "contasPagar")),
+            getDocs(collection(db, "contasReceber"))
+        ]);
+
+        fornecedores = fornecedoresSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        pedidosCompra = pedidosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        movimentacoes = movimentacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        contasPagar = contasPagarSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        contasReceber = contasReceberSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        console.log("Dados carregados com sucesso:", { fornecedores, pedidosCompra, produtos, estoques, movimentacoes, contasPagar, contasReceber });
+
+        loadPendingOrders();
+        loadStockAlerts();
+        loadCashFlowSummary();
+    } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+    }
+}
+
+// Função para carregar pedidos pendentes
+function loadPendingOrders() {
+    console.log("Carregando pedidos pendentes...");
+    const tableBody = document.getElementById('pendingOrdersTableBody');
+    tableBody.innerHTML = '';
+
+    const pendingOrders = pedidosCompra.filter(pedido => 
+        pedido.status === 'ABERTO' || pedido.status === 'APROVADO'
+    ).slice(0, 5);
+
+    if (pendingOrders.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhum pedido pendente</td></tr>';
+    } else {
+        pendingOrders.forEach(pedido => {
+            const fornecedor = fornecedores.find(f => f.id === pedido.fornecedorId);
+            const row = document.createElement('tr');
+            const statusClass = {
+                'ABERTO': 'bg-success',
+                'APROVADO': 'bg-info'
+            }[pedido.status] || 'bg-secondary';
+
+            row.innerHTML = `
+                <td>${pedido.numero || 'N/A'}</td>
+                <td>${fornecedor ? fornecedor.razaoSocial : 'N/A'}</td>
+                <td><span class="badge ${statusClass}">${pedido.status}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewOrder('${pedido.id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${pedido.status === 'ABERTO' ? `
+                        <button class="btn btn-sm btn-success" onclick="approveOrder('${pedido.id}')">
+                            Aprovar
+                        </button>
+                    ` : ''}
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    const pendingCount = pedidosCompra.filter(p => p.status === 'ABERTO' || p.status === 'APROVADO').length;
+    document.querySelector('.card.bg-warning .card-body h2').textContent = pedidosCompra.length;
+    document.querySelector('.card.bg-warning .card-body p').textContent = `${pendingCount} aguardando aprovação`;
+}
+
+// Função para carregar alertas de estoque
+function loadStockAlerts() {
+    console.log("Carregando alertas de estoque...");
+    const alertsList = document.querySelector('#dashboard .col-md-4 .list-group');
+    alertsList.innerHTML = '';
+
+    const criticalStocks = produtos.map(produto => {
+        const estoque = estoques.find(e => e.produtoId === produto.id) || { saldo: 0 };
+        return {
+            ...produto,
+            saldo: estoque.saldo,
+            isCritical: estoque.saldo <= (produto.quantidadeMinima || 0),
+            isLow: estoque.saldo > (produto.quantidadeMinima || 0) && estoque.saldo < (produto.quantidadeMinima * 2 || 10)
+        };
+    }).filter(p => p.isCritical || p.isLow).slice(0, 3);
+
+    if (criticalStocks.length === 0) {
+        alertsList.innerHTML = '<li class="list-group-item text-center">Nenhum alerta de estoque</li>';
+    } else {
+        criticalStocks.forEach(produto => {
+            const daysLeft = estimateDaysLeft(produto);
+            const alertClass = produto.isCritical ? 'bg-danger' : 'bg-warning text-dark';
+            const alertText = produto.isCritical ? 'Crítico' : 'Baixo';
+
+            const item = document.createElement('li');
+            item.className = 'list-group-item d-flex justify-content-between align-items-center';
+            item.innerHTML = `
+                <div>
+                    <span class="badge ${alertClass} me-2">${alertText}</span>
+                    <span>${produto.codigo} - ${produto.descricao}</span>
+                </div>
+                <span class="badge bg-secondary rounded-pill">${daysLeft} dias</span>
+            `;
+            alertsList.appendChild(item);
+        });
+    }
+}
+
+// Função auxiliar para estimar dias restantes até o estoque zerar
+function estimateDaysLeft(produto) {
+    const movs = movimentacoes.filter(m => m.produtoId === produto.id && m.tipo === 'SAIDA')
+        .sort((a, b) => b.dataHora.seconds - a.dataHora.seconds).slice(0, 5);
+    if (movs.length === 0) return 'N/A';
+
+    const avgDailyUse = movs.reduce((sum, m) => sum + m.quantidade, 0) / movs.length;
+    return Math.round(produto.saldo / avgDailyUse) || 0;
+}
+
+// Função para carregar resumo do fluxo de caixa
+function loadCashFlowSummary() {
+    console.log("Carregando resumo do fluxo de caixa...");
+    const cashFlowBody = document.querySelector('#dashboard .col-md-4 .card:last-child .card-body div');
+
+    const today = new Date();
+    const sevenDaysAhead = new Date(today);
+    sevenDaysAhead.setDate(today.getDate() + 7);
+
+    const filteredPayables = contasPagar.filter(conta => {
+        const vencimento = new Date(conta.dataVencimento.seconds * 1000);
+        return vencimento >= today && vencimento <= sevenDaysAhead && conta.status !== 'PAGO';
+    });
+    const filteredReceivables = contasReceber.filter(conta => {
+        const vencimento = new Date(conta.dataVencimento.seconds * 1000);
+        return vencimento >= today && vencimento <= sevenDaysAhead && conta.status !== 'RECEBIDO';
+    });
+
+    const totalPayable = filteredPayables.reduce((sum, conta) => sum + conta.valor, 0);
+    const totalReceivable = filteredReceivables.reduce((sum, conta) => sum + conta.valor, 0);
+    const projectedBalance = totalReceivable - totalPayable;
+
+    cashFlowBody.innerHTML = `
+        <p class="text-muted">Saldo projetado (7 dias)</p>
+        <h3 style="color: ${projectedBalance >= 0 ? '#28a745' : '#dc3545'}">
+            ${formatCurrency(projectedBalance)}
+        </h3>
+    `;
+}
+
+// Função auxiliar para formatar valores em moeda
+function formatCurrency(value) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    }).format(value);
+}
+
+window.viewOrder = function(orderId) {
+    window.location.href = `pedidos_compra.html#${orderId}`;
+};
+
+window.approveOrder = async function(orderId) {
+    if (confirm('Confirma a aprovação deste pedido?')) {
+        try {
+            await updateDoc(doc(db, "pedidosCompra", orderId), {
+                status: 'APROVADO',
+                dataAprovacao: Timestamp.now()
+            });
+            await loadInitialData();
+            alert('Pedido aprovado com sucesso!');
+        } catch (error) {
+            console.error("Erro ao aprovar pedido:", error);
+            alert("Erro ao aprovar pedido.");
+        }
+    }
+};
+
+// Carregar todos os dados ao iniciar
+window.onload = async function() {
+    await loadRecentOrders();
+    await loadInitialData();
+};
+</script>
+</body>
+</html>

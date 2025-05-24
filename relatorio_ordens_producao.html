@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Ordens de Produção</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 20px 25px;
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header-title {
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    .back-button {
+      background-color: transparent;
+      border: 1px solid white;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .back-button:hover {
+      background-color: white;
+      color: var(--header-bg);
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .no-print {
+        display: none;
+      }
+      .order-page {
+        page-break-after: always;
+        padding: 10mm 15mm !important;
+        margin: 0 !important;
+      }
+      .order-page:last-child {
+        page-break-after: avoid;
+      }
+      .report-info {
+        display: none;
+      }
+      .container {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+      .header {
+        margin: 0 0 10mm 0 !important;
+      }
+      .logo {
+        width: 120px !important;
+      }
+      .order-info {
+        margin-top: 0 !important;
+      }
+      .order-info h2 {
+        margin-top: 0 !important;
+        margin-bottom: 15px !important;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .filters {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .filter-group {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .order-page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 20mm;
+      margin: 0 auto;
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #333;
+    }
+
+    .logo {
+      max-width: 150px;
+      height: auto;
+    }
+
+    .order-info {
+      margin-bottom: 30px;
+    }
+
+    .order-info h2 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .info-item {
+      padding: 5px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+
+    .materials-section {
+      margin-bottom: 30px;
+    }
+
+    .materials-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .materials-table th,
+    .materials-table td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    .materials-table th {
+      background-color: #f8f9fa;
+    }
+
+    .operations-section {
+      margin-top: 30px;
+    }
+
+    .operations-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .operations-table th,
+    .operations-table td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    .operations-table th {
+      background-color: #f8f9fa;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .status-pendente { background-color: #ffc107; color: #000; }
+    .status-em-producao { background-color: #17a2b8; color: #fff; }
+    .status-concluida { background-color: #28a745; color: #fff; }
+    .status-cancelada { background-color: #dc3545; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-title">Relatório de Ordens de Produção</div>
+      <button onclick="window.location.href='index.html'" class="back-button">Voltar</button>
+    </div>
+
+    <div class="no-print">
+      <div class="filters">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Status:</label>
+            <select id="statusFilter">
+              <option value="">Todos</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Em Produção">Em Produção</option>
+              <option value="Concluída">Concluída</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Data Inicial:</label>
+            <input type="date" id="startDate">
+          </div>
+          <div class="filter-group">
+            <label>Data Final:</label>
+            <input type="date" id="endDate">
+          </div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Produto:</label>
+            <select id="productFilter">
+              <option value="">Todos</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <button onclick="generateReport()">Gerar Relatório</button>
+      <button onclick="window.print()">Imprimir</button>
+      <button onclick="window.location.href='index.html'" class="back-button">Voltar</button>
+    </div>
+
+    <div id="reportContent">
+      <!-- O conteúdo do relatório será gerado aqui -->
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      getDocs, 
+      query, 
+      where, 
+      orderBy 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let produtos = [];
+    let estruturas = [];
+    let operacoes = [];
+    let recursos = [];
+    let ordensProducao = [];
+    let estoques = [];
+
+    window.onload = async function() {
+      await loadData();
+      updateProductFilter();
+      await updateExistingOrders();
+    };
+
+    async function loadData() {
+      try {
+        const [produtosSnap, estruturasSnap, operacoesSnap, recursosSnap, ordensSnap, estoquesSnap] = await Promise.all([
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "estruturas")),
+          getDocs(collection(db, "operacoes")),
+          getDocs(collection(db, "recursos")),
+          getDocs(collection(db, "ordensProducao")),
+          getDocs(collection(db, "estoques"))
+        ]);
+
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estruturas = estruturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        operacoes = operacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        recursos = recursosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        ordensProducao = ordensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados. Por favor, recarregue a página.");
+      }
+    }
+
+    function updateProductFilter() {
+      const select = document.getElementById('productFilter');
+      select.innerHTML = '<option value="">Todos</option>';
+      
+      produtos
+        .filter(p => p.tipo === 'PA' || p.tipo === 'SP')
+        .forEach(produto => {
+          select.innerHTML += `<option value="${produto.id}">${produto.codigo} - ${produto.descricao}</option>`;
+        });
+    }
+
+    async function updateExistingOrders() {
+      if (!estoques || estoques.length === 0) {
+        console.log("Dados de estoque não disponíveis");
+        return;
+      }
+      
+      try {
+        // Buscar todas as ordens pai
+        const parentOrders = ordensProducao.filter(order => !order.opPaiId);
+        
+        for (const order of parentOrders) {
+          const estrutura = estruturas.find(e => e.produtoPaiId === order.produtoId);
+          if (!estrutura) continue;
+
+          const materialNeeds = [];
+          
+          // Processar cada componente
+          for (const componente of estrutura.componentes) {
+            const produto = produtos.find(p => p.id === componente.componentId);
+            const quantidadeNecessaria = order.quantidade * componente.quantidade;
+            const estoque = estoques.find(e => e.produtoId === componente.componentId);
+            const saldoEstoque = estoque ? estoque.saldo : 0;
+            const necessidade = Math.max(0, quantidadeNecessaria - saldoEstoque);
+
+            // Registrar necessidade do material (seja MP ou SP)
+            materialNeeds.push({
+              produtoId: componente.componentId,
+              quantidade: quantidadeNecessaria,
+              saldoEstoque,
+              necessidade
+            });
+          }
+
+          // Atualizar a ordem com as necessidades de materiais
+          if (materialNeeds.length > 0) {
+            await updateDoc(doc(db, "ordensProducao", order.id), {
+              materiaisNecessarios: materialNeeds
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao atualizar ordens existentes:", error);
+      }
+    }
+
+    // Função recursiva para obter todas as ordens filhas
+    function getAllChildOrders(orderId, allOrders) {
+      const children = allOrders.filter(order => order.opPaiId === orderId);
+      let result = [...children];
+      
+      for (const child of children) {
+        const grandChildren = getAllChildOrders(child.id, allOrders);
+        result = result.concat(grandChildren);
+      }
+      
+      return result;
+    }
+
+    // Função para criar uma página de ordem
+    function createOrderPage(order, isChild = false) {
+      const produto = produtos.find(p => p.id === order.produtoId);
+      const estrutura = estruturas.find(e => e.produtoPaiId === order.produtoId);
+      
+      const orderPage = document.createElement('div');
+      orderPage.className = 'order-page';
+      
+      orderPage.innerHTML = `
+        <div class="header">
+          <img src="https://www.naliteck.com.br/img/logo.png" alt="Logo" class="logo">
+          <div class="report-info no-print">
+            <div>Data: ${new Date().toLocaleDateString()}</div>
+            <div>Hora: ${new Date().toLocaleTimeString()}</div>
+          </div>
+        </div>
+
+        <div class="order-info">
+          <h2>Ordem de Produção: ${order.numero}</h2>
+          ${isChild ? `<p><strong>Ordem Pai:</strong> ${ordensProducao.find(op => op.id === order.opPaiId)?.numero || 'N/A'}</p>` : ''}
+          <div class="info-grid">
+            <div class="info-item">
+              <strong>Produto:</strong> ${produto.codigo} - ${produto.descricao}
+            </div>
+            <div class="info-item">
+              <strong>Tipo:</strong> ${produto.tipo}
+            </div>
+            <div class="info-item">
+              <strong>Quantidade:</strong> ${order.quantidade} ${produto.unidade}
+            </div>
+            <div class="info-item">
+              <strong>Status:</strong> 
+              <span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span>
+            </div>
+            <div class="info-item">
+              <strong>Data de Criação:</strong> 
+              ${new Date(order.dataCriacao.seconds * 1000).toLocaleDateString()}
+            </div>
+            <div class="info-item">
+              <strong>Data de Entrega:</strong> 
+              ${new Date(order.dataEntrega.seconds * 1000).toLocaleDateString()}
+            </div>
+          </div>
+        </div>
+
+        ${order.materiaisNecessarios ? `
+          <div class="materials-section">
+            <h3>Materiais Necessários</h3>
+            <table class="materials-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Descrição</th>
+                  <th>Tipo</th>
+                  <th>Quantidade</th>
+                  <th>Unidade</th>
+                  <th>Disponível</th>
+                  <th>Necessidade</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${order.materiaisNecessarios.map(material => {
+                  const materialProduto = produtos.find(p => p.id === material.produtoId);
+                  return `
+                    <tr>
+                      <td>${materialProduto.codigo}</td>
+                      <td>${materialProduto.descricao}</td>
+                      <td>${materialProduto.tipo}</td>
+                      <td>${material.quantidade}</td>
+                      <td>${materialProduto.unidade}</td>
+                      <td>${material.saldoEstoque}</td>
+                      <td>${material.necessidade}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+
+        ${estrutura && estrutura.operacoes ? `
+          <div class="operations-section">
+            <h3>Roteiro de Produção</h3>
+            <table class="operations-table">
+              <thead>
+                <tr>
+                  <th style="width: 30px;">Seq.</th>
+                  <th>Operação</th>
+                  <th style="width: 80px;">Recurso</th>
+                  <th style="width: 30px;">Min.</th>
+                  <th>Descrição</th>
+                  <th style="width: 60px;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${estrutura.operacoes.sort((a, b) => a.sequencia - b.sequencia).map(op => {
+                  const operacao = operacoes.find(o => o.id === op.operacaoId);
+                  const recurso = recursos.find(r => r.id === op.recursoId);
+                  return `
+                    <tr>
+                      <td>${op.sequencia}</td>
+                      <td>${operacao.operacao}</td>
+                      <td>${recurso.codigo}</td>
+                      <td>${op.tempo}</td>
+                      <td>${op.descricao || ''}</td>
+                      <td></td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+      `;
+
+      return orderPage;
+    }
+
+    window.generateReport = async function() {
+      const statusFilter = document.getElementById('statusFilter').value;
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const productFilter = document.getElementById('productFilter').value;
+
+      let filteredOrders = ordensProducao;
+
+      if (statusFilter) {
+        filteredOrders = filteredOrders.filter(op => op.status === statusFilter);
+      }
+
+      if (startDate) {
+        const startTimestamp = new Date(startDate).getTime() / 1000;
+        filteredOrders = filteredOrders.filter(op => op.dataCriacao.seconds >= startTimestamp);
+      }
+
+      if (endDate) {
+        const endTimestamp = new Date(endDate).getTime() / 1000 + 86400; // Add 24 hours
+        filteredOrders = filteredOrders.filter(op => op.dataCriacao.seconds <= endTimestamp);
+      }
+
+      if (productFilter) {
+        filteredOrders = filteredOrders.filter(op => op.produtoId === productFilter);
+      }
+
+      const reportContent = document.getElementById('reportContent');
+      reportContent.innerHTML = '';
+
+      // Processar apenas ordens pai (sem opPaiId)
+      const parentOrders = filteredOrders.filter(order => !order.opPaiId);
+
+      // Para cada ordem pai, gerar páginas para ela e todas as suas subfilhas
+      for (const parentOrder of parentOrders) {
+        // Adicionar página da ordem pai
+        reportContent.appendChild(createOrderPage(parentOrder, false));
+
+        // Obter todas as ordens filhas recursivamente
+        const allChildren = getAllChildOrders(parentOrder.id, filteredOrders);
+        
+        // Ordenar as ordens filhas por nível e número
+        allChildren.sort((a, b) => {
+          if (a.nivel === b.nivel) {
+            return a.numero.localeCompare(b.numero);
+          }
+          return a.nivel - b.nivel;
+        });
+
+        // Adicionar uma página para cada ordem filha
+        for (const childOrder of allChildren) {
+          reportContent.appendChild(createOrderPage(childOrder, true));
+        }
+      }
+    };
+
+    async function explodeComponents(parentOp, estrutura, level = 0) {
+      const childOrders = [];
+      const materialNeeds = [];
+
+      for (const componente of estrutura.componentes) {
+        const produto = produtos.find(p => p.id === componente.componentId);
+        const quantidadeNecessaria = parentOp.quantidade * componente.quantidade;
+        
+        // Verificar saldo em estoque
+        const saldoEstoque = await checkInventory(componente.componentId);
+        const necessidade = Math.max(0, quantidadeNecessaria - saldoEstoque);
+
+        // Registrar necessidade de material (incluindo SPs)
+        materialNeeds.push({
+          produtoId: componente.componentId,
+          quantidade: quantidadeNecessaria,
+          saldoEstoque,
+          necessidade
+        });
+
+        // Se for SP, criar ordem de produção filha
+        if (produto.tipo === 'SP') {
+          const componenteEstrutura = estruturas.find(e => e.produtoPaiId === componente.componentId);
+          if (componenteEstrutura && necessidade > 0) {
+            // Criar ordem de produção para o semi-produto
+            const childOp = {
+              numero: await generateOrderNumber(),
+              produtoId: componente.componentId,
+              produtoPaiId: parentOp.produtoId,
+              quantidade: necessidade,
+              dataEntrega: parentOp.dataEntrega,
+              status: 'Pendente',
+              opPaiId: parentOp.id,
+              nivel: level + 1,
+              prioridade: parentOp.prioridade,
+              dataCriacao: Timestamp.now()
+            };
+
+            const docRef = await addDoc(collection(db, "ordensProducao"), childOp);
+            childOp.id = docRef.id;
+            childOrders.push(childOp);
+
+            // Recursivamente explodir componentes do semi-produto
+            await explodeComponents(childOp, componenteEstrutura, level + 1);
+          }
+        }
+      }
+
+      // Atualizar ordem pai com materiais necessários
+      await updateDoc(doc(db, "ordensProducao", parentOp.id), {
+        materiaisNecessarios: materialNeeds
+      });
+
+      return { childOrders, materialNeeds };
+    }
+  </script>
+</body>
+</html>

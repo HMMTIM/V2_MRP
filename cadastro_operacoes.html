@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Operações</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .form-container {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .form-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .operations-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .operations-table th,
+    .operations-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .operations-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .operations-table th:hover {
+      background-color: #e0e0e0;
+    }
+
+    .operations-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+
+    .edit-btn, .delete-btn {
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .edit-btn {
+      background-color: #ffc107;
+      color: #000;
+    }
+
+    .delete-btn {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .required::after {
+      content: "*";
+      color: var(--danger-color);
+      margin-left: 4px;
+    }
+
+    .table-container {
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .sort-indicator {
+      margin-left: 5px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Cadastro de Operações</h1>
+      <div>
+        <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+      </div>
+    </div>
+
+    <div class="form-container">
+      <h2 class="form-title">Cadastrar Nova Operação</h2>
+      <form id="operationForm">
+        <input type="hidden" id="editingId">
+        <label for="numero" class="required">Número</label>
+        <input type="text" id="numero" name="numero" required>
+
+        <label for="operacao" class="required">Operação</label>
+        <input type="text" id="operacao" name="operacao" required>
+
+        <label for="setor" class="required">Setor</label>
+        <select id="setor" name="setor" required>
+          <option value="">Selecione um setor...</option>
+        </select>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="cancelEdit()">Cancelar</button>
+          <button type="submit" class="btn-success" id="submitButton">Cadastrar Operação</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-container">
+      <h2 class="form-title">Operações Cadastradas</h2>
+      <table class="operations-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('numero')">Número <span id="sortNumero" class="sort-indicator"></span></th>
+            <th onclick="sortTable('operacao')">Operação <span id="sortOperacao" class="sort-indicator"></span></th>
+            <th>Data Cadastro</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="operationsTableBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs, 
+      doc, 
+      updateDoc, 
+      deleteDoc 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let operacoes = [];
+    let setores = [];
+    let sortDirection = 'asc'; // Direção da ordenação
+    let currentSortColumn = ''; // Coluna atual sendo ordenada
+
+    window.onload = async function() {
+      await loadSetores();
+      await loadOperations();
+    };
+
+    async function loadSetores() {
+      try {
+        const setoresSnapshot = await getDocs(collection(db, "setores"));
+        setores = [];
+        setoresSnapshot.forEach((doc) => {
+          setores.push({ id: doc.id, ...doc.data() });
+        });
+        
+        const setorSelect = document.getElementById('setor');
+        setorSelect.innerHTML = '<option value="">Selecione um setor...</option>';
+        setores
+          .sort((a, b) => a.codigo.localeCompare(b.codigo))
+          .forEach(setor => {
+            setorSelect.innerHTML += `<option value="${setor.id}">${setor.codigo} - ${setor.nome}</option>`;
+          });
+      } catch (error) {
+        console.error("Erro ao carregar setores:", error);
+        alert("Erro ao carregar setores. Por favor, recarregue a página.");
+      }
+    }
+
+    async function loadOperations() {
+      try {
+        const operacoesSnapshot = await getDocs(collection(db, "operacoes"));
+        operacoes = [];
+        operacoesSnapshot.forEach((doc) => {
+          operacoes.push({ id: doc.id, ...doc.data() });
+        });
+        displayOperations();
+      } catch (error) {
+        console.error("Erro ao carregar operações:", error);
+        alert("Erro ao carregar operações. Por favor, recarregue a página.");
+      }
+    }
+
+    function displayOperations() {
+      const tableBody = document.getElementById('operationsTableBody');
+      tableBody.innerHTML = '';
+
+      operacoes.forEach(operacao => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${operacao.numero}</td>
+          <td>${operacao.operacao}</td>
+          <td>${new Date(operacao.dataCadastro.seconds * 1000).toLocaleDateString()}</td>
+          <td class="action-buttons">
+            <button class="edit-btn" onclick="editOperation('${operacao.id}')">Editar</button>
+            <button class="delete-btn" onclick="deleteOperation('${operacao.id}')">Excluir</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    window.sortTable = function(sortBy) {
+      if (sortBy === currentSortColumn) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSortColumn = sortBy;
+        sortDirection = 'asc';
+      }
+
+      if (sortBy === 'numero') {
+        operacoes.sort((a, b) => sortDirection === 'asc' 
+          ? a.numero.localeCompare(b.numero)
+          : b.numero.localeCompare(a.numero));
+      } else if (sortBy === 'operacao') {
+        operacoes.sort((a, b) => sortDirection === 'asc' 
+          ? a.operacao.localeCompare(b.operacao)
+          : b.operacao.localeCompare(a.operacao));
+      }
+
+      updateSortIndicators(sortBy, sortDirection);
+      displayOperations();
+    };
+
+    function updateSortIndicators(column, direction) {
+      document.getElementById('sortNumero').innerHTML = '';
+      document.getElementById('sortOperacao').innerHTML = '';
+
+      if (column === 'numero') {
+        document.getElementById('sortNumero').innerHTML = direction === 'asc' ? '▲' : '▼';
+      } else if (column === 'operacao') {
+        document.getElementById('sortOperacao').innerHTML = direction === 'asc' ? '▲' : '▼';
+      }
+    }
+
+    window.editOperation = function(operationId) {
+      const operation = operacoes.find(o => o.id === operationId);
+      if (operation) {
+        document.getElementById('editingId').value = operationId;
+        document.getElementById('numero').value = operation.numero;
+        document.getElementById('operacao').value = operation.operacao;
+        document.getElementById('submitButton').textContent = 'Atualizar Operação';
+      }
+    };
+
+    window.cancelEdit = function() {
+      document.getElementById('operationForm').reset();
+      document.getElementById('editingId').value = '';
+      document.getElementById('submitButton').textContent = 'Cadastrar Operação';
+    };
+
+    window.deleteOperation = async function(operationId) {
+      if (confirm('Tem certeza que deseja excluir esta operação?')) {
+        try {
+          await deleteDoc(doc(db, "operacoes", operationId));
+          alert('Operação excluída com sucesso!');
+          await loadOperations();
+        } catch (error) {
+          console.error("Erro ao excluir operação:", error);
+          alert("Erro ao excluir operação. Por favor, tente novamente.");
+        }
+      }
+    };
+
+    document.getElementById('operationForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      
+      const formData = {
+        numero: document.getElementById('numero').value,
+        operacao: document.getElementById('operacao').value,
+        setor: document.getElementById('setor').value,
+        dataCadastro: new Date()
+      };
+
+      const editingId = document.getElementById('editingId').value;
+
+      try {
+        if (editingId) {
+          await updateDoc(doc(db, "operacoes", editingId), formData);
+          alert("Operação atualizada com sucesso!");
+        } else {
+          await addDoc(collection(db, "operacoes"), formData);
+          alert("Operação cadastrada com sucesso!");
+        }
+
+        await loadOperations();
+        event.target.reset();
+        cancelEdit();
+      } catch (error) {
+        console.error("Erro ao salvar operação:", error);
+        alert("Erro ao salvar operação. Por favor, tente novamente.");
+      }
+    });
+  </script>
+</body>
+</html>

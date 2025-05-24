@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saldos Iniciais - Estoque</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #0854a0;
+            --secondary-color: #f0f3f6;
+            --border-color: #d4d4d4;
+            --text-color: #333;
+            --header-bg: #354a5f;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f7f7;
+            color: var(--text-color);
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            margin: -20px -20px 20px -20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .form-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .table th, .table td {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .table th {
+            background-color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .status-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Saldos Iniciais - Estoque</h1>
+            <button class="btn btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+        </div>
+
+        <div class="form-section">
+            <h2>Importação de Saldos</h2>
+            <div class="form-group">
+                <label>Arquivo Excel:</label>
+                <input type="file" id="excelFile" accept=".xlsx,.xls" class="form-control">
+            </div>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="importarSaldos()">Importar Saldos</button>
+                <button class="btn btn-secondary" onclick="exportarModelo()">Exportar Modelo Excel</button>
+            </div>
+            <div id="importStatus" class="status-message"></div>
+        </div>
+
+        <div class="form-section">
+            <h2>Cadastro Manual</h2>
+            <div class="form-group">
+                <label>Produto:</label>
+                <select id="produto" class="form-control" onchange="atualizarUnidade()"></select>
+            </div>
+            <div class="form-group">
+                <label>Quantidade:</label>
+                <input type="number" id="quantidade" class="form-control" step="0.001" min="0">
+            </div>
+            <div class="form-group">
+                <label>Armazém:</label>
+                <select id="armazem" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label>Lote:</label>
+                <input type="text" id="lote" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Preço Unitário:</label>
+                <input type="number" id="precoUnitario" class="form-control" step="0.01" min="0">
+            </div>
+            <button class="btn btn-primary" onclick="cadastrarSaldo()">Cadastrar</button>
+        </div>
+
+        <div class="form-section">
+            <h2>Saldos Cadastrados</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descrição</th>
+                        <th>Tipo</th>
+                        <th>Unidade</th>
+                        <th>Armazém</th>
+                        <th>Lote</th>
+                        <th>Quantidade</th>
+                        <th>Preço Unitário</th>
+                        <th>Data Cadastro</th>
+                    </tr>
+                </thead>
+                <tbody id="saldosTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { 
+            collection, 
+            addDoc, 
+            getDocs,
+            query,
+            where,
+            Timestamp 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let produtos = [];
+        let armazens = [];
+        let estoques = [];
+
+        window.onload = async function() {
+            await carregarDados();
+            popularSelects();
+            carregarSaldos();
+        };
+
+        async function carregarDados() {
+            try {
+                const [produtosSnap, armazensSnap, estoquesSnap] = await Promise.all([
+                    getDocs(collection(db, "produtos")),
+                    getDocs(collection(db, "armazens")),
+                    getDocs(collection(db, "estoques"))
+                ]);
+
+                produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                armazens = armazensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+                mostrarMensagem("Erro ao carregar dados", "error");
+            }
+        }
+
+        function popularSelects() {
+            const produtoSelect = document.getElementById('produto');
+            const armazemSelect = document.getElementById('armazem');
+
+            produtoSelect.innerHTML = '<option value="">Selecione um produto...</option>';
+            produtos.forEach(produto => {
+                produtoSelect.innerHTML += `
+                    <option value="${produto.id}">
+                        ${produto.codigo} - ${produto.descricao}
+                    </option>`;
+            });
+
+            armazemSelect.innerHTML = '<option value="">Selecione um armazém...</option>';
+            armazens.forEach(armazem => {
+                armazemSelect.innerHTML += `
+                    <option value="${armazem.id}">
+                        ${armazem.codigo} - ${armazem.descricao}
+                    </option>`;
+            });
+        }
+
+        window.atualizarUnidade = function() {
+            const produtoId = document.getElementById('produto').value;
+            const produto = produtos.find(p => p.id === produtoId);
+            if (produto) {
+                const qtdInput = document.getElementById('quantidade');
+                qtdInput.placeholder = `Quantidade em ${produto.unidade}`;
+            }
+        };
+
+        window.cadastrarSaldo = async function() {
+            const produtoId = document.getElementById('produto').value;
+            const armazemId = document.getElementById('armazem').value;
+            const quantidade = parseFloat(document.getElementById('quantidade').value);
+            const lote = document.getElementById('lote').value;
+
+            if (!produtoId || !armazemId || !quantidade || quantidade <= 0) {
+                mostrarMensagem("Preencha todos os campos corretamente", "error");
+                return;
+            }
+
+            try {
+                const produto = produtos.find(p => p.id === produtoId);
+                const estoque = estoques.find(e => e.produtoId === produtoId && e.armazemId === armazemId);
+
+                if (estoque) {
+                    mostrarMensagem("Já existe saldo para este produto neste armazém", "error");
+                    return;
+                }
+
+                const precoUnitario = parseFloat(document.getElementById('precoUnitario').value) || 0;
+                const saldoInicial = {
+                    produtoId,
+                    armazemId,
+                    saldo: quantidade,
+                    lote,
+                    precoUnitario,
+                    dataCadastro: Timestamp.now()
+                };
+
+                await addDoc(collection(db, "estoques"), saldoInicial);
+
+                await addDoc(collection(db, "movimentacoesEstoque"), {
+                    produtoId,
+                    tipo: 'ENTRADA',
+                    quantidade,
+                    tipoDocumento: 'SALDO_INICIAL',
+                    numeroDocumento: 'SI-' + new Date().getTime(),
+                    observacoes: 'Saldo inicial do produto',
+                    dataHora: Timestamp.now(),
+                    armazemId,
+                    lote
+                });
+
+                mostrarMensagem("Saldo cadastrado com sucesso!", "success");
+                await carregarDados();
+                carregarSaldos();
+                limparFormulario();
+            } catch (error) {
+                console.error("Erro ao cadastrar saldo:", error);
+                mostrarMensagem("Erro ao cadastrar saldo", "error");
+            }
+        };
+
+        window.importarSaldos = async function() {
+            const fileInput = document.getElementById('excelFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                mostrarMensagem("Selecione um arquivo Excel", "error");
+                return;
+            }
+
+            try {
+                const data = await lerArquivoExcel(file);
+                let sucessos = 0;
+                let erros = 0;
+                let errosDetalhados = [];
+
+                // Verificar se as colunas necessárias existem
+                const colunasNecessarias = ['Código', 'Quantidade', 'Armazém', 'Lote', 'Preço Unitário'];
+                const primeiraLinha = data[0];
+                const colunasFaltantes = colunasNecessarias.filter(col => !(col in primeiraLinha));
+
+                if (colunasFaltantes.length > 0) {
+                    throw new Error(`Colunas obrigatórias faltando: ${colunasFaltantes.join(', ')}`);
+                }
+
+                for (const row of data) {
+                    try {
+                        // Normalizar o código do produto (remover espaços e converter para maiúsculas)
+                        const codigoProduto = String(row['Código']).trim().toUpperCase();
+                        const produto = produtos.find(p => p.codigo.toUpperCase() === codigoProduto);
+
+                        if (!produto) {
+                            errosDetalhados.push(`Produto não encontrado: ${codigoProduto}`);
+                            erros++;
+                            continue;
+                        }
+
+                        // Normalizar o código do armazém
+                        const codigoArmazem = String(row['Armazém']).trim().toUpperCase();
+                        const armazem = armazens.find(a => a.codigo.toUpperCase() === codigoArmazem);
+
+                        if (!armazem) {
+                            errosDetalhados.push(`Armazém não encontrado: ${codigoArmazem}`);
+                            erros++;
+                            continue;
+                        }
+
+                        // Converter e validar quantidade
+                        const quantidade = parseFloat(String(row['Quantidade']).replace(',', '.'));
+                        if (isNaN(quantidade) || quantidade <= 0) {
+                            errosDetalhados.push(`Quantidade inválida para produto ${codigoProduto}: ${row['Quantidade']}`);
+                            erros++;
+                            continue;
+                        }
+
+                        // Verificar se já existe estoque
+                        const estoque = estoques.find(e => 
+                            e.produtoId === produto.id && e.armazemId === armazem.id);
+
+                        if (estoque) {
+                            errosDetalhados.push(`Já existe saldo para o produto ${codigoProduto} no armazém ${codigoArmazem}`);
+                            erros++;
+                            continue;
+                        }
+
+                        // Converter preço unitário (opcional)
+                        const precoUnitario = parseFloat(String(row['Preço Unitário'] || '0').replace(',', '.'));
+
+                        // Criar novo estoque
+                        await addDoc(collection(db, "estoques"), {
+                            produtoId: produto.id,
+                            armazemId: armazem.id,
+                            saldo: quantidade,
+                            lote: String(row['Lote'] || 'INICIAL').trim(),
+                            precoUnitario: isNaN(precoUnitario) ? 0 : precoUnitario,
+                            dataCadastro: Timestamp.now()
+                        });
+
+                        // Registrar movimentação
+                        await addDoc(collection(db, "movimentacoesEstoque"), {
+                            produtoId: produto.id,
+                            tipo: 'ENTRADA',
+                            quantidade,
+                            tipoDocumento: 'SALDO_INICIAL',
+                            numeroDocumento: 'SI-' + new Date().getTime(),
+                            observacoes: 'Importação de saldo inicial',
+                            dataHora: Timestamp.now(),
+                            armazemId: armazem.id,
+                            lote: String(row['Lote'] || 'INICIAL').trim()
+                        });
+
+                        sucessos++;
+                    } catch (error) {
+                        console.error("Erro ao processar linha:", error);
+                        errosDetalhados.push(`Erro ao processar linha: ${error.message}`);
+                        erros++;
+                    }
+                }
+
+                // Mostrar mensagem com detalhes dos erros
+                let mensagem = `Importação concluída: ${sucessos} sucessos, ${erros} erros`;
+                if (erros > 0) {
+                    mensagem += '\n\nDetalhes dos erros:\n' + errosDetalhados.slice(0, 10).join('\n');
+                    if (errosDetalhados.length > 10) {
+                        mensagem += `\n... e mais ${errosDetalhados.length - 10} erros`;
+                    }
+                }
+                mostrarMensagem(mensagem, sucessos > 0 ? "success" : "error");
+
+                await carregarDados();
+                carregarSaldos();
+                fileInput.value = '';
+            } catch (error) {
+                console.error("Erro na importação:", error);
+                mostrarMensagem("Erro ao processar arquivo: " + error.message, "error");
+            }
+        };
+
+        async function lerArquivoExcel(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = e.target.result;
+                        const workbook = XLSX.read(data, { type: 'binary' });
+                        const sheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[sheetName];
+                        const json = XLSX.utils.sheet_to_json(worksheet);
+                        resolve(json);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsBinaryString(file);
+            });
+        }
+
+        async function carregarSaldos() {
+            const tableBody = document.getElementById('saldosTable');
+            tableBody.innerHTML = '';
+
+            estoques.forEach(estoque => {
+                const produto = produtos.find(p => p.id === estoque.produtoId);
+                const armazem = armazens.find(a => a.id === estoque.armazemId);
+                if (!produto || !armazem) return;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${produto.codigo}</td>
+                    <td>${produto.descricao}</td>
+                    <td>${produto.tipo}</td>
+                    <td>${produto.unidade}</td>
+                    <td>${armazem.codigo}</td>
+                    <td>${estoque.lote || '-'}</td>
+                    <td>${estoque.saldo.toFixed(3)}</td>
+                    <td>R$ ${estoque.precoUnitario ? estoque.precoUnitario.toFixed(2) : '0.00'}</td>
+                    <td>${estoque.dataCadastro ? new Date(estoque.dataCadastro.seconds * 1000).toLocaleString() : '-'}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function limparFormulario() {
+            document.getElementById('produto').value = '';
+            document.getElementById('quantidade').value = '';
+            document.getElementById('armazem').value = '';
+            document.getElementById('lote').value = '';
+        }
+
+        function mostrarMensagem(mensagem, tipo) {
+            const statusElement = document.getElementById('importStatus');
+            statusElement.textContent = mensagem;
+            statusElement.className = `status-message ${tipo}`;
+            statusElement.style.display = 'block';
+            setTimeout(() => statusElement.style.display = 'none', 5000);
+        }
+
+        window.exportarModelo = function() {
+            try {
+                // Criar dados de exemplo
+                const dados = [
+                    {
+                        'Código': 'EXEMPLO001',
+                        'Quantidade': '100.000',
+                        'Armazém': 'ALM001',
+                        'Lote': 'LOTE001',
+                        'Preço Unitário': '10.50'
+                    },
+                    {
+                        'Código': 'EXEMPLO002',
+                        'Quantidade': '50.000',
+                        'Armazém': 'ALM002',
+                        'Lote': 'LOTE002',
+                        'Preço Unitário': '25.75'
+                    }
+                ];
+
+                // Criar planilha de dados
+                const ws = XLSX.utils.json_to_sheet(dados);
+
+                // Criar planilha de instruções
+                const wsInstrucoes = XLSX.utils.aoa_to_sheet([
+                    ['INSTRUÇÕES PARA IMPORTAÇÃO DE SALDOS'],
+                    [''],
+                    ['Coluna Código:'],
+                    ['- Deve conter o código do produto cadastrado no sistema'],
+                    ['- Exemplo: "PROD001"'],
+                    [''],
+                    ['Coluna Quantidade:'],
+                    ['- Deve ser um número maior que zero'],
+                    ['- Use ponto como separador decimal'],
+                    ['- Exemplo: "100.000"'],
+                    [''],
+                    ['Coluna Armazém:'],
+                    ['- Deve conter o código do armazém cadastrado no sistema'],
+                    ['- Exemplo: "ALM001"'],
+                    ['- Códigos disponíveis:'],
+                    ...armazens.map(a => [`- ${a.codigo} (${a.descricao})`]),
+                    [''],
+                    ['Coluna Lote:'],
+                    ['- Identificação do lote do produto'],
+                    ['- Exemplo: "LOTE001"'],
+                    [''],
+                    ['Coluna Preço Unitário:'],
+                    ['- Valor unitário do produto'],
+                    ['- Use ponto como separador decimal'],
+                    ['- Exemplo: "10.50"']
+                ]);
+
+                // Ajustar largura das colunas da planilha de dados
+                const wscols = [
+                    {wch: 15}, // Código
+                    {wch: 15}, // Quantidade
+                    {wch: 15}, // Armazém
+                    {wch: 15}, // Lote
+                    {wch: 15}  // Preço Unitário
+                ];
+                ws['!cols'] = wscols;
+
+                // Ajustar largura da coluna de instruções
+                wsInstrucoes['!cols'] = [{wch: 50}];
+
+                // Criar workbook
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, wsInstrucoes, "Instruções");
+                XLSX.utils.book_append_sheet(wb, ws, "Modelo");
+
+                // Formatar cabeçalhos da planilha de dados
+                const range = XLSX.utils.decode_range(ws['!ref']);
+                for(let C = range.s.c; C <= range.e.c; ++C) {
+                    const cell = XLSX.utils.encode_cell({r: 0, c: C});
+                    if(!ws[cell]) ws[cell] = { v: "" };
+                    ws[cell].s = {
+                        font: { bold: true },
+                        fill: { fgColor: { rgb: "CCCCCC" } }
+                    };
+                }
+
+                // Formatar título das instruções
+                wsInstrucoes['A1'].s = {
+                    font: { bold: true, color: { rgb: "0854A0" } },
+                    alignment: { horizontal: "center" }
+                };
+
+                // Salvar arquivo
+                XLSX.writeFile(wb, "modelo_importacao_saldos.xlsx");
+
+                mostrarMensagem("Modelo exportado com sucesso!", "success");
+            } catch (error) {
+                console.error("Erro ao exportar modelo:", error);
+                mostrarMensagem("Erro ao exportar modelo: " + error.message, "error");
+            }
+        };
+    </script>
+</body>
+</html>

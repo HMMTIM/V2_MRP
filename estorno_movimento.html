@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estorno de Movimentações</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .search-bar {
+      margin-bottom: 20px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-col {
+      flex: 1;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .movements-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .movements-table th,
+    .movements-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .movements-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .movements-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .movement-type {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .type-entrada {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .type-saida {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+
+    .estorno-btn {
+      background-color: var(--warning-color);
+      color: #000;
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .estorno-btn:hover {
+      background-color: #d9620a;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 8px;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-body {
+      padding: 15px 5px;
+    }
+
+    .close-button {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+      resize: vertical;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Estorno de Movimentações</h1>
+    <div>
+      <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <div class="form-row">
+      <div class="form-col">
+        <input type="text" id="searchInput" placeholder="Buscar por código, descrição ou documento..." oninput="filterMovements()">
+      </div>
+      <div class="form-col">
+        <select id="typeFilter" onchange="filterMovements()">
+          <option value="">Todos os tipos</option>
+          <option value="ENTRADA">Entradas</option>
+          <option value="SAIDA">Saídas</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h2>Movimentações Registradas</h2>
+    <table class="movements-table">
+      <thead>
+        <tr>
+          <th>Data/Hora</th>
+          <th>Produto</th>
+          <th>Tipo</th>
+          <th>Quantidade</th>
+          <th>Documento</th>
+          <th>Observações</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="movementsTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal de Confirmação de Estorno -->
+<div id="estornoModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Confirmar Estorno</h2>
+      <span class="close-button" onclick="closeModal()">×</span>
+    </div>
+
+    <div class="modal-body">
+      <form id="estornoForm" onsubmit="handleEstorno(event)">
+        <input type="hidden" id="movementId">
+        <div class="form-group">
+          <label>Detalhes da Movimentação:</label>
+          <div id="movementDetails" style="padding: 8px; background-color: var(--secondary-color); border-radius: 4px;"></div>
+        </div>
+        <div class="form-group">
+          <label for="estornoReason">Motivo do Estorno:</label>
+          <textarea id="estornoReason" rows="3" placeholder="Digite o motivo do estorno..." required></textarea>
+        </div>
+        <button type="submit" class="btn-danger">Confirmar Estorno</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { db } from './firebase-config.js';
+  import { 
+    collection,
+    getDoc,
+    addDoc, 
+    onSnapshot,
+    doc,
+    updateDoc,
+    Timestamp,
+    deleteDoc
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  let produtos = [];
+  let estoques = [];
+  let movimentacoes = [];
+  let armazens = [];
+
+  window.onload = async function() {
+    await setupRealTimeListeners();
+  };
+
+  async function setupRealTimeListeners() {
+    try {
+      const promises = [
+        new Promise(resolve => onSnapshot(collection(db, "produtos"), snap => { produtos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); resolve(); })),
+        new Promise(resolve => onSnapshot(collection(db, "estoques"), snap => { estoques = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); resolve(); })),
+        new Promise(resolve => onSnapshot(collection(db, "movimentacoesEstoque"), snap => { movimentacoes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); displayMovements(); resolve(); })),
+        new Promise(resolve => onSnapshot(collection(db, "armazens"), snap => { armazens = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); resolve(); }))
+      ];
+      await Promise.all(promises);
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+      alert("Erro ao carregar dados: " + error.message);
+    }
+  }
+
+  function displayMovements(filteredMovements = movimentacoes) {
+    const tableBody = document.getElementById('movementsTableBody');
+    tableBody.innerHTML = '';
+
+    const sortedMovements = filteredMovements.sort((a, b) => b.dataHora.seconds - a.dataHora.seconds);
+
+    sortedMovements.forEach(mov => {
+      const produto = produtos.find(p => p.id === mov.produtoId);
+      if (!produto) return;
+
+      const armazem = armazens.find(a => a.id === (mov.armazemOrigemId || mov.armazemDestinoId));
+      const armazemText = armazem ? ` (${armazem.codigo})` : '';
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${new Date(mov.dataHora.seconds * 1000).toLocaleString()}</td>
+        <td>${produto.codigo} - ${produto.descricao}${armazemText}</td>
+        <td><span class="movement-type type-${mov.tipo.toLowerCase()}">${mov.tipo}</span></td>
+        <td>${mov.quantidade.toFixed(3)} ${mov.unidade}</td>
+        <td>${mov.tipoDocumento} ${mov.numeroDocumento}</td>
+        <td>${mov.observacoes || ''}</td>
+        <td class="action-buttons">
+          ${mov.estornada ? '<span>Estornada</span>' : `<button class="estorno-btn" onclick="openEstornoModal('${mov.id}')">Estornar</button>`}
+          <button class="btn-danger" onclick="excluirMovimentacao('${mov.id}')">Excluir</button>
+        </td>`;
+      tableBody.appendChild(row);
+    });
+  }
+
+  window.filterMovements = function() {
+    const searchText = document.getElementById('searchInput').value.toLowerCase();
+    const typeFilter = document.getElementById('typeFilter').value;
+
+    const filteredMovements = movimentacoes.filter(mov => {
+      const produto = produtos.find(p => p.id === mov.produtoId);
+      const searchMatch = (produto && (produto.codigo.toLowerCase().includes(searchText) || produto.descricao.toLowerCase().includes(searchText))) ||
+                          mov.numeroDocumento.toLowerCase().includes(searchText) ||
+                          (mov.observacoes || '').toLowerCase().includes(searchText);
+      const typeMatch = !typeFilter || mov.tipo === typeFilter;
+      return searchMatch && typeMatch && !mov.estornada;
+    });
+
+    displayMovements(filteredMovements);
+  };
+
+  window.openEstornoModal = function(movementId) {
+    const mov = movimentacoes.find(m => m.id === movementId);
+    if (!mov || mov.estornada) return;
+
+    const produto = produtos.find(p => p.id === mov.produtoId);
+    const armazem = armazens.find(a => a.id === (mov.armazemOrigemId || mov.armazemDestinoId));
+    document.getElementById('movementId').value = movementId;
+    document.getElementById('movementDetails').innerHTML = `
+      <strong>Produto:</strong> ${produto?.codigo} - ${produto?.descricao}<br>
+      <strong>Tipo:</strong> ${mov.tipo}<br>
+      <strong>Quantidade:</strong> ${mov.quantidade.toFixed(3)} ${mov.unidade}<br>
+      <strong>Armazém:</strong> ${armazem?.codigo || 'Desconhecido'}<br>
+      <strong>Documento:</strong> ${mov.tipoDocumento} ${mov.numeroDocumento}<br>
+      <strong>Data:</strong> ${new Date(mov.dataHora.seconds * 1000).toLocaleString()}`;
+    document.getElementById('estornoModal').style.display = 'block';
+  };
+
+  window.closeModal = function() {
+    document.getElementById('estornoModal').style.display = 'none';
+    document.getElementById('estornoForm').reset();
+  };
+
+  window.handleEstorno = async function(event) {
+    event.preventDefault();
+
+    const movementId = document.getElementById('movementId').value;
+    const estornoReason = document.getElementById('estornoReason').value;
+    const mov = movimentacoes.find(m => m.id === movementId);
+    if (!mov || mov.estornada) return;
+
+    const armazemId = mov.armazemOrigemId || mov.armazemDestinoId;
+    if (!armazemId) {
+      alert('Não foi possível identificar o armazém da movimentação para estorno.');
+      return;
+    }
+    const estoque = estoques.find(e => e.produtoId === mov.produtoId && e.armazemId === armazemId);
+
+    try {
+      const novoSaldo = mov.tipo === 'ENTRADA'
+        ? (estoque?.saldo || 0) - mov.quantidade
+        : (estoque?.saldo || 0) + mov.quantidade;
+
+      // Verifica configuração de estoque negativo
+      const docRef = doc(db, "parametros", "sistema");
+      const docSnap = await getDoc(docRef);
+      const parametros = docSnap.exists() ? docSnap.data() : {};
+      const permitirEstoqueNegativo = parametros.permitirEstoqueNegativo || false;
+      const metodoValorizacao = parametros.metodoValorizacao || 'MEDIO';
+
+      if (!permitirEstoqueNegativo && novoSaldo < 0) {
+        alert('Estorno não permitido: saldo ficaria negativo no armazém!');
+        return;
+      }
+
+      // Validação do método de valorização
+      if (mov.tipo === 'SAIDA') {
+        const movimentacoesValorizacao = movimentacoes
+          .filter(m => m.produtoId === mov.produtoId && m.tipo === 'ENTRADA' && !m.estornada)
+          .sort((a, b) => {
+            if (metodoValorizacao === 'FIFO') return a.dataHora.seconds - b.dataHora.seconds;
+            if (metodoValorizacao === 'LIFO') return b.dataHora.seconds - a.dataHora.seconds;
+            return 0;
+          });
+
+        const movimentacaoOriginal = movimentacoesValorizacao[0];
+        if (!movimentacaoOriginal) {
+          alert('Não foi possível identificar a movimentação original para estorno baseado no método ' + metodoValorizacao);
+          return;
+        }
+
+        if (metodoValorizacao !== 'MEDIO' && mov.valorUnitario !== movimentacaoOriginal.valorUnitario) {
+          alert(`Estorno não permitido: valor unitário incompatível com o método ${metodoValorizacao}`);
+          return;
+        }
+      }
+
+      const estornoMovimentacao = {
+        produtoId: mov.produtoId,
+        tipo: mov.tipo === 'ENTRADA' ? 'SAIDA' : 'ENTRADA',
+        quantidade: mov.quantidade,
+        unidade: mov.unidade,
+        quantidadeOriginal: mov.quantidadeOriginal || mov.quantidade,
+        unidadeOriginal: mov.unidadeOriginal || mov.unidade,
+        valorUnitario: mov.valorUnitario || 0,
+        tipoDocumento: 'ESTORNO',
+        numeroDocumento: `EST-${movementId}`,
+        observacoes: `Estorno da movimentação ${mov.tipoDocumento} ${mov.numeroDocumento}. Motivo: ${estornoReason}`,
+        dataHora: Timestamp.now(),
+        estornoDe: movementId,
+        [mov.tipo === 'ENTRADA' ? 'armazemOrigemId' : 'armazemDestinoId']: armazemId
+      };
+
+      if (estoque) {
+        await updateDoc(doc(db, "estoques", estoque.id), {
+          saldo: novoSaldo,
+          ultimaMovimentacao: Timestamp.now()
+        });
+      } else if (mov.tipo === 'SAIDA') {
+        await addDoc(collection(db, "estoques"), {
+          produtoId: mov.produtoId,
+          armazemId: armazemId,
+          saldo: novoSaldo,
+          ultimaMovimentacao: Timestamp.now()
+        });
+      }
+
+      // Se for estorno de ENTRADA de transferência para OP, reduzir saldoReservado na OP
+      if (mov.tipo === 'ENTRADA' && mov.observacoes && mov.observacoes.includes('Transferência para OP')) {
+        // Tenta extrair o número da OP das observações
+        const opMatch = mov.observacoes.match(/OP(\d+)/);
+        if (opMatch) {
+          const opNumero = 'OP' + opMatch[1];
+          // Buscar a OP correspondente
+          const opSnap = await getDoc(doc(db, "ordensProducao", opNumero));
+          if (opSnap.exists()) {
+            const opData = opSnap.data();
+            const materiaisNecessarios = opData.materiaisNecessarios || [];
+            const updatedMateriais = materiaisNecessarios.map(m => {
+              if (m.produtoId === mov.produtoId) {
+                return { ...m, saldoReservado: Math.max(0, (m.saldoReservado || 0) - mov.quantidade) };
+              }
+              return m;
+            });
+            await updateDoc(doc(db, "ordensProducao", opNumero), {
+              materiaisNecessarios: updatedMateriais
+            });
+          }
+        }
+      }
+
+      await addDoc(collection(db, "movimentacoesEstoque"), estornoMovimentacao);
+      await updateDoc(doc(db, "movimentacoesEstoque", movementId), {
+        estornada: true,
+        estornoData: Timestamp.now(),
+        estornoMotivo: estornoReason
+      });
+
+      alert('Movimentação estornada com sucesso!');
+      closeModal();
+    } catch (error) {
+      console.error("Erro ao estornar:", error);
+      alert("Erro ao estornar: " + error.message);
+    }
+  };
+
+  window.excluirMovimentacao = async function(id) {
+    if (!confirm('Tem certeza que deseja excluir esta movimentação?')) return;
+    try {
+      await deleteDoc(doc(db, 'movimentacoesEstoque', id));
+    } catch (e) {
+      alert('Erro ao excluir: ' + e.message);
+    }
+  };
+
+  window.onclick = function(event) {
+    const modal = document.getElementById('estornoModal');
+    if (event.target === modal) closeModal();
+  };
+</script>
+</body>
+</html>

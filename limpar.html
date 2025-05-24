@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpar Solicitações de Compra</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+        button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #c82333;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .back-button {
+            background-color: #6c757d;
+            margin-right: 10px;
+        }
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Limpar Solicitações de Compra</h1>
+
+        <div class="warning">
+            <h3>⚠️ Atenção!</h3>
+            <p>Esta operação irá:</p>
+            <ul>
+                <li>Excluir <strong>todas</strong> as solicitações de compra existentes</li>
+                <li>Reiniciar o contador de solicitações</li>
+                <li>Esta ação <strong>não pode</strong> ser desfeita</li>
+            </ul>
+        </div>
+
+        <div id="success" class="success">
+            Solicitações de compra foram limpas com sucesso!
+        </div>
+
+        <div>
+            <button class="back-button" onclick="window.location.href='index.html'">Voltar</button>
+            <button id="btnLimpar" onclick="limparSolicitacoes()">Limpar Solicitações</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { 
+            collection, 
+            getDocs, 
+            deleteDoc,
+            doc,
+            setDoc
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        window.limparSolicitacoes = async function() {
+            if (!confirm('Tem certeza que deseja limpar todas as solicitações de compra? Esta ação não pode ser desfeita.')) {
+                return;
+            }
+
+            const btnLimpar = document.getElementById('btnLimpar');
+            btnLimpar.disabled = true;
+            btnLimpar.textContent = 'Limpando...';
+
+            try {
+                // Excluir todas as solicitações
+                const solicitacoesSnap = await getDocs(collection(db, "solicitacoesCompra"));
+                const deletePromises = solicitacoesSnap.docs.map(doc => deleteDoc(doc.ref));
+                await Promise.all(deletePromises);
+
+                // Reiniciar o contador
+                await setDoc(doc(db, "contadores", "solicitacoesCompra"), {
+                    valor: 0
+                });
+
+                document.getElementById('success').style.display = 'block';
+                btnLimpar.textContent = 'Solicitações Limpas';
+            } catch (error) {
+                console.error("Erro ao limpar solicitações:", error);
+                alert("Erro ao limpar solicitações: " + error.message);
+                btnLimpar.disabled = false;
+                btnLimpar.textContent = 'Limpar Solicitações';
+            }
+        };
+
+        // Verificar autenticação
+        window.onload = function() {
+            const userSession = localStorage.getItem('currentUser');
+            if (!userSession) {
+                window.location.href = 'login.html';
+            }
+        };
+    </script>
+</body>
+</html> 

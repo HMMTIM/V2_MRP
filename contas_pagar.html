@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contas a Pagar</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+    
+    .container {
+      width: 95%;
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 20px;
+
+<div class="modal" id="conciliacaoModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Conciliação Bancária</h2>
+      <button class="close-button" onclick="closeConciliacaoModal()">&times;</button>
+    </div>
+    <div class="form-row">
+      <div class="form-col">
+        <label>Arquivo OFX/CSV</label>
+        <input type="file" id="arquivoConciliacao" accept=".ofx,.csv">
+      </div>
+    </div>
+    <div id="resultadoConciliacao"></div>
+    <div class="form-actions">
+      <button onclick="processarConciliacao()" class="btn-primary">Processar</button>
+    </div>
+  </div>
+</div>
+
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+    
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 10px;
+      background-color: var(--secondary-color);
+      border-radius: 4px;
+    }
+    
+    .search-box {
+      flex: 1;
+      max-width: 400px;
+      position: relative;
+    }
+    
+    .search-box input {
+      width: 100%;
+      padding: 8px 10px 8px 35px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>');
+      background-repeat: no-repeat;
+      background-position: 8px center;
+    }
+    
+    .filter-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .filter-group select {
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .summary-card {
+      background-color: white;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    .summary-card.overdue {
+      border-left-color: var(--danger-color);
+    }
+    
+    .summary-card.pending {
+      border-left-color: var(--warning-color);
+    }
+    
+    .summary-card.paid {
+      border-left-color: var(--success-color);
+    }
+    
+    .summary-card h3 {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+
+<div class="form-row">
+  <div class="form-col">
+    <label>Conta Bancária</label>
+    <select id="contaBancaria" required>
+      <option value="">Selecione a conta</option>
+      <option value="1">Conta Principal</option>
+      <option value="2">Conta Secundária</option>
+    </select>
+  </div>
+  <div class="form-col">
+    <label>Saldo Disponível</label>
+    <div id="saldoConta" class="info-text">R$ 0,00</div>
+  </div>
+</div>
+
+    
+    .summary-card .value {
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--text-color);
+    }
+    
+    .summary-card .overdue-value {
+      color: var(--danger-color);
+    }
+    
+    .summary-card .pending-value {
+      color: var(--warning-color);
+    }
+    
+    .summary-card .paid-value {
+      color: var(--success-color);
+    }
+    
+    .tab-container {
+      margin-bottom: 20px;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 2px;
+      background-color: #f8f9fa;
+      padding: 5px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: #666;
+      font-size: 14px;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 20px 0;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .bills-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    .bills-table th,
+    .bills-table td {
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+    
+    .bills-table th {
+      background-color: var(--secondary-color);
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    
+    .bills-table tr:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .status-paid {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .status-overdue {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .status-partial {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .btn-view, .btn-pay, .btn-edit, .btn-delete {
+      padding: 5px 8px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .btn-view {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-pay {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    .btn-edit {
+      background-color: #ffc107;
+      color: #000;
+    }
+    
+    .btn-delete {
+      background-color: var(--danger-color);
+      color: white;
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+function validarPagamento(dados) {
+  // Validar disponibilidade de saldo
+  if (dados.valor > getSaldoConta(dados.contaBancaria)) {
+    throw new Error('Saldo insuficiente na conta bancária');
+  }
+
+  // Validar alçada do usuário
+  if (!verificarAlcadaUsuario(dados.valor)) {
+    throw new Error('Valor excede sua alçada de aprovação');
+  }
+
+  // Validar documentação
+  if (dados.valor > 10000 && !dados.comprovante) {
+    throw new Error('Comprovante obrigatório para valores acima de R$ 10.000');
+  }
+
+  return true;
+}
+
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 800px;
+      border-radius: 8px;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .modal-header h2 {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--primary-color);
+      margin: 0;
+    }
+    
+    .close-button {
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .form-col {
+      flex: 1;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .required::after {
+      content: "*";
+      color: var(--danger-color);
+      margin-left: 4px;
+    }
+    
+    .info-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    
+    .installments-container {
+      margin-top: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 15px;
+    }
+    
+    .installments-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .installments-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .installments-table th,
+    .installments-table td {
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+    
+    .installments-table th {
+      background-color: var(--secondary-color);
+      font-weight: 500;
+    }
+    
+    .payment-history {
+      margin-top: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 15px;
+    }
+    
+    .payment-history h3 {
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: var(--text-color);
+    }
+    
+    .payment-history-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .payment-history-table th,
+    .payment-history-table td {
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+    
+    .payment-history-table th {
+      background-color: var(--secondary-color);
+      font-weight: 500;
+    }
+    
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Contas a Pagar</h1>
+      <div>
+        <button class="btn-primary" onclick="openNewBillModal()">Nova Conta</button>
+        <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+      </div>
+    </div>
+    
+    <div class="summary-cards">
+      <div class="summary-card">
+        <h3>Total a Pagar</h3>
+        <div class="value" id="totalValue">R$ 0,00</div>
+      </div>
+      <div class="summary-card overdue">
+        <h3>Vencidas</h3>
+        <div class="value overdue-value" id="overdueValue">R$ 0,00</div>
+      </div>
+      <div class="summary-card pending">
+        <h3>A Vencer (30 dias)</h3>
+        <div class="value pending-value" id="pendingValue">R$ 0,00</div>
+      </div>
+      <div class="summary-card paid">
+        <h3>Pagas (30 dias)</h3>
+        <div class="value paid-value" id="paidValue">R$ 0,00</div>
+      </div>
+    </div>
+    
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Buscar por fornecedor, número..." oninput="filterBills()">
+      </div>
+      <div class="filter-group">
+        <select id="statusFilter" onchange="filterBills()">
+          <option value="">Todos os Status</option>
+          <option value="PENDENTE">Pendente</option>
+          <option value="PAGO">Pago</option>
+          <option value="VENCIDO">Vencido</option>
+          <option value="PARCIAL">Parcialmente Pago</option>
+        </select>
+        <select id="periodFilter" onchange="filterBills()">
+          <option value="30">Últimos 30 dias</option>
+          <option value="60">Últimos 60 dias</option <option value="60">Últimos 60 dias</option>
+          <option value="90">Últimos 90 dias</option>
+          <option value="180">Últimos 180 dias</option>
+          <option value="365">Último ano</option>
+          <option value="all">Todos</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="tab-container">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('all')">Todas</button>
+        <button class="tab" onclick="switchTab('pending')">Pendentes</button>
+        <button class="tab" onclick="switchTab('overdue')">Vencidas</button>
+        <button class="tab" onclick="switchTab('paid')">Pagas</button>
+      </div>
+      
+      <div id="allTab" class="tab-content active">
+        <table class="bills-table">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Fornecedor</th>
+              <th>Documento</th>
+              <th>Emissão</th>
+              <th>Vencimento</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="allBillsTableBody">
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="pendingTab" class="tab-content">
+        <table class="bills-table">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Fornecedor</th>
+              <th>Documento</th>
+              <th>Emissão</th>
+              <th>Vencimento</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="pendingBillsTableBody">
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="overdueTab" class="tab-content">
+        <table class="bills-table">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Fornecedor</th>
+              <th>Documento</th>
+              <th>Emissão</th>
+              <th>Vencimento</th>
+              <th>Valor</th>
+              <th>Dias Vencidos</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="overdueBillsTableBody">
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="paidTab" class="tab-content">
+        <table class="bills-table">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Fornecedor</th>
+              <th>Documento</th>
+              <th>Emissão</th>
+              <th>Vencimento</th>
+              <th>Pagamento</th>
+              <th>Valor</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="paidBillsTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <button onclick="window.location.href='index.html'" class="back-button">Voltar para o Menu</button>
+  </div>
+  
+  <!-- Modal Nova Conta -->
+  <div id="billModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Nova Conta a Pagar</h2>
+        <button class="close-button" onclick="closeModal()">&times;</button>
+      </div>
+      
+      <form id="billForm">
+        <input type="hidden" id="editingId">
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="fornecedor" class="required">Fornecedor</label>
+            <select id="fornecedor" required>
+              <option value="">Selecione o fornecedor</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="tipoDocumento" class="required">Tipo de Documento</label>
+            <select id="tipoDocumento" required>
+              <option value="NF">Nota Fiscal</option>
+              <option value="BOLETO">Boleto</option>
+              <option value="RECIBO">Recibo</option>
+              <option value="FATURA">Fatura</option>
+              <option value="DUPLICATA">Duplicata</option>
+              <option value="OUTROS">Outros</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="numeroDocumento" class="required">Número do Documento</label>
+            <input type="text" id="numeroDocumento" required>
+          </div>
+          <div class="form-col">
+            <label for="dataEmissao" class="required">Data de Emissão</label>
+            <input type="date" id="dataEmissao" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="valorTotal" class="required">Valor Total</label>
+            <input type="number" id="valorTotal" min="0.01" step="0.01" required onchange="updateInstallments()">
+          </div>
+          <div class="form-col">
+            <label for="condicaoPagamento" class="required">Condição de Pagamento</label>
+            <select id="condicaoPagamento" required onchange="updateInstallments()">
+              <option value="">Selecione a condição</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="centroCusto">Centro de Custo</label>
+            <select id="centroCusto">
+              <option value="">Selecione o centro de custo</option>
+              <option value="ADMINISTRATIVO">Administrativo</option>
+              <option value="COMERCIAL">Comercial</option>
+              <option value="FINANCEIRO">Financeiro</option>
+              <option value="PRODUCAO">Produção</option>
+              <option value="LOGISTICA">Logística</option>
+              <option value="TI">TI</option>
+              <option value="RH">Recursos Humanos</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="contaContabil">Conta Contábil</label>
+            <select id="contaContabil">
+              <option value="">Selecione a conta contábil</option>
+              <option value="FORNECEDORES">Fornecedores</option>
+              <option value="SERVICOS">Serviços</option>
+              <option value="IMPOSTOS">Impostos</option>
+              <option value="SALARIOS">Salários</option>
+              <option value="ALUGUEIS">Aluguéis</option>
+              <option value="UTILIDADES">Utilidades (Água, Luz, etc)</option>
+              <option value="OUTROS">Outros</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="observacoes">Observações</label>
+            <textarea id="observacoes" rows="3"></textarea>
+          </div>
+        </div>
+        
+        <div class="installments-container">
+          <div class="installments-header">
+            <h3>Parcelas</h3>
+          </div>
+          
+          <table class="installments-table">
+            <thead>
+              <tr>
+                <th>Parcela</th>
+                <th>Vencimento</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody id="installmentsTableBody">
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-success" id="submitButton">Cadastrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Modal de Pagamento -->
+  <div id="paymentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Registrar Pagamento</h2>
+        <button class="close-button" onclick="closePaymentModal()">&times;</button>
+      </div>
+      
+      <form id="paymentForm">
+        <input type="hidden" id="paymentBillId">
+        <input type="hidden" id="paymentInstallmentId">
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="paymentDate" class="required">Data do Pagamento</label>
+            <input type="date" id="paymentDate" required>
+          </div>
+          <div class="form-col">
+            <label for="paymentValue" class="required">Valor Pago</label>
+            <input type="number" id="paymentValue" min="0.01" step="0.01" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="paymentMethod" class="required">Forma de Pagamento</label>
+            <select id="paymentMethod" required>
+              <option value="PIX">PIX</option>
+              <option value="TRANSFERENCIA">Transferência Bancária</option>
+              <option value="BOLETO">Boleto</option>
+              <option value="CARTAO">Cartão de Crédito</option>
+              <option value="DINHEIRO">Dinheiro</option>
+              <option value="CHEQUE">Cheque</option>
+              <option value="OUTROS">Outros</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="paymentReference">Referência/Comprovante</label>
+            <input type="text" id="paymentReference">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="paymentNotes">Observações</label>
+            <textarea id="paymentNotes" rows="3"></textarea>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closePaymentModal()">Cancelar</button>
+          <button type="submit" class="btn-success">Confirmar Pagamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Modal de Detalhes -->
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Detalhes da Conta</h2>
+        <button class="close-button" onclick="closeDetailsModal()">&times;</button>
+      </div>
+      
+      <div id="billDetails">
+        <div class="form-row">
+          <div class="form-col">
+            <label>Fornecedor</label>
+            <div id="detailFornecedor" class="info-text"></div>
+          </div>
+          <div class="form-col">
+            <label>Documento</label>
+            <div id="detailDocumento" class="info-text"></div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label>Emissão</label>
+            <div id="detailEmissao" class="info-text"></div>
+          </div>
+          <div class="form-col">
+            <label>Valor Total</label>
+            <div id="detailValor" class="info-text"></div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label>Centro de Custo</label>
+            <div id="detailCentroCusto" class="info-text"></div>
+          </div>
+          <div class="form-col">
+            <label>Conta Contábil</label>
+            <div id="detailContaContabil" class="info-text"></div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label>Observações</label>
+            <div id="detailObservacoes" class="info-text"></div>
+          </div>
+        </div>
+        
+        <div class="installments-container">
+          <h3>Parcelas</h3>
+          <table class="installments-table">
+            <thead>
+              <tr>
+                <th>Parcela</th>
+                <th>Vencimento</th>
+                <th>Valor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="detailInstallmentsTableBody">
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="payment-history">
+          <h3>Histórico de Pagamentos</h3>
+          <table class="payment-history-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Valor</th>
+                <th>Forma</th>
+                <th>Referência</th>
+                <th>Observações</th>
+              </tr>
+            </thead>
+            <tbody id="paymentHistoryTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs, 
+      doc, 
+      getDoc,
+      updateDoc, 
+      deleteDoc,
+      query,
+      where,
+      Timestamp 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let contasAPagar = [];
+    let fornecedores = [];
+    let condicoesPagamento = [];
+    let currentUser = null;
+
+    window.onload = async function() {
+      // Verificar autenticação
+      const userSession = localStorage.getItem('currentUser');
+      if (userSession) {
+        currentUser = JSON.parse(userSession);
+      }
+      
+      await loadData();
+      updateSummary();
+      displayBills();
+      updateSelects();
+    };
+
+    async function loadData() {
+      try {
+        const [contasSnap, fornecedoresSnap, condicoesSnap] = await Promise.all([
+          getDocs(collection(db, "contasAPagar")),
+          getDocs(collection(db, "fornecedores")),
+          getDocs(collection(db, "condicoesPagamento"))
+        ]);
+
+        contasAPagar = contasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        fornecedores = fornecedoresSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        condicoesPagamento = condicoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados. Por favor, recarregue a página.");
+      }
+    }
+
+    function updateSelects() {
+      const fornecedorSelect = document.getElementById('fornecedor');
+      const condicaoSelect = document.getElementById('condicaoPagamento');
+      
+      // Atualizar select de fornecedores
+      fornecedorSelect.innerHTML = '<option value="">Selecione o fornecedor</option>';
+      fornecedores.forEach(fornecedor => {
+        fornecedorSelect.innerHTML += `
+          <option value="${fornecedor.id}">
+            ${fornecedor.codigo} - ${fornecedor.razaoSocial}
+          </option>`;
+      });
+      
+      // Atualizar select de condições de pagamento
+      condicaoSelect.innerHTML = '<option value="">Selecione a condição</option>';
+      condicoesPagamento
+        .filter(condicao => condicao.ativo)
+        .forEach(condicao => {
+          condicaoSelect.innerHTML += `
+            <option value="${condicao.id}">
+              ${condicao.codigo} - ${condicao.descricao}
+            </option>`;
+        });
+    }
+
+    function updateSummary() {
+      const today = new Date();
+      
+      // Total a pagar (pendente + vencido)
+      const totalValue = contasAPagar.reduce((total, conta) => {
+        if (!conta.parcelas) return total;
+        
+        const valorPendente = conta.parcelas.reduce((sum, parcela) => {
+          if (parcela.status !== 'PAGO') {
+            return sum + (parcela.valor - (parcela.valorPago || 0));
+          }
+          return sum;
+        }, 0);
+        
+        return total + valorPendente;
+      }, 0);
+      
+      // Vencidas
+      const overdueValue = contasAPagar.reduce((total, conta) => {
+        if (!conta.parcelas) return total;
+        
+        const valorVencido = conta.parcelas.reduce((sum, parcela) => {
+          const dataVencimento = new Date(parcela.dataVencimento.seconds * 1000);
+          if (dataVencimento < today && parcela.status !== 'PAGO') {
+            return sum + (parcela.valor - (parcela.valorPago || 0));
+          }
+          return sum;
+        }, 0);
+        
+        return total + valorVencido;
+      }, 0);
+      
+      // A vencer nos próximos 30 dias
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(today.getDate() + 30);
+      
+      const pendingValue = contasAPagar.reduce((total, conta) => {
+        if (!conta.parcelas) return total;
+        
+        const valorAVencer = conta.parcelas.reduce((sum, parcela) => {
+          const dataVencimento = new Date(parcela.dataVencimento.seconds * 1000);
+          if (dataVencimento >= today && dataVencimento <= thirtyDaysFromNow && parcela.status !== 'PAGO') {
+            return sum + (parcela.valor - (parcela.valorPago || 0));
+          }
+          return sum;
+        }, 0);
+        
+        return total + valorAVencer;
+      }, 0);
+      
+      // Pagas nos últimos 30 dias
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+      
+      const paidValue = contasAPagar.reduce((total, conta) => {
+        if (!conta.parcelas) return total;
+        
+        const valorPago = conta.parcelas.reduce((sum, parcela) => {
+          if (parcela.pagamentos && parcela.pagamentos.length > 0) {
+            return parcela.pagamentos.reduce((paidSum, pagamento) => {
+              const dataPagamento = new Date(pagamento.dataPagamento.seconds * 1000);
+              if (dataPagamento >= thirtyDaysAgo && dataPagamento <= today) {
+                return paidSum + pagamento.valor;
+              }
+              return paidSum;
+            }, sum);
+          }
+          return sum;
+        }, 0);
+        
+        return total + valorPago;
+      }, 0);
+      
+      // Atualizar os valores no DOM
+      document.getElementById('totalValue').textContent = `R$ ${totalValue.toFixed(2)}`;
+      document.getElementById('overdueValue').textContent = `R$ ${overdueValue.toFixed(2)}`;
+      document.getElementById('pendingValue').textContent = `R$ ${pendingValue.toFixed(2)}`;
+      document.getElementById('paidValue').textContent = `R$ ${paidValue.toFixed(2)}`;
+    }
+
+    function displayBills() {
+      const allTableBody = document.getElementById('allBillsTableBody');
+      const pendingTableBody = document.getElementById('pendingBillsTableBody');
+      const overdueTableBody = document.getElementById('overdueBillsTableBody');
+      const paidTableBody = document.getElementById('paidBillsTableBody');
+      
+      allTableBody.innerHTML = '';
+      pendingTableBody.innerHTML = '';
+      overdueTableBody.innerHTML = '';
+      paidTableBody.innerHTML = '';
+      
+      const today = new Date();
+      
+      contasAPagar.forEach(conta => {
+        const fornecedor = fornecedores.find(f => f.id === conta.fornecedorId);
+        const fornecedorNome = fornecedor ? fornecedor.razaoSocial : 'N/A';
+        
+        // Determinar o status geral da conta
+        let statusGeral = 'PENDENTE';
+        let valorPendente = 0;
+        let valorPago = 0;
+        let proximoVencimento = null;
+        let parcelaVencida = false;
+        
+        if (conta.parcelas && conta.parcelas.length > 0) {
+          // Calcular valores e verificar status
+          conta.parcelas.forEach(parcela => {
+            const dataVencimento = new Date(parcela.dataVencimento.seconds * 1000);
+            
+            if (parcela.status === 'PAGO') {
+              valorPago += parcela.valor;
+            } else {
+              valorPendente += parcela.valor - (parcela.valorPago || 0);
+              
+              // Verificar se está vencida
+              if (dataVencimento < today) {
+                parcelaVencida = true;
+              }
+              
+              // Determinar o próximo vencimento
+              if (!proximoVencimento || dataVencimento < proximoVencimento) {
+                proximoVencimento = dataVencimento;
+              }
+            }
+          });
+          
+          // Determinar status geral
+          if (valorPendente === 0) {
+            statusGeral = 'PAGO';
+          } else if (parcelaVencida) {
+            statusGeral = 'VENCIDO';
+          } else if (valorPago > 0 && valorPendente > 0) {
+            statusGeral = 'PARCIAL';
+          }
+        }
+        
+        // Adicionar à tabela geral
+        const allRow = document.createElement('tr');
+        allRow.innerHTML = `
+          <td>${conta.numeroDocumento}</td>
+          <td>${fornecedorNome}</td>
+          <td>${conta.tipoDocumento}</td>
+          <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+          <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+          <td>R$ ${conta.valorTotal.toFixed(2)}</td>
+          <td><span class="status-badge status-${statusGeral.toLowerCase()}">${statusGeral}</span></td>
+          <td class="action-buttons">
+            <button class="btn-view" onclick="viewBillDetails('${conta.id}')">Detalhes</button>
+            ${statusGeral !== 'PAGO' ? `<button class="btn-pay" onclick="openPaymentModal('${conta.id}')">Pagar</button>` : ''}
+            <button class="btn-edit" onclick="editBill('${conta.id}')">Editar</button>
+            <button class="btn-delete" onclick="deleteBill('${conta.id}')">Excluir</button>
+          </td>
+        `;
+        allTableBody.appendChild(allRow);
+        
+        // Adicionar às tabelas específicas
+        if (statusGeral === 'PENDENTE' || statusGeral === 'PARCIAL') {
+          const pendingRow = document.createElement('tr');
+          pendingRow.innerHTML = `
+            <td>${conta.numeroDocumento}</td>
+            <td>${fornecedorNome}</td>
+            <td>${conta.tipoDocumento}</td>
+            <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+            <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+            <td>R$ ${valorPendente.toFixed(2)}</td>
+            <td><span class="status-badge status-${statusGeral.toLowerCase()}">${statusGeral}</span></td>
+            <td class="action-buttons">
+              <button class="btn-view" onclick="viewBillDetails('${conta.id}')">Detalhes</button>
+              <button class="btn-pay" onclick="openPaymentModal('${conta.id}')">Pagar</button>
+              <button class="btn-edit" onclick="editBill('${conta.id}')">Editar</button>
+            </td>
+          `;
+          pendingTableBody.appendChild(pendingRow);
+        } else if (statusGeral === 'VENCIDO') {
+          // Calcular dias vencidos
+          const diasVencidos = Math.floor((today - proximoVencimento) / (1000 * 60 * 60 * 24));
+          
+          const overdueRow = document.createElement('tr');
+          overdueRow.innerHTML = `
+            <td>${conta.numeroDocumento}</td>
+            <td>${fornecedorNome}</td>
+            <td>${conta.tipoDocumento}</td>
+            <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+            <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+            <td>R$ ${valorPendente.toFixed(2)}</td>
+            <td>${diasVencidos} dias</td>
+            <td class="action-buttons">
+              <button class="btn-view" onclick="viewBillDetails('${conta.id}')">Detalhes</button>
+              <button class="btn-pay" onclick="openPaymentModal('${conta.id}')">Pagar</button>
+              <button class="btn-edit" onclick="editBill('${conta.id}')">Editar</button>
+            </td>
+          `;
+          overdueTableBody.appendChild(overdueRow);
+        } else if (statusGeral === 'PAGO') {
+          // Encontrar a data do último pagamento
+          let ultimoPagamento = null;
+          
+          conta.parcelas.forEach(parcela => {
+            if (parcela.pagamentos && parcela.pagamentos.length > 0) {
+              parcela.pagamentos.forEach(pagamento => {
+                const dataPagamento = new Date(pagamento.dataPagamento.seconds * 1000);
+                if (!ultimoPagamento || dataPagamento > ultimoPagamento) {
+                  ultimoPagamento = dataPagamento;
+                }
+              });
+            }
+          });
+          
+          const paidRow = document.createElement('tr');
+          paidRow.innerHTML = `
+            <td>${conta.numeroDocumento}</td>
+            <td>${fornecedorNome}</td>
+            <td>${conta.tipoDocumento}</td>
+            <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+            <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+            <td>${ultimoPagamento ? ultimoPagamento.toLocaleDateString() : 'N/A'}</td>
+            <td>R$ ${conta.valorTotal.toFixed(2)}</td>
+            <td class="action-buttons">
+              <button class="btn-view" onclick="viewBillDetails('${conta.id}')">Detalhes</button>
+              <button class="btn-edit" onclick="editBill('${conta.id}')">Editar</button>
+            </td>
+          `;
+          paidTableBody.appendChild(paidRow);
+        }
+      });
+    }
+
+    window.switchTab = function(tab) {
+      document.querySelectorAll('.tab').forEach(t => {
+        t.classList.remove('active');
+      });
+      document.querySelectorAll('.tab-content').forEach(c => {
+        c.classList.remove('active');
+      });
+
+      document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+      
+      if (tab === 'all') {
+        document.getElementById('allTab').classList.add('active');
+      } else if (tab === 'pending') {
+        document.getElementById('pendingTab').classList.add('active');
+      } else if (tab === 'overdue') {
+        document.getElementById('overdueTab').classList.add('active');
+      } else if (tab === 'paid') {
+        document.getElementById('paidTab').classList.add('active');
+      }
+    };
+
+    window.filterBills = function() {
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+      const periodFilter = parseInt(document.getElementById('periodFilter').value) || 0;
+      
+      const today = new Date();
+      const startDate = new Date();
+      
+      if (periodFilter > 0) {
+        startDate.setDate(today.getDate() - periodFilter);
+      } else {
+        // Se for "all", definir uma data bem antiga
+        startDate.setFullYear(2000);
+      }
+      
+      // Filtrar contas
+      const filteredBills = contasAPagar.filter(conta => {
+        const fornecedor = fornecedores.find(f => f.id === conta.fornecedorId);
+        const fornecedorNome = fornecedor ? fornecedor.razaoSocial.toLowerCase() : '';
+        
+        // Filtro de texto
+        const matchesText = 
+          conta.numeroDocumento.toLowerCase().includes(searchText) ||
+          fornecedorNome.includes(searchText);
+        
+        if (!matchesText) return false;
+        
+        // Filtro de período
+        const dataEmissao = new Date(conta.dataEmissao.seconds * 1000);
+        const matchesPeriod = dataEmissao >= startDate && dataEmissao <= today;
+        
+        if (!matchesPeriod) return false;
+        
+        // Filtro de status
+        if (statusFilter) {
+          // Determinar o status geral da conta
+          let statusGeral = 'PENDENTE';
+          let valorPendente = 0;
+          let parcelaVencida = false;
+          
+          if (conta.parcelas && conta.parcelas.length > 0) {
+            // Calcular valores e verificar status
+            conta.parcelas.forEach(parcela => {
+              const dataVencimento = new Date(parcela.dataVencimento.seconds * 1000);
+              
+              if (parcela.status !== 'PAGO') {
+                valorPendente += parcela.valor - (parcela.valorPago || 0);
+                
+                // Verificar se está vencida
+                if (dataVencimento < today) {
+                  parcelaVencida = true;
+                }
+              }
+            });
+            
+            // Determinar status geral
+            if (valorPendente === 0) {
+              statusGeral = 'PAGO';
+            } else if (parcelaVencida) {
+              statusGeral = 'VENCIDO';
+            } else if (conta.parcelas.some(p => p.status === 'PAGO') && valorPendente > 0) {
+              statusGeral = 'PARCIAL';
+            }
+          }
+          
+          return statusGeral === statusFilter;
+        }
+        
+        return true;
+      });
+      
+      // Atualizar tabelas
+      displayFilteredBills(filteredBills);
+    };
+
+    function displayFilteredBills(bills) {
+      const allTableBody = document.getElementById('allBillsTableBody');
+      const pendingTableBody = document.getElementById('pendingBillsTableBody');
+      const overdueTableBody = document.getElementById('overdueBillsTableBody');
+      const paidTableBody = document.getElementById('paidBillsTableBody');
+      
+      allTableBody.innerHTML = '';
+      pendingTableBody.innerHTML = '';
+      overdueTableBody.innerHTML = '';
+      paidTableBody.innerHTML = '';
+      
+      const today = new Date();
+      
+      bills.forEach(conta => {
+        const fornecedor = fornecedores.find(f => f.id === conta.fornecedorId);
+        const fornecedorNome = fornecedor ? fornecedor.razaoSocial : 'N/A';
+        
+        // Determinar o status geral da conta
+        let statusGeral = 'PENDENTE';
+        let valorPendente = 0;
+        let valorPago = 0;
+        let proximoVencimento = null;
+        let parcelaVencida = false;
+        
+        if (conta.parcelas && conta.parcelas.length > 0) {
+          // Calcular valores e verificar status
+          conta.parcelas.forEach(parcela => {
+            const dataVencimento = new Date(parcela.dataVencimento.seconds * 1000);
+            
+            if (parcela.status === 'PAGO') {
+              valorPago += parcela.valor;
+            } else {
+              valorPendente += parcela.valor - (parcela.valorPago || 0);
+              
+              // Verificar se está vencida
+              if (dataVencimento < today) {
+                parcelaVencida = true;
+              }
+              
+              // Determinar o próximo vencimento
+              if (!proximoVencimento || dataVencimento < proximoVencimento) {
+                proximoVencimento = dataVencimento;
+              }
+            }
+          });
+          
+          // Determinar status geral
+          if (valorPendente === 0) {
+            statusGeral = 'PAGO';
+          } else if (parcelaVencida) {
+            statusGeral = 'VENCIDO';
+          } else if (valorPago > 0 && valorPendente > 0) {
+            statusGeral = 'PARCIAL';
+          }
+        }
+        
+        // Adicionar à tabela geral
+        const allRow = document.createElement('tr');
+        allRow.innerHTML = `
+          <td>${conta.numeroDocumento}</td>
+          <td>${fornecedorNome}</td>
+          <td>${conta.tipoDocumento}</td>
+          <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+          <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+          <td>R$ ${conta.valorTotal.toFixed(2)}</td>
+          <td><span class="status-badge status-${statusGeral.toLowerCase()}">${statusGeral}</span></td>
+          <td class="action-buttons">
+            <button class="btn-view" onclick="viewBillDetails('${conta.id}')">Detalhes</button>
+            ${statusGeral !== 'PAGO' ? `<button class="btn-pay" onclick="openPaymentModal('${conta.id}')">Pagar</button>` : ''}
+            <button class="btn-edit" onclick="editBill('${conta.id}')">Editar</button>
+            <button class="btn-delete" onclick="deleteBill('${conta.id}')">Excluir</button>
+          </td>
+        `;
+        allTableBody.appendChild(allRow);
+        
+        // Adicionar às tabelas específicas (mesmo código da função displayBills)
+        if (statusGeral === 'PENDENTE' || statusGeral === 'PARCIAL') {
+          const pendingRow = document.createElement('tr');
+          pendingRow.innerHTML = `
+            <td>${conta.numeroDocumento}</td>
+            <td>${fornecedorNome}</td>
+            <td>${conta.tipoDocumento}</td>
+            <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+            <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+            <td>R$ ${valorPendente.toFixed(2)}</td>
+            <td><span class="status-badge status-${statusGeral.toLowerCase()}">${statusGeral}</span></td>
+            <td class="action-buttons">
+              <button class="btn-view" onclick="viewBillDetails('${conta.id}')">Detalhes</button>
+              <button class="btn-pay" onclick="openPaymentModal('${conta.id}')">Pagar</button>
+              <button class="btn-edit" onclick="editBill('${conta.id}')">Editar</button>
+            </td>
+          `;
+          pendingTableBody.appendChild(pendingRow);
+        } else if (statusGeral === 'VENCIDO') {
+          // Calcular dias vencidos
+          const diasVencidos = Math.floor((today - proximoVencimento) / (1000 * 60 * 60 * 24));
+          
+          const overdueRow = document.createElement('tr');
+          overdueRow.innerHTML = `
+            <td>${conta.numeroDocumento}</td>
+            <td>${fornecedorNome}</td>
+            <td>${conta.tipoDocumento}</td>
+            <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+            <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+            <td>R$ ${valorPendente.toFixed(2)}</td>
+            <td>${diasVencidos} dias</td>
+            <td class="action-buttons">
+              <button class="btn-view" onclick="viewBillDetails('${conta.id}')">Detalhes</button>
+              <button class="btn-pay" onclick="openPaymentModal('${conta.id}')">Pagar</button>
+              <button class="btn-edit" onclick="editBill('${conta.id}')">Editar</button>
+            </td>
+          `;
+          overdueTableBody.appendChild(overdueRow);
+        } else if (statusGeral === 'PAGO') {
+          // Encontrar a data do último pagamento
+          let ultimoPagamento = null;
+          
+          conta.parcelas.forEach(parcela => {
+            if (parcela.pagamentos && parcela.pagamentos.length > 0) {
+              parcela.pagamentos.forEach(pagamento => {
+                const dataPagamento = new Date(pagamento.dataPagamento.seconds * 1000);
+                if (!ultimoPagamento || dataPagamento > ultimoPagamento) {
+                  ultimoPagamento = dataPagamento;
+                }
+              });
+            }
+          });
+          
+          const paidRow = document.createElement('tr');
+          paidRow.innerHTML = `
+            <td>${conta.numeroDocumento}</td>
+            <td>${fornecedorNome}</td>
+            <td>${conta.tipoDocumento}</td>
+            <td>${new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString()}</td>
+            <td>${proximoVencimento ? proximoVencimento.toLocaleDateString() : 'N/A'}</td>
+            <td>${ultimoPagamento ? ultimoPagamento.toLocaleDateString() : 'N/A'}</td>
+            <td>R$ ${conta.valorTotal.toFixed(2)}</td>
+            <td class="action-buttons">
+              <button class="btn-view" onclick="viewBillDetails('${conta.id}')">Detalhes</button>
+              <button class="btn-edit" onclick="editBill('${conta.id}')">Editar</button>
+            </td>
+          `;
+          paidTableBody.appendChild(paidRow);
+        }
+      });
+    }
+
+    window.openNewBillModal = function() {
+      document.getElementById('billForm').reset();
+      document.getElementById('editingId').value = '';
+      document.getElementById('modalTitle').textContent = 'Nova Conta a Pagar';
+      document.getElementById('submitButton').textContent = 'Cadastrar';
+      document.getElementById('installmentsTableBody').innerHTML = '';
+      
+      // Definir data de emissão como hoje
+      const today = new Date();
+      const formattedDate = today.toISOString().split('T')[0];
+      document.getElementById('dataEmissao').value = formattedDate;
+      
+      document.getElementById('billModal').style.display = 'block';
+    };
+    window.openNewBillModal = openNewBillModal;
+  
+    window.closeModal = function() {
+      document.getElementById('billModal').style.display = 'none';
+    };
+
+    window.updateInstallments = function() {
+      const valorTotal = parseFloat(document.getElementById('valorTotal').value) || 0;
+      const condicaoId = document.getElementById('condicaoPagamento').value;
+      const dataEmissao = document.getElementById('dataEmissao').value;
+      
+      if (!valorTotal || !condicaoId || !dataEmissao) {
+        return;
+      }
+      
+      const condicao = condicoesPagamento.find(c => c.id === condicaoId);
+      if (!condicao) return;
+      
+      const tableBody = document.getElementById('installmentsTableBody');
+      tableBody.innerHTML = '';
+      
+      const dataBase = new Date(dataEmissao);
+      
+      if (condicao.tipo === 'A_VISTA') {
+        // Pagamento à vista
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>À Vista</td>
+          <td>${dataBase.toLocaleDateString()}</td>
+          <td>R$ ${valorTotal.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(row);
+      } else if (condicao.tipo === 'PARCELADO') {
+        // Pagamento parcelado
+        const valorParcela = valorTotal / condicao.numParcelas;
+        
+        for (let i = 1; i <= condicao.numParcelas; i++) {
+          const dataVencimento = new Date(dataBase);
+          dataVencimento.setDate(dataVencimento.getDate() + (condicao.intervalo * (i - 1)));
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${i}/${condicao.numParcelas}</td>
+            <td>${dataVencimento.toLocaleDateString()}</td>
+            <td>R$ ${valorParcela.toFixed(2)}</td>
+          `;
+          tableBody.appendChild(row);
+        }
+      } else if (condicao.tipo === 'ENTRADA_PARCELADO') {
+        // Entrada + parcelado
+        const valorEntrada = valorTotal * (condicao.percentualEntrada / 100);
+        const valorRestante = valorTotal - valorEntrada;
+        const valorParcela = valorRestante / condicao.numParcelas;
+        
+        // Entrada
+        const dataEntrada = new Date(dataBase);
+        dataEntrada.setDate(dataEntrada.getDate() + condicao.diasEntrada);
+        
+        const rowEntrada = document.createElement('tr');
+        rowEntrada.innerHTML = `
+          <td>Entrada</td>
+          <td>${dataEntrada.toLocaleDateString()}</td>
+          <td>R$ ${valorEntrada.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(rowEntrada);
+        
+        // Parcelas
+        for (let i = 1; i <= condicao.numParcelas; i++) {
+          const dataVencimento = new Date(dataEntrada);
+          dataVencimento.setDate(dataVencimento.getDate() + (condicao.intervalo * i));
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${i}/${condicao.numParcelas}</td>
+            <td>${dataVencimento.toLocaleDateString()}</td>
+            <td>R$ ${valorParcela.toFixed(2)}</td>
+          `;
+          tableBody.appendChild(row);
+        }
+      }
+    };
+
+    document.getElementById('billForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      
+      const editingId = document.getElementById('editingId').value;
+      const fornecedorId = document.getElementById('fornecedor').value;
+      const tipoDocumento = document.getElementById('tipoDocumento').value;
+      const numeroDocumento = document.getElementById('numeroDocumento').value;
+      const dataEmissao = document.getElementById('dataEmissao').value;
+      const valorTotal = parseFloat(document.getElementById('valorTotal').value) || 0;
+      const condicaoPagamentoId = document.getElementById('condicaoPagamento').value;
+      const centroCusto = document.getElementById('centroCusto').value;
+      const contaContabil = document.getElementById('contaContabil').value;
+      const observacoes = document.getElementById('observacoes').value;
+      
+      if (!fornecedorId || !tipoDocumento || !numeroDocumento || !dataEmissao || !valorTotal || !condicaoPagamentoId) {
+        alert('Por favor, preencha todos os campos obrigatórios.');
+        return;
+      }
+      
+      // Gerar parcelas
+      const condicao = condicoesPagamento.find(c => c.id === condicaoPagamentoId);
+      if (!condicao) {
+        alert('Condição de pagamento inválida.');
+        return;
+      }
+      
+      const parcelas = [];
+      const dataBase = new Date(dataEmissao);
+      
+      if (condicao.tipo === 'A_VISTA') {
+        // Pagamento à vista
+        parcelas.push({
+          numero: 1,
+          descricao: 'À Vista',
+          dataVencimento: Timestamp.fromDate(dataBase),
+          valor: valorTotal,
+          valorPago: 0,
+          status: 'PENDENTE',
+          pagamentos: []
+        });
+      } else if (condicao.tipo === 'PARCELADO') {
+        // Pagamento parcelado
+        const valorParcela = valorTotal / condicao.numParcelas;
+        
+        for (let i = 1; i <= condicao.numParcelas; i++) {
+          const dataVencimento = new Date(dataBase);
+          dataVencimento.setDate(dataVencimento.getDate() + (condicao.intervalo * (i - 1)));
+          
+          parcelas.push({
+            numero: i,
+            descricao: `Parcela ${i}/${condicao.numParcelas}`,
+            dataVencimento: Timestamp.fromDate(dataVencimento),
+
+            valor: valorParcela,
+            valorPago: 0,
+            status: 'PENDENTE',
+            pagamentos: []
+          });
+        }
+      } else if (condicao.tipo === 'ENTRADA_PARCELADO') {
+        // Entrada + parcelado
+        const valorEntrada = valorTotal * (condicao.percentualEntrada / 100);
+        const valorRestante = valorTotal - valorEntrada;
+        const valorParcela = valorRestante / condicao.numParcelas;
+        
+        // Entrada
+        const dataEntrada = new Date(dataBase);
+        dataEntrada.setDate(dataEntrada.getDate() + condicao.diasEntrada);
+        
+        parcelas.push({
+          numero: 0,
+          descricao: 'Entrada',
+          dataVencimento: Timestamp.fromDate(dataEntrada),
+          valor: valorEntrada,
+          valorPago: 0,
+          status: 'PENDENTE',
+          pagamentos: []
+        });
+        
+        // Parcelas
+        for (let i = 1; i <= condicao.numParcelas; i++) {
+          const dataVencimento = new Date(dataEntrada);
+          dataVencimento.setDate(dataVencimento.getDate() + (condicao.intervalo * i));
+          
+          parcelas.push({
+            numero: i,
+            descricao: `Parcela ${i}/${condicao.numParcelas}`,
+            dataVencimento: Timestamp.fromDate(dataVencimento),
+            valor: valorParcela,
+            valorPago: 0,
+            status: 'PENDENTE',
+            pagamentos: []
+          });
+        }
+      }
+      
+      const contaData = {
+        fornecedorId,
+        tipoDocumento,
+        numeroDocumento,
+        dataEmissao: Timestamp.fromDate(new Date(dataEmissao)),
+        valorTotal,
+        condicaoPagamentoId,
+        centroCusto,
+        contaContabil,
+        observacoes,
+        parcelas,
+        dataCadastro: Timestamp.now()
+      };
+      
+      try {
+        if (editingId) {
+          // Atualizar conta existente
+          await updateDoc(doc(db, "contasAPagar", editingId), contaData);
+          alert('Conta atualizada com sucesso!');
+        } else {
+          // Criar nova conta
+          await addDoc(collection(db, "contasAPagar"), contaData);
+          alert('Conta cadastrada com sucesso!');
+        }
+        
+        closeModal();
+        await loadData();
+        updateSummary();
+        displayBills();
+      } catch (error) {
+        console.error("Erro ao salvar conta:", error);
+        alert("Erro ao salvar conta. Por favor, tente novamente.");
+      }
+    });
+
+    window.editBill = function(billId) {
+      const conta = contasAPagar.find(c => c.id === billId);
+      if (!conta) return;
+      
+      // Verificar se a conta já tem pagamentos
+      const temPagamentos = conta.parcelas.some(p => 
+        p.pagamentos && p.pagamentos.length > 0
+      );
+      
+      if (temPagamentos) {
+        alert('Esta conta já possui pagamentos registrados e não pode ser editada completamente. Para ajustes, por favor, estorne os pagamentos primeiro.');
+        return;
+      }
+      
+      document.getElementById('editingId').value = billId;
+      document.getElementById('fornecedor').value = conta.fornecedorId;
+      document.getElementById('tipoDocumento').value = conta.tipoDocumento;
+      document.getElementById('numeroDocumento').value = conta.numeroDocumento;
+      
+      // Formatar data de emissão
+      const dataEmissao = new Date(conta.dataEmissao.seconds * 1000);
+      document.getElementById('dataEmissao').value = dataEmissao.toISOString().split('T')[0];
+      
+      document.getElementById('valorTotal').value = conta.valorTotal;
+      document.getElementById('condicaoPagamento').value = conta.condicaoPagamentoId;
+      document.getElementById('centroCusto').value = conta.centroCusto || '';
+      document.getElementById('contaContabil').value = conta.contaContabil || '';
+      document.getElementById('observacoes').value = conta.observacoes || '';
+      
+      // Atualizar parcelas
+      updateInstallments();
+      
+      document.getElementById('modalTitle').textContent = 'Editar Conta a Pagar';
+      document.getElementById('submitButton').textContent = 'Atualizar';
+      document.getElementById('billModal').style.display = 'block';
+    };
+
+    window.deleteBill = async function(billId) {
+      const conta = contasAPagar.find(c => c.id === billId);
+      if (!conta) return;
+      
+      // Verificar se a conta já tem pagamentos
+      const temPagamentos = conta.parcelas.some(p => 
+        p.pagamentos && p.pagamentos.length > 0
+      );
+      
+      if (temPagamentos) {
+        alert('Esta conta já possui pagamentos registrados e não pode ser excluída. Para excluir, estorne os pagamentos primeiro.');
+        return;
+      }
+      
+      if (confirm('Tem certeza que deseja excluir esta conta?')) {
+        try {
+          await deleteDoc(doc(db, "contasAPagar", billId));
+          await loadData();
+          updateSummary();
+          displayBills();
+          alert('Conta excluída com sucesso!');
+        } catch (error) {
+          console.error("Erro ao excluir conta:", error);
+          alert("Erro ao excluir conta. Por favor, tente novamente.");
+        }
+      }
+    };
+
+    window.viewBillDetails = function(billId) {
+      const conta = contasAPagar.find(c => c.id === billId);
+      if (!conta) return;
+      
+      const fornecedor = fornecedores.find(f => f.id === conta.fornecedorId);
+      
+      // Preencher detalhes
+      document.getElementById('detailFornecedor').textContent = fornecedor ? 
+        `${fornecedor.codigo} - ${fornecedor.razaoSocial}` : 'N/A';
+      
+      document.getElementById('detailDocumento').textContent = 
+        `${conta.tipoDocumento} ${conta.numeroDocumento}`;
+      
+      document.getElementById('detailEmissao').textContent = 
+        new Date(conta.dataEmissao.seconds * 1000).toLocaleDateString();
+      
+      document.getElementById('detailValor').textContent = 
+        `R$ ${conta.valorTotal.toFixed(2)}`;
+      
+      document.getElementById('detailCentroCusto').textContent = 
+        conta.centroCusto || 'Não informado';
+      
+      document.getElementById('detailContaContabil').textContent = 
+        conta.contaContabil || 'Não informada';
+      
+      document.getElementById('detailObservacoes').textContent = 
+        conta.observacoes || 'Sem observações';
+      
+      // Preencher parcelas
+      const parcelasTableBody = document.getElementById('detailInstallmentsTableBody');
+      parcelasTableBody.innerHTML = '';
+      
+      if (conta.parcelas && conta.parcelas.length > 0) {
+        conta.parcelas.forEach(parcela => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${parcela.descricao}</td>
+            <td>${new Date(parcela.dataVencimento.seconds * 1000).toLocaleDateString()}</td>
+            <td>R$ ${parcela.valor.toFixed(2)}</td>
+            <td><span class="status-badge status-${parcela.status.toLowerCase()}">${parcela.status}</span></td>
+          `;
+          parcelasTableBody.appendChild(row);
+        });
+      }
+      
+      // Preencher histórico de pagamentos
+      const pagamentosTableBody = document.getElementById('paymentHistoryTableBody');
+      pagamentosTableBody.innerHTML = '';
+      
+      let temPagamentos = false;
+      
+      if (conta.parcelas) {
+        conta.parcelas.forEach(parcela => {
+          if (parcela.pagamentos && parcela.pagamentos.length > 0) {
+            temPagamentos = true;
+            
+            parcela.pagamentos.forEach(pagamento => {
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <td>${new Date(pagamento.dataPagamento.seconds * 1000).toLocaleDateString()}</td>
+                <td>R$ ${pagamento.valor.toFixed(2)}</td>
+                <td>${pagamento.formaPagamento}</td>
+                <td>${pagamento.referencia || '-'}</td>
+                <td>${pagamento.observacoes || '-'}</td>
+              `;
+              pagamentosTableBody.appendChild(row);
+            });
+          }
+        });
+      }
+      
+      if (!temPagamentos) {
+        pagamentosTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum pagamento registrado</td></tr>';
+      }
+      
+      document.getElementById('detailsModal').style.display = 'block';
+    };
+
+    window.closeDetailsModal = function() {
+      document.getElementById('detailsModal').style.display = 'none';
+    };
+
+    window.openPaymentModal = function(billId) {
+      const conta = contasAPagar.find(c => c.id === billId);
+      if (!conta) return;
+      
+      // Encontrar a próxima parcela pendente
+      let parcelaPendente = null;
+      
+      if (conta.parcelas) {
+        for (const parcela of conta.parcelas) {
+          if (parcela.status !== 'PAGO') {
+            parcelaPendente = parcela;
+            break;
+          }
+        }
+      }
+      
+      if (!parcelaPendente) {
+        alert('Não há parcelas pendentes para esta conta.');
+        return;
+      }
+      
+      document.getElementById('paymentBillId').value = billId;
+      document.getElementById('paymentInstallmentId').value = parcelaPendente.numero;
+      
+      // Definir valor pendente
+      const valorPendente = parcelaPendente.valor - (parcelaPendente.valorPago || 0);
+      document.getElementById('paymentValue').value = valorPendente.toFixed(2);
+      
+      // Definir data de pagamento como hoje
+      const today = new Date();
+      const formattedDate = today.toISOString().split('T')[0];
+      document.getElementById('paymentDate').value = formattedDate;
+      
+      document.getElementById('paymentModal').style.display = 'block';
+    };
+
+    window.closePaymentModal = function() {
+      document.getElementById('paymentModal').style.display = 'none';
+    };
+
+    document.getElementById('paymentForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      
+      const billId = document.getElementById('paymentBillId').value;
+      const installmentNumber = parseInt(document.getElementById('paymentInstallmentId').value);
+      const paymentDate = document.getElementById('paymentDate').value;
+      const paymentValue = parseFloat(document.getElementById('paymentValue').value) || 0;
+      const paymentMethod = document.getElementById('paymentMethod').value;
+      const paymentReference = document.getElementById('paymentReference').value;
+      const paymentNotes = document.getElementById('paymentNotes').value;
+      
+      if (!billId || !paymentDate || !paymentValue || !paymentMethod) {
+        alert('Por favor, preencha todos os campos obrigatórios.');
+        return;
+      }
+      
+      try {
+        // Buscar a conta atual
+        const contaRef = doc(db, "contasAPagar", billId);
+        const contaDoc = await getDoc(contaRef);
+        
+        if (!contaDoc.exists()) {
+          alert('Conta não encontrada.');
+          return;
+        }
+        
+        const conta = contaDoc.data();
+        
+        // Encontrar a parcela
+        const parcelaIndex = conta.parcelas.findIndex(p => p.numero === installmentNumber);
+        
+        if (parcelaIndex === -1) {
+          alert('Parcela não encontrada.');
+          return;
+        }
+        
+        const parcela = conta.parcelas[parcelaIndex];
+        const valorPendente = parcela.valor - (parcela.valorPago || 0);
+        
+        if (paymentValue > valorPendente) {
+          alert(`O valor do pagamento (R$ ${paymentValue.toFixed(2)}) é maior que o valor pendente (R$ ${valorPendente.toFixed(2)}).`);
+          return;
+        }
+        
+        // Criar o pagamento
+        const pagamento = {
+          dataPagamento: Timestamp.fromDate(new Date(paymentDate)),
+          valor: paymentValue,
+          formaPagamento: paymentMethod,
+          referencia: paymentReference,
+          observacoes: paymentNotes,
+          registradoPor: currentUser ? currentUser.nome : 'Sistema'
+        };
+        
+        // Atualizar a parcela
+        const novoValorPago = (parcela.valorPago || 0) + paymentValue;
+        const novoStatus = novoValorPago >= parcela.valor ? 'PAGO' : 'PARCIAL';
+        
+        const parcelasAtualizadas = [...conta.parcelas];
+        parcelasAtualizadas[parcelaIndex] = {
+          ...parcela,
+          valorPago: novoValorPago,
+          status: novoStatus,
+          pagamentos: [...(parcela.pagamentos || []), pagamento]
+        };
+        
+        // Atualizar a conta
+        await updateDoc(contaRef, {
+          parcelas: parcelasAtualizadas
+        });
+        
+        alert('Pagamento registrado com sucesso!');
+        closePaymentModal();
+        await loadData();
+        updateSummary();
+        displayBills();
+      } catch (error) {
+        console.error("Erro ao registrar pagamento:", error);
+        alert("Erro ao registrar pagamento. Por favor, tente novamente.");
+      }
+    });
+  </script>
+</body>
+</html>

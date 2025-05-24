@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pedidos de Compra</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --header-bg: #354a5f;
+      --warning-color: #f59e0b; /* Adicionado do seu CSS */
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f7f7f7; color: var(--text-color); }
+    .container { width: 95%; max-width: 1200px; margin: 50px auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+    .header { background-color: var(--header-bg); color: white; padding: 15px 20px; border-radius: 8px 8px 0 0; margin: -20px -20px 20px -20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 24px; font-weight: 500; margin: 0; }
+    h2 { font-size: 18px; font-weight: 500; margin-bottom: 20px; color: var(--primary-color); padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+
+    /* Estilos do <DOCUMENT> */
+    .filters { background-color: var(--secondary-color); padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; }
+    .filter-row { display: flex; gap: 15px; margin-bottom: 15px; }
+    .filter-group { flex: 1; }
+    .filter-group label { display: block; margin-bottom: 5px; color: var(--text-secondary); font-weight: 500; font-size: 14px; }
+    .filter-group input, .filter-group select { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; }
+    .filter-group input:focus, .filter-group select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1); }
+    .button-group { display: flex; gap: 10px; justify-content: flex-end; }
+    .summary-section { margin-top: 20px; padding: 15px; background-color: var(--secondary-color); border: 1px solid var(--border-color); border-radius: 8px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+    .summary-item { padding: 10px; background: #fff; border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+    .summary-item h3 { margin: 0 0 5px 0; color: var(--primary-color); font-size: 14px; font-weight: 500; }
+    .summary-value { font-size: 20px; font-weight: bold; color: var(--text-color); }
+    .orders-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .orders-table th, .orders-table td { padding: 12px 15px; border: 1px solid var(--border-color); text-align: left; }
+    .orders-table th { background-color: var(--secondary-color); font-weight: 600; color: var(--text-secondary); }
+    .orders-table tr:hover { background-color: #f8f9fa; }
+    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    .status-aberto { background-color: var(--success-color); color: white; }
+    .status-aprovado { background-color: var(--primary-color); color: white; }
+    .status-recebido { background-color: #6c757d; color: white; }
+    .status-cancelado { background-color: var(--danger-color); color: white; }
+    .status-pendente { background-color: #ffc107; color: black; }
+    button { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background-color 0.2s; }
+    button:hover { opacity: 0.9; }
+    .back-button { background-color: #6c757d; color: white; }
+    .back-button:hover { background-color: #5a6268; }
+    button[onclick="applyFilters()"], button[onclick="openNewOrderModal()"] { background-color: var(--success-color); color: white; }
+    button[onclick="applyFilters()"]:hover, button[onclick="openNewOrderModal()"]:hover { background-color: var(--success-hover); }
+    button[onclick="resetFilters()"], button[onclick="openFromQuotationModal()"], button[onclick="exportToExcel()"] { background-color: #6c757d; color: white; }
+    button[onclick="resetFilters()"]:hover, button[onclick="openFromQuotationModal()"]:hover, button[onclick="exportToExcel()"]:hover { background-color: #5a6268; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; }
+    .modal-content { background-color: #fff; margin: 5% auto; padding: 20px; width: 80%; max-width: 800px; border-radius: 8px; position: relative; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border-color); }
+    .close-button { position: absolute; right: 15px; top: 15px; font-size: 24px; cursor: pointer; color: var(--text-secondary); }
+    .close-button:hover { color: var(--danger-color); }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; color: var(--text-secondary); font-weight: 500; font-size: 14px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1); }
+    .items-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .items-table th, .items-table td { padding: 12px 15px; border: 1px solid var(--border-color); text-align: left; }
+    .items-table th { background-color: var(--secondary-color); font-weight: 600; color: var(--text-secondary); }
+    .items-table tfoot td { font-weight: bold; background-color: var(--secondary-color); }
+    .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
+    .form-col { flex: 1; }
+    .pagination { display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 10px; }
+    .pagination button { padding: 5px 10px; background: white; border: 1px solid var(--border-color); color: var(--text-color); border-radius: 4px; }
+    .pagination button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+    .pagination button:hover:not(.active) { background: #f8f9fa; }
+    .quotation-details { padding: 15px; background-color: var(--secondary-color); border-radius: 4px; margin-bottom: 15px; }
+
+    /* Seus novos estilos */
+    .budget-alert {
+      background-color: var(--warning-color);
+      color: white;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      display: none;
+    }
+    .approval-workflow {
+      background-color: var(--secondary-color);
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+    .approval-step {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: white;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+    .approval-step .status {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    .status-pending { background-color: var(--warning-color); }
+    .status-approved { background-color: var(--success-color); }
+    .status-rejected { background-color: var(--danger-color); }
+    .delivery-timeline {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: var(--secondary-color);
+      border-radius: 4px;
+    }
+    .timeline-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .timeline-date {
+      min-width: 100px;
+      font-weight: bold;
+    }
+    .progress-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .progress-bar {
+      background-color: #e0e0e0;
+      height: 20px;
+      border-radius: 4px;
+      overflow: hidden;
+      width: 100%;
+      flex: 1;
+    }
+    .progress-bar > div {
+      height: 100%;
+      background-color: var(--success-color);
+    }
+    #atrasadoProgress > div {
+      background-color: var(--danger-color);
+    }
+    #parcialProgress > div {
+      background-color: var(--warning-color);
+    }
+
+    /* Added Legend Styles */
+    .status-legend {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 15px;
+      padding: 10px;
+      background: var(--secondary-color);
+      border-radius: 4px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-dot.pendente { background-color: #FFC107; }
+    .status-dot.aberto { background-color: #2196F3; }
+    .status-dot.aprovado { background-color: #4CAF50; }
+    .status-dot.recebido { background-color: #9C27B0; }
+    .status-dot.cancelado { background-color: #F44336; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Pedidos de Compra</h1>
+      <div>
+        <button onclick="openNewOrderModal()">Novo Pedido</button>
+        <button onclick="openFromQuotationModal()">Pedido de Cotação</button>
+        <button onclick="exportToExcel()">Exportar Excel</button>
+        <button onclick="window.location.href='index.html'" class="back-button">Voltar</button>
+      </div>
+    </div>
+
+    <!-- Novo componente: Alerta de Orçamento -->
+    <div id="budgetAlert" class="budget-alert">
+      Atenção: Este pedido excede o limite de orçamento mensal!
+    </div>
+
+    <!-- Novo componente: Workflow de Aprovação -->
+    <div class="approval-workflow">
+      <h3>Workflow de Aprovação</h3>
+      <div id="approvalSteps">
+        <!-- Preenchido dinamicamente -->
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Período</label>
+          <input type="date" id="startDate">
+        </div>
+        <div class="filter-group">
+          <label>Até</label>
+          <input type="date" id="endDate">
+        </div>
+        <div class="filter-group">
+          <label>Fornecedor</label>
+          <select id="supplierFilter">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Número:</label>
+          <input type="text" id="numeroFilter" placeholder="Número do pedido">
+        </div>
+        <div class="filter-group">
+          <label>Observações:</label>
+          <input type="text" id="observacaoFilter" placeholder="Observações">
+        </div>
+        <div class="filter-group">
+          <label>Status</label>
+          <select id="statusFilter">
+            <option value="">Todos</option>
+            <option value="PENDENTE">Pendente</option>
+            <option value="ABERTO">Aberto</option>
+            <option value="APROVADO">Aprovado</option>
+            <option value="RECEBIDO">Recebido</option>
+            <option value="CANCELADO">Cancelado</option>
+          </select>
+        </div>
+      </div>
+      <div class="button-group">
+        <button onclick="applyFilters()">Aplicar Filtros</button>
+        <button onclick="resetFilters()">Limpar Filtros</button>
+      </div>
+    </div>
+
+    <div class="summary-section">
+      <div class="summary-grid">
+        <div class="summary-item">
+          <h3>Total de Pedidos</h3>
+          <div class="summary-value" id="totalPedidos">0</div>
+        </div>
+        <div class="summary-item">
+          <h3>Valor Total</h3>
+          <div class="summary-value" id="valorTotal">R$ 0,00</div>
+        </div>
+        <div class="summary-item">
+          <h3>Pedidos em Aberto</h3>
+          <div class="summary-value" id="pedidosAbertos">0</div>
+        </div>
+        <div class="summary-item">
+          <h3>Média por Pedido</h3>
+          <div class="summary-value" id="mediaPedido">R$ 0,00</div>
+        </div>
+        <div class="summary-item">
+          <h3>Pedidos Atrasados</h3>
+          <div class="summary-value" id="pedidosAtrasados">0</div>
+        </div>
+        <div class="summary-item">
+          <h3>Pedidos a Vencer</h3>
+          <div class="summary-value" id="pedidosAVencer">0</div>
+        </div>
+      </div>
+    </div>
+
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Data</th>
+          <th>Fornecedor</th>
+          <th>Valor Total</th>
+          <th>Status</th>
+          <th>Data Entrega Prevista</th>
+          <th>Dias Restantes</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTableBody"></tbody>
+    </table>
+
+    <div class="pagination" id="pagination"></div>
+
+    <!-- Novo componente: Timeline de Entrega -->
+    <div class="delivery-timeline">
+      <h3>Timeline de Entrega</h3>
+      <div id="deliveryTimeline">
+        <!-- Preenchido dinamicamente -->
+      </div>
+    </div>
+
+    <div class="progress-container">
+      <div class="progress-bar" id="noPrazoProgress">
+        <div></div>
+      </div>
+      <div class="progress-bar" id="atrasadoProgress">
+        <div></div>
+      </div>
+      <div class="progress-bar" id="parcialProgress">
+        <div></div>
+      </div>
+    </div>
+    <div class="progress-container">
+      <p id="noPrazoCount"></p>
+      <p id="atrasadoCount"></p>
+      <p id="parcialCount"></p>
+    </div>
+
+    <!-- Status Legend -->
+    <div class="status-legend">
+      <div class="legend-item">
+        <span class="status-dot pendente"></span>
+        <span>Pendente</span>
+      </div>
+      <div class="legend-item">
+        <span class="status-dot aberto"></span>
+        <span>Aberto</span>
+      </div>
+      <div class="legend-item">
+        <span class="status-dot aprovado"></span>
+        <span>Aprovado</span>
+      </div>
+      <div class="legend-item">
+        <span class="status-dot recebido"></span>
+        <span>Recebido</span>
+      </div>
+      <div class="legend-item">
+        <span class="status-dot cancelado"></span>
+        <span>Cancelado</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal Novo Pedido -->
+  <div id="orderModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal('orderModal')">×</span>
+      <h2>Novo Pedido de Compra</h2>
+      <form id="orderForm" onsubmit="handleOrder(event)">
+        <div class="form-row">
+          <div class="form-col">
+            <label>Fornecedor:</label>
+            <select id="supplierSelect" required onchange="checkSupplierLimits()">
+              <option value="">Selecione o fornecedor...</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label>Condição de Pagamento:</label>
+            <select id="paymentTerms" required>
+              <option value="AVISTA">À Vista</option>
+              <option value="7DIAS">7 Dias</option>
+              <option value="15DIAS">15 Dias</option>
+              <option value="30DIAS">30 Dias</option>
+              <option value="45DIAS">45 Dias</option>
+              <option value="60DIAS">60 Dias</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Novo campo: Data de Entrega Prevista -->
+        <div class="form-row">
+          <div class="form-col">
+            <label>Data de Entrega Prevista:</label>
+            <input type="date" id="expectedDeliveryDate" required>
+          </div>
+          <div class="form-col">
+            <label>Centro de Custo:</label>
+            <select id="costCenter" required>
+              <option value="">Selecione...</option>
+              <option value="PRODUCAO">Produção</option>
+              <option value="MANUTENCAO">Manutenção</option>
+              <option value="ADMINISTRATIVO">Administrativo</option>
+              <option value="COMERCIAL">Comercial</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Itens:</label>
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Quantidade</th>
+                <th>Unidade</th>
+                <th>Valor Unit.</th>
+                <th>Total</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="itemsTableBody"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="5" style="text-align: right;"><strong>Total Geral:</strong></td>
+                <td id="totalGeral">R$ 0,00</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+          <button type="button" onclick="addItem()">Adicionar Item</button>
+        </div>
+
+        <div class="form-group">
+          <label for="observacoes">Observações:</label>
+          <textarea id="observacoes" rows="3"></textarea>
+        </div>
+
+        <!-- Novos campos: Anexos -->
+        <div class="form-group">
+          <label>Anexos:</label>
+          <input type="file" id="attachments" multiple>
+        </div>
+
+        <button type="submit">Criar Pedido</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Pedido de Cotação -->
+  <div id="quotationOrderModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal('quotationOrderModal')">×</span>
+      <h2>Criar Pedido de Cotação</h2>
+      <div class="form-group">
+        <label>Cotação:</label>
+        <select id="quotationSelect" onchange="loadQuotationDetails()">
+          <option value="">Selecione a cotação...</option>
+        </select>
+      </div>
+      <div id="quotationDetails" class="quotation-details"></div>
+      <div class="form-group">
+        <label>Fornecedor:</label>
+        <select id="quotationSupplierSelect" onchange="updateQuotationItems()">
+          <option value="">Selecione o fornecedor...</option>
+        </select>
+      </div>
+      <div id="quotationItemsContainer"></div>
+      <button onclick="createOrderFromQuotation()">Criar Pedido</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, Timestamp, doc, updateDoc, deleteDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // Initialize Firebase and Firestore
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYx8MkgI89ppSLq-T6Dkbp_l7rdVIq-no",
+      authDomain: "naliteck-banco.firebaseapp.com",
+      projectId: "naliteck-banco",
+      storageBucket: "naliteck-banco.firebasestorage.app",
+      messagingSenderId: "550678334202",
+      appId: "1:550678334202:web:383ffe9421f4a35e471743",
+      measurementId: "G-ZG9HVWVH4N"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let fornecedores = [];
+    let produtos = [];
+    let cotacoes = [];
+    let pedidosCompra = [];
+    let filteredPedidos = [];
+    let currentUser = null;
+    let userPermissions = [];
+    const itemsPerPage = 20;
+    let currentPage = 1;
+
+    window.applyFilters = function() {
+      const startDate = new Date(document.getElementById('startDate').value);
+      const endDate = new Date(document.getElementById('endDate').value);
+      endDate.setHours(23, 59, 59);
+
+      const fornecedorId = document.getElementById('supplierFilter').value;
+      const numero = document.getElementById('numeroFilter').value;
+      const observacao = document.getElementById('observacaoFilter').value;
+      const status = document.getElementById('statusFilter').value;
+
+      filteredPedidos = pedidosCompra.filter(pedido => {
+        const pedidoDate = pedido.dataCriacao ? new Date(pedido.dataCriacao.seconds * 1000) : null;
+        const matchesDate = pedidoDate && pedidoDate >= startDate && pedidoDate <= endDate;
+        const matchesFornecedor = !fornecedorId || pedido.fornecedorId === fornecedorId;
+        const matchesNumero = !numero || pedido.numero.includes(numero);
+        const matchesObservacao = !observacao || (pedido.observacoes || "").includes(observacao);
+        const matchesStatus = !status || pedido.status === status;
+        return matchesDate && matchesFornecedor && matchesNumero && matchesObservacao && matchesStatus;
+      });
+
+      currentPage = 1;
+      loadOrders();
+      updateSummary();
+      updatePagination();
+    };
+    // Novas variáveis para controle de orçamento (do seu código)
+    const LIMITE_ORCAMENTO_MENSAL = 100000; // R$ 100.000,00
+    let orcamentoUtilizado = 0;
+    let condicoesPagamento = [];
+
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      const userSession = localStorage.getItem('currentUser');
+      if (!userSession) {
+        window.location.href = 'login.html';
+        return;
+      }
+      currentUser = JSON.parse(userSession);
+      await loadUserPermissions();
+      await loadInitialData();
+      setupDateFilters();
+      updateSupplierFilter();
+      await loadOrders();
+      await checkBudgetLimits(); // Sua função adicionada
+    });
+
+    async function loadUserPermissions() {
+      if (currentUser.nivel === 9) {
+        userPermissions = [
+          'solicitacao_compras_criar', 'cotacoes_gerenciar', 'pedidos_compra_criar',
+          'pedidos_compra_aprovar', 'pedidos_compra_receber', 'pedidos_compra_cancelar'
+        ];
+      } else {
+        const permissionsDoc = await getDoc(doc(db, "permissoes", currentUser.id));
+        userPermissions = permissionsDoc.exists() ? permissionsDoc.data().permissoes || [] : [];
+      }
+    }
+
+    function setupDateFilters() {
+      const today = new Date();
+      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      document.getElementById('startDate').value = firstDayOfMonth.toISOString().split('T')[0];
+      document.getElementById('endDate').value = today.toISOString().split('T')[0];
+    }
+
+    async function getNextOrderNumber() {
+      const pedidosRef = collection(db, "pedidosCompra");
+      const q = query(pedidosRef, orderBy("numero", "desc"), limit(1));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) return "000001";
+      const ultimoPedido = querySnapshot.docs[0].data();
+      const ultimoNumero = parseInt(ultimoPedido.numero, 10);
+      return (ultimoNumero + 1).toString().padStart(6, '0');
+    }
+
+    async function loadInitialData() {
+      try {
+        const [fornecedoresSnap, produtosSnap, cotacoesSnap, pedidosSnap, condicoesSnap] = await Promise.all([
+          getDocs(collection(db, "fornecedores")),
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "cotacoes")),
+          getDocs(collection(db, "pedidosCompra")),
+          getDocs(collection(db, "condicoesPagamento"))
+        ]);
+
+        fornecedores = fornecedoresSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        cotacoes = cotacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        pedidosCompra = pedidosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        condicoesPagamento = condicoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados iniciais.");
+      }
+    }
+
+    function updateSupplierFilter() {
+      const select = document.getElementById('supplierFilter');
+      select.innerHTML = '<option value="">Todos</option>';
+      fornecedores.forEach(fornecedor => {
+        select.innerHTML += `<option value="${fornecedor.id}">${fornecedor.codigo} - ${fornecedor.razaoSocial}</option>`;
+      });
+    }
+
+    window.applyFilters = function() {
+      const startDate = new Date(document.getElementById('startDate').value);
+      const endDate = new Date(document.getElementById('endDate').value);
+      if (!startDate || !endDate) {
+        alert('Por favor selecione um período válido');
+        return;
+      }
+      const startDate = new Date(document.getElementById('startDate').value);
+      const endDate = new Date(document.getElementById('endDate').value);
+      endDate.setHours(23, 59, 59);
+      const fornecedorId = document.getElementById('supplierFilter').value;
+      const numero = document.getElementById('numeroFilter').value;
+      const observacao = document.getElementById('observacaoFilter').value;
+      const status = document.getElementById('statusFilter').value;
+
+      filteredPedidos = pedidosCompra.filter(pedido => {
+        const pedidoDate = pedido.dataCriacao ? new Date(pedido.dataCriacao.seconds * 1000) : null;
+        const matchesDate = pedidoDate && pedidoDate >= startDate && pedidoDate <= endDate;
+        const matchesFornecedor = !fornecedorId || pedido.fornecedorId === fornecedorId;
+        const matchesNumero = !numero || pedido.numero.includes(numero);
+        const matchesObservacao = !observacao || (pedido.observacoes || "").includes(observacao);
+        const matchesStatus = !status || pedido.status === status;
+        return matchesDate && matchesFornecedor && matchesNumero && matchesObservacao && matchesStatus;
+      });
+
+      currentPage = 1;
+      loadOrders();
+      updateSummary();
+      updatePagination();
+    };
+
+    window.resetFilters = function() {
+      setupDateFilters();
+      document.getElementById('supplierFilter').value = '';
+      document.getElementById('numeroFilter').value = '';
+      document.getElementById('observacaoFilter').value = '';
+      document.getElementById('statusFilter').value = '';
+      applyFilters();
+    };
+
+    function updateSummary() {
+      const totalPedidos = filteredPedidos.length;
+      const valorTotal = filteredPedidos.reduce((sum, pedido) => sum + (pedido.valorTotal || 0), 0);
+      const pedidosAbertos = filteredPedidos.filter(p => p.status === 'ABERTO' || p.status === 'PENDENTE').length;
+      const mediaPedido = totalPedidos > 0 ? valorTotal / totalPedidos : 0;
+
+      document.getElementById('totalPedidos').textContent = totalPedidos;
+      document.getElementById('valorTotal').textContent = `R$ ${valorTotal.toFixed(2)}`;
+      document.getElementById('pedidosAbertos').textContent = pedidosAbertos;
+      document.getElementById('mediaPedido').textContent = `R$ ${mediaPedido.toFixed(2)}`;
+    }
+
+    async function loadOrders() {
+      try {
+        const tableBody = document.getElementById('ordersTableBody');
+        tableBody.innerHTML = '';
+
+        let pedidosAtrasados = 0;
+        let pedidosAVencer = 0;
+        let noPrazo = 0;
+        let atrasados = 0;
+        let parciais = 0;
+        const hoje = new Date();
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageItems = filteredPedidos.slice(startIndex, endIndex);
+
+        pageItems.forEach(pedido => {
+          const fornecedor = fornecedores.find(f => f.id === pedido.fornecedorId);
+          const numero = pedido.numero || "N/D";
+          const dataCriacao = pedido.dataCriacao ? new Date(pedido.dataCriacao.seconds * 1000).toLocaleDateString() : "N/D";
+          const dataEntregaPrevista = pedido.dataEntregaPrevista ? new Date(pedido.dataEntregaPrevista.seconds * 1000).toLocaleDateString() : "N/D";
+          const dataEntrega = pedido.dataEntrega ? new Date(pedido.dataEntrega.seconds * 1000).toLocaleDateString() : "N/D";
+          const dataPrevista = new Date(pedido.dataEntregaPrevista.seconds * 1000);
+          const diffTime = Math.abs(hoje - dataPrevista);
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          let diasRestantes = diffDays;
+          if (diasRestantes < 0) diasRestantes = 0;
+          let statusClass = pedido.status.toLowerCase();
+
+
+          if (pedido.status === 'APROVADO' && diffDays > 0) {
+            if (diffDays > 7) {
+              statusClass += ' atrasado';
+              atrasados++;
+            } else {
+              statusClass += ' a-vencer';
+              pedidosAVencer++;
+            }
+          } else if (pedido.status === 'RECEBIDO' && diffDays > 0) {
+            statusClass += ' atrasado';
+            atrasados++;
+          } else if (pedido.status === 'RECEBIDO') {
+            noPrazo++;
+          } else if (pedido.status === 'APROVADO') {
+            noPrazo++;
+          } else if (pedido.status === 'ABERTO') {
+            noPrazo++;
+          } else if (pedido.status === 'PENDENTE') {
+            noPrazo++;
+          } else {
+            noPrazo++;
+          }
+
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${numero}</td>
+            <td>${dataCriacao}</td>
+            <td>${fornecedor ? fornecedor.razaoSocial : 'N/A'}</td>
+            <td>R$ ${pedido.valorTotal?.toFixed(2) || '0,00'}</td>
+            <td><span class="status-badge status-${statusClass}">${pedido.status}</span></td>
+            <td>${dataEntregaPrevista}</td>
+            <td>${diasRestantes}</td>
+            <td>
+              <button onclick="viewOrder('${pedido.id}')">Detalhes</button>
+              <button onclick="printOrder('${pedido.id}')">Imprimir</button>
+              ${(pedido.status === 'ABERTO' || pedido.status === 'PENDENTE') && userPermissions.includes('pedidos_compra_aprovar') ? `
+                <button onclick="approveOrder('${pedido.id}')">Aprovar</button>
+              ` : ''}
+              ${(pedido.status === 'ABERTO' || pedido.status === 'PENDENTE') && userPermissions.includes('pedidos_compra_cancelar') ? `
+                <button onclick="cancelOrder('${pedido.id}')">Cancelar</button>
+              ` : ''}
+              ${pedido.status === 'APROVADO' && userPermissions.includes('pedidos_compra_receber') ? `
+                <button onclick="receiveOrder('${pedido.id}')">Receber</button>
+              ` : ''}
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+
+        // Update summary counters
+        document.getElementById('pedidosAtrasados').textContent = pedidosAtrasados;
+        document.getElementById('pedidosAVencer').textContent = pedidosAVencer;
+
+        // Update tracking progress bars
+        const total = noPrazo + atrasados + parciais;
+        if (total > 0) {
+          document.getElementById('noPrazoProgress').style.width = `${(noPrazo/total)*100}%`;
+          document.getElementById('atrasadoProgress').style.width = `${(atrasados/total)*100}%`;
+          document.getElementById('parcialProgress').style.width = `${(parciais/total)*100}%`;
+
+          document.getElementById('noPrazoCount').textContent = `${noPrazo} pedidos`;
+          document.getElementById('atrasadoCount').textContent = `${atrasados} pedidos`;
+          document.getElementById('parcialCount').textContent = `${parciais} pedidos`;
+        }
+
+        updatePagination();
+        updateSummary();
+      } catch (error) {
+        console.error("Erro ao carregar pedidos:", error);
+        alert("Erro ao carregar pedidos.");
+      }
+    }
+
+    function updatePagination() {
+      const totalPages = Math.ceil(filteredPedidos.length / itemsPerPage);
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = '';
+
+      if (totalPages > 1) {
+        pagination.innerHTML += `
+          <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Anterior</button>
+        `;
+        for (let i = 1; i <= totalPages; i++) {
+          pagination.innerHTML += `
+            <button onclick="changePage(${i})" class="${currentPage === i ? 'active' : ''}">${i}</button>
+          `;
+        }
+        pagination.innerHTML += `
+          <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Próximo</button>
+        `;
+      }
+    }
+
+    window.changePage = function(page) {
+      if (page >= 1 && page <= Math.ceil(filteredPedidos.length / itemsPerPage)) {
+        currentPage = page;
+        loadOrders();
+      }
+    };
+
+    window.exportToExcel = function() {
+      let csv = 'Número;Data;Fornecedor;Valor Total;Status\n';
+      filteredPedidos.forEach(pedido => {
+        const fornecedor = fornecedores.find(f => f.id === pedido.fornecedorId);
+        const data = pedido.dataCriacao ? new Date(pedido.dataCriacao.seconds * 1000).toLocaleDateString() : 'N/D';
+        csv += `${pedido.numero || 'N/D'};${data};${fornecedor ? fornecedor.razaoSocial : 'N/A'};${pedido.valorTotal?.toFixed(2) || '0,00'};${pedido.status}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'pedidos_compra.csv';
+      link.click();
+    };
+
+    window.openNewOrderModal = function openNewOrderModal() {
+      if (!userPermissions.includes('pedidos_compra_criar')) {
+        alert('Você não tem permissão para criar pedidos de compra.');
+        return;
+      }
+      document.getElementById('orderForm').reset();
+      document.getElementById('itemsTableBody').innerHTML = '';
+      document.getElementById('totalGeral').textContent = 'R$ 0,00';
+      document.getElementById('orderModal').style.display = 'block';
+      updateSupplierSelect();
+    };
+
+    function updateSupplierSelect() {
+      const select = document.getElementById('supplierSelect');
+      select.innerHTML = '<option value="">Selecione o fornecedor...</option>';
+      fornecedores.forEach(fornecedor => {
+        select.innerHTML += `<option value="${fornecedor.id}">${fornecedor.codigo} - ${fornecedor.razaoSocial}</option>`;
+      });
+    }
+
+    window.closeModal = function(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    };
+
+    window.addItem = function() {
+      const tableBody = document.getElementById('itemsTableBody');
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>
+          <div style="display: flex; gap: 5px;">
+            <input type="text" class="item-codigo" placeholder="Código" style="width: 100px;" onblur="searchProduct(this)" required>
+            <button type="button" onclick="openProductSearch(this)">🔍</button>
+          </div>
+        </td>
+        <td><input type="text" class="item-descricao" required readonly></td>
+        <td><input type="number" class="item-quantidade" min="0.001" step="0.001" required onchange="calculateItemTotal(this)"></td>
+        <td>
+          <select class="item-unidade" onchange="updateConvertedQty(this)" required>
+            <option value="">Selecione...</option>          </select>
+        </td>
+        <td><input type="number" class="item-valor" min="0.01" step="0.01" required onchange="calculateItemTotal(this)"></td>
+        <td><input type="text" class="item-total" readonly></td>
+        <td><button type="button" onclick="removeItem(this)">Remover</button></td>
+        <td><input type="text" class="item-qtd-convertida" readonly placeholder="Qtd. em PC"></td>
+      `;
+      tableBody.appendChild(row);
+    };
+
+    window.calculateItemTotal = function(input) {
+      const row = input.closest('tr');
+      const quantidade = parseFloat(row.querySelector('.item-quantidade').value) || 0;
+      const valor = parseFloat(row.querySelector('.item-valor').value) || 0;
+      const total = quantidade * valor;
+      row.querySelector('.item-total').value = `R$ ${totaltoFixed(2)}`;
+      calculateOrderTotal();
+    };
+
+    function calculateOrderTotal() {
+      let total = 0;
+      document.querySelectorAll('#itemsTableBody tr').forEach(row => {
+        const quantidade = parseFloat(row.querySelector('.item-quantidade').value) || 0;
+        const valor = parseFloat(row.querySelector('.item-valor').value) || 0;
+        total += quantidade * valor;
+      });
+      document.getElementById('totalGeral').textContent = `R$ ${total.toFixed(2)}`;
+    }
+
+    window.searchProduct = function(input) {
+      const codigo = input.value.trim().toUpperCase();
+      const row = input.closest('tr');
+      const descricaoInput = row.querySelector('.item-descricao');
+      const unidadeSelect = row.querySelector('.item-unidade');
+      const qtdConvertidaInput = row.querySelector('.item-qtd-convertida');
+
+      if (codigo) {
+        const produto = produtos.find(p => p.codigo.toUpperCase() === codigo);
+        if (produto) {
+          descricaoInput.value = produto.descricao;
+          unidadeSelect.innerHTML = `
+            <option value="${produto.unidade}">${produto.unidade} (Principal)</option>
+            ${produto.unidadeSecundaria ? `<option value="${produto.unidadeSecundaria}">${produto.unidadeSecundaria} (Secundária)</option>` : ''}
+          `;
+          qtdConvertidaInput.dataset.produtoId = produto.id;
+          updateConvertedQty(unidadeSelect);
+        } else {
+          alert('Produto não encontrado!');
+          input.value = '';
+          descricaoInput.value = '';
+          unidadeSelect.innerHTML = '<option value="">Selecione...</option>';
+          qtdConvertidaInput.value = '';
+        }
+      }
+    };
+
+    window.openProductSearch = function(button) {
+      const searchText = prompt('Digite o código ou descrição do produto:');
+      if (searchText) {
+        const searchLower = searchText.toLowerCase();
+        const foundProducts = produtos.filter(p => 
+          p.codigo.toLowerCase().includes(searchLower) || 
+          p.descricao.toLowerCase().includes(searchLower)
+        );
+
+        if (foundProducts.length > 0) {
+          const options = foundProducts.map((p, index) => 
+            `${index + 1} - ${p.codigo} - ${p.descricao}`
+          ).join('\n');
+
+          const selection = prompt(`Selecione o produto (1-${foundProducts.length}):\n\n${options}`);
+          const selectedIndex = parseInt(selection) - 1;
+
+          if (selectedIndex >= 0 && selectedIndex < foundProducts.length) {
+            const produto = foundProducts[selectedIndex];
+            const row = button.closest('tr');
+            row.querySelector('.item-codigo').value = produto.codigo;
+            row.querySelector('.item-descricao').value = produto.descricao;
+            row.querySelector('.item-unidade').value = produto.unidade;
+          }
+        } else {
+          alert('Nenhum produto encontrado!');
+        }
+      }
+    };
+
+    window.removeItem = function(button) {
+      button.closest('tr').remove();
+      calculateOrderTotal();
+    };
+
+    // Função combinada: handleOrder (do <DOCUMENT> com suas alterações)
+    window.handleOrder = async function(event) {
+      event.preventDefault();
+      if (!userPermissions.includes('pedidos_compra_criar')) {
+        alert('Você não tem permissão para criar pedidos de compra.');
+        return;
+      }
+
+      const fornecedorId = document.getElementById('supplierSelect').value;
+      const expectedDeliveryDate = document.getElementById('expectedDeliveryDate').value;
+      const costCenter = document.getElementById('costCenter').value;
+
+      if (!fornecedorId || !expectedDeliveryDate || !costCenter) {
+        alert('Preencha todos os campos obrigatórios.');
+        return;
+      }
+
+      const items = [];
+      let valorTotal = 0;
+      document.querySelectorAll('#itemsTableBody tr').forEach(row => {
+        const quantidade = parseFloat(row.querySelector('.item-quantidade').value);
+        const valorUnitario = parseFloat(row.querySelector('.item-valor').value);
+        const unidade = row.querySelector('.item-unidade').value;
+        const qtdConvertida = parseFloat(row.querySelector('.item-qtd-convertida').value) || quantidade;
+        const total = quantidade * valorUnitario;
+        items.push({
+          codigo: row.querySelector('.item-codigo').value,
+          descricao: row.querySelector('.item-descricao').value,
+          quantidade,
+          unidade,
+          quantidadeConvertida: qtdConvertida,
+          valorUnitario,
+          valorTotal: total
+        });
+        valorTotal += total;
+      });
+
+      if (items.length === 0) {
+        alert('Adicione pelo menos um item ao pedido.');
+        return;
+      }
+
+      // Verificar limite de orçamento (do seu código)
+      if (valorTotal + orcamentoUtilizado > LIMITE_ORCAMENTO_MENSAL) {
+        if (!confirm('Este pedido irá exceder o limite de orçamento mensal. Deseja continuar?')) {
+          return;
+        }
+      }
+
+      try {
+        const numeroSequencial = await getNextOrderNumber();
+        const pedido = {
+          numero: numeroSequencial,
+          fornecedorId,
+          condicaoPagamento: document.getElementById('paymentTerms').value,
+          dataEntregaPrevista: new Date(expectedDeliveryDate), // Seu campo adicionado
+          centroCusto: costCenter, // Seu campo adicionado
+          itens: items,
+          valorTotal,
+          observacoes: document.getElementById('observacoes').value,
+          status: 'PENDENTE', // Alterado para PENDENTE conforme seu código
+          dataCriacao: Timestamp.now(),
+          criadoPor: currentUser.nome,
+          workflowAprovacao: [ // Seu workflow adicionado
+            { nivel: 1, cargo: 'Supervisor', status: 'PENDENTE' },
+            { nivel: 2, cargo: 'Gerente', status: 'PENDENTE' },
+            { nivel: 3, cargo: 'Diretor', status: valorTotal > 50000 ? 'PENDENTE' : 'NAO_REQUERIDO' }
+          ],
+          historico: [{ data: Timestamp.now(), acao: 'Criado', usuario: currentUser.nome }]
+        };
+
+        // Criar pedido de compra
+        const pedidoRef = await addDoc(collection(db, "pedidosCompra"), pedido);
+
+        // Criar conta a pagar automaticamente
+        const condicao = condicoesPagamento.find(c => c.id === document.getElementById('paymentTerms').value);
+        const fornecedor = fornecedores.find(f => f.id === fornecedorId);
+
+        const contaPagar = {
+          fornecedorId: fornecedorId,
+          tipoDocumento: 'PEDIDO',
+          numeroDocumento: numeroSequencial,
+          dataEmissao: Timestamp.now(),
+          valorTotal: valorTotal,
+          condicaoPagamentoId: condicao.id,
+          centroCusto: document.getElementById('costCenter').value,
+          observacoes: `Gerado automaticamente do Pedido de Compra ${numeroSequencial}`,
+          pedidoCompraId: pedidoRef.id,
+          dataCadastro: Timestamp.now(),
+          parcelas: []
+        };
+
+        // Gerar parcelas baseado na condição de pagamento
+        if (condicao.tipo === 'A_VISTA') {
+          contaPagar.parcelas.push({
+            numero: 1,
+            descricao: 'À Vista',
+            dataVencimento: Timestamp.now(),
+            valor: valorTotal,
+            valorPago: 0,
+            status: 'PENDENTE',
+            pagamentos: []
+          });
+        } else if (condicao.tipo === 'PARCELADO') {
+          const valorParcela = valorTotal / condicao.numParcelas;
+          for (let i = 1; i <= condicao.numParcelas; i++) {
+            const dataVencimento = new Date();
+            dataVencimento.setDate(dataVencimento.getDate() + (condicao.intervalo * (i - 1)));
+            contaPagar.parcelas.push({
+              numero: i,
+              descricao: `Parcela ${i}/${condicao.numParcelas}`,
+              dataVencimento: Timestamp.fromDate(dataVencimento),
+              valor: valorParcela,
+              valorPago: 0,
+              status: 'PENDENTE',
+              pagamentos: []
+            });
+          }
+        }
+
+        await addDoc(collection(db, "contasAPagar"), contaPagar);
+
+        alert('Pedido criado com sucesso e conta a pagar gerada automaticamente!');
+        closeModal('orderModal');
+      } catch (error) {
+        console.error("Erro ao criar pedido:", error);
+        alert("Erro ao criar pedido: " + error.message);
+      }
+    };
+
+    window.viewOrder = async function(orderId) {
+      try {
+        const pedidoRef = doc(db, "pedidosCompra", orderId);
+        const pedidoSnap = await getDoc(pedidoRef);
+        if (pedidoSnap.exists()) {
+          window.open(`relatorio_pc.html?id=${orderId}`, '_blank');
+        } else {
+          alert('Pedido não encontrado');
+        }
+      } catch (error) {
+        console.error("Erro ao abrir detalhes:", error);
+        alert("Erro ao abrir detalhes do pedido");
+      }
+    };
+
+    window.printOrder = async function(orderId) {
+      try {
+        const pedidoRef = doc(db, "pedidosCompra", orderId);
+        const pedidoSnap = await getDoc(pedidoRef);
+        if (pedidoSnap.exists()) {
+          window.open(`imprimir_pedido.html?orderId=${orderId}`, '_blank');
+        } else {
+          alert('Pedido não encontrado');
+        }
+      } catch (error) {
+        console.error("Erro ao imprimir:", error);
+        alert("Erro ao imprimir pedido");
+      }
+    };
+
+    window.approveOrder = async function(orderId) {
+      if (!userPermissions.includes('pedidos_compra_aprovar')) {
+        alert('Você não tem permissão para aprovar pedidos de compra.');
+        return;
+      }
+      if (confirm('Confirma a aprovação deste pedido?')) {
+        try {
+          const pedidoRef = doc(db, "pedidosCompra", orderId);
+          const pedidoSnap = await getDoc(pedidoRef);
+          const pedido = pedidoSnap.data();
+          await updateDoc(pedidoRef, {
+            status: 'APROVADO',
+            dataAprovacao: Timestamp.now(),
+            aprovadoPor: currentUser.nome,
+            historico: [
+              ...(pedido.historico || []),
+              { data: Timestamp.now(), acao: 'Aprovado', usuario: currentUser.nome }
+            ]
+          });
+          await loadInitialData();
+          applyFilters();
+          alert('Pedido aprovado com sucesso!');
+        } catch (error) {
+          console.error("Erro ao aprovar pedido:", error);
+          alert("Erro ao aprovar pedido.");
+        }
+      }
+    };
+
+    window.cancelOrder = async function(orderId) {
+      if (!userPermissions.includes('pedidos_compra_cancelar')) {
+        alert('Você não tem permissão para cancelar pedidos de compra.');
+        return;
+      }
+      if (confirm('Confirma o cancelamento deste pedido?')) {
+        try {
+          const pedidoRef = doc(db, "pedidosCompra", orderId);
+          const pedidoSnap = await getDoc(pedidoRef);
+          const pedido = pedidoSnap.data();
+          await updateDoc(pedidoRef, {
+            status: 'CANCELADO',
+            dataCancelamento: Timestamp.now(),
+            canceladoPor: currentUser.nome,
+            historico: [
+              ...(pedido.historico || []),
+              { data: Timestamp.now(), acao: 'Cancelado', usuario: currentUser.nome }
+            ]
+          });
+          await loadInitialData();
+          applyFilters();
+          alert('Pedido cancelado com sucesso!');
+        } catch (error) {
+          console.error("Erro ao cancelar pedido:", error);
+          alert("Erro ao cancelar pedido.");
+        }
+      }
+    };
+
+    window.receiveOrder = async function(orderId) {
+      if (!userPermissions.includes('pedidos_compra_receber')) {
+        alert('Você não tem permissão para receber pedidos de compra.');
+        return;
+      }
+
+      // Verificar parâmetros do sistema
+      const parametrosDoc = await getDoc(doc(db, "parametros", "sistema"));
+      const params = parametrosDoc.exists() ? parametrosDoc.data() : {};
+      const requireInspecao = params.inspecaoRecebimento || false;
+      const useArmazemQualidade = params.armazemQualidade || false;
+      if (confirm('Confirma o recebimento deste pedido?')) {
+        try {
+          const pedidoRef = doc(db, "pedidosCompra", orderId);
+          const pedidoSnap = await getDoc(pedidoRef);
+          const pedido = { id: pedidoSnap.id, ...pedidoSnap.data() };
+
+          await updateDoc(pedidoRef, {
+            status: 'RECEBIDO',
+            dataRecebimento: Timestamp.now(),
+            recebidoPor: currentUser.nome,
+            historico: [
+              ...(pedido.historico || []),
+              { data: Timestamp.now(), acao: 'Recebido', usuario: currentUser.nome }
+            ]
+          });
+
+          for (const item of pedido.itens) {
+            const produto = produtos.find(p => p.codigo === item.codigo);
+            if (!produto) continue;
+
+            await addDoc(collection(db, "estoqueQualidade"), {
+              pedidoId: orderId,
+              produtoId: produto.id,
+              codigo: item.codigo,
+              descricao: item.descricao,
+              quantidade: item.quantidade,
+              unidade: item.unidade,
+              status: 'PENDENTE',
+              dataEntrada: Timestamp.now(),
+              origem: `Pedido de Compra ${pedido.numero}`
+            });
+          }
+
+          await loadInitialData();
+          applyFilters();
+          alert('Pedido recebido com sucesso! Itens enviados para inspeção de qualidade.');
+        } catch (error) {
+          console.error("Erro ao receber pedido:", error);
+          alert("Erro ao receber pedido.");
+        }
+      }
+    };
+
+    window.openFromQuotationModal = function openFromQuotationModal() {
+      if (!userPermissions.includes('pedidos_compra_criar')) {
+        alert('Você não tem permissão para criar pedidos de compra.');
+        return;
+      }
+      const select = document.getElementById('quotationSelect');
+      select.innerHTML = '<option value="">Selecione a cotação...</option>';
+      cotacoes
+        .filter(c => c.status === 'APROVADA')
+        .forEach(cotacao => {
+          select.innerHTML += `<option value="${cotacao.id}">${cotacao.numero}</option>`;
+        });
+      document.getElementById('quotationOrderModal').style.display = 'block';
+    };
+
+    window.loadQuotationDetails = async function() {
+      const cotacaoId = document.getElementById('quotationSelect').value;
+      const detailsContainer = document.getElementById('quotationDetails');
+      const supplierSelect = document.getElementById('quotationSupplierSelect');
+
+      if (!cotacaoId) {
+        detailsContainer.innerHTML = '';
+        supplierSelect.innerHTML = '<option value="">Selecione o fornecedor...</option>';
+        document.getElementById('quotationItemsContainer').innerHTML = '';
+        return;
+      }
+
+      const cotacao = cotacoes.find(c => c.id === cotacaoId);
+      if (cotacao) {
+        supplierSelect.innerHTML = '<option value="">Selecione o fornecedor...</option>';
+        const respondedSuppliers = cotacao.fornecedores.filter(f => cotacao.respostas && cotacao.respostas[f]);
+        respondedSuppliers.forEach(fornecedorId => {
+          const fornecedor = fornecedores.find(f => f.id === fornecedorId);
+          if (fornecedor) {
+            supplierSelect.innerHTML += `
+              <option value="${fornecedor.id}">${fornecedor.codigo} - ${fornecedor.razaoSocial}</option>
+            `;
+          }
+        });
+
+        detailsContainer.innerHTML = `
+          <p><strong>Número:</strong> ${cotacao.numero}</p>
+          <p><strong>Data:</strong> ${new Date(cotacao.dataCriacao.seconds * 1000).toLocaleDateString()}</p>
+          <p><strong>Itens:</strong> ${cotacao.itens.length}</p>
+          <p><strong>Valor Total Estimado:</strong> R$ ${cotacao.valorTotal?.toFixed(2) || '0,00'}</p>
+        `;
+      }
+    };
+
+    window.updateQuotationItems = function() {
+      const cotacaoId = document.getElementById('quotationSelect').value;
+      const fornecedorId = document.getElementById('quotationSupplierSelect').value;
+      const container = document.getElementById('quotationItemsContainer');
+
+      if (!cotacaoId || !fornecedorId) {
+        container.innerHTML = '';
+        return;
+      }
+
+      const cotacao = cotacoes.find(c => c.id === cotacaoId);
+      const resposta = cotacao.respostas?.[fornecedorId];
+      if (!resposta) {
+        container.innerHTML = '<p>Fornecedor ainda não respondeu à cotação.</p>';
+        return;
+      }
+
+      let subtotal = 0;
+      const itemsHtml = cotacao.itens.map((item, index) => {
+        const precoUnitario = resposta.precos[index] || 0;
+        const ipi = resposta.ipi[index] || 0;
+        const icms = resposta.icms[index] || 0;
+        const totalItem = precoUnitario * item.quantidade * (1 + ipi / 100) * (1 + icms / 100);
+        subtotal += totalItem;
+        return `
+          <tr>
+            <td>${item.codigo}</td>
+            <td>${item.descricao}</td>
+            <td>${item.quantidadeInterna || item.quantidade}</td>
+            <td>${item.unidadeInterna || item.unidade}</td>
+            <td>${item.quantidadeCompra || item.quantidade}</td>
+            <td>${item.unidadeCompra || item.unidade}</td>
+            <td>R$ ${precoUnitario.toFixed(2)}</td>
+            <td>${ipi.toFixed(2)}%</td>
+            <td>${icms.toFixed(2)}%</td>
+            <td>R$ ${totalItem.toFixed(2)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const freteValor = resposta.frete?.valor || 0;
+      const desconto = resposta.desconto || 0;
+      const totalGeral = subtotal + freteValor - (subtotal * desconto / 100);
+
+      container.innerHTML = `
+        <div class="form-group">
+          <h3>Itens da Cotação</h3>
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Qtd. Interna</th>
+                <th>Unid. Interna</th>
+                <th>Qtd. Compra</th>
+                <th>Unid. Compra</th>
+                <th>Valor Unit.</th>
+                <th>IPI</th>
+                <th>ICMS</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>${itemsHtml}</tbody>
+            <tfoot>
+              <tr>
+                <td colspan="9" style="text-align: right;">Subtotal:</td>
+                <td>R$ ${subtotal.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td colspan="9" style="text-align: right;">Frete (${resposta.frete?.tipo || 'N/A'}):</td>
+                <td>R$ ${freteValor.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td colspan="9" style="text-align: right;">Desconto (${resposta.desconto || 0}%):</td>
+                <td>R$ ${(subtotal * desconto / 100).toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td colspan="9" style="text-align: right;"><strong>Total Geral:</strong></td>
+                <td><strong>R$ ${totalGeral.toFixed(2)}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="form-group quotation-details">
+          <h3>Condições Comerciais</h3>
+          <p><strong>Condição de Pagamento:</strong> ${resposta.condicaoPagamento || 'N/A'}</p>
+          <p><strong>Prazo de Entrega:</strong> ${resposta.prazoEntrega || 'N/A'} dias</p>
+          <p><strong>Validade da Proposta:</strong> ${resposta.validadeProposta || 'N/A'} dias</p>
+          <p><strong>Pedido Mínimo:</strong> R$ ${resposta.pedidoMinimo?.toFixed(2) || '0,00'}</p>
+          <p><strong>Garantia:</strong> ${resposta.garantia || 0} meses</p>
+          <p><strong>Observações:</strong> ${resposta.observacoes || 'Nenhuma'}</p>
+        </div>
+      `;
+    };
+
+    window.createOrderFromQuotation = async function() {
+      if (!userPermissions.includes('pedidos_compra_criar')) {
+        alert('Você não tem permissão para criar pedidos de compra.');
+        return;
+      }
+      const cotacaoId = document.getElementById('quotationSelect').value;
+      const fornecedorId = document.getElementById('quotationSupplierSelect').value;
+
+      if (!cotacaoId || !fornecedorId) {
+        alert('Selecione a cotação e o fornecedor.');
+        return;
+      }
+
+      const cotacao = cotacoes.find(c => c.id === cotacaoId);
+      const resposta = cotacao.respostas?.[fornecedorId];
+      if (!resposta) {
+        alert('O fornecedor selecionado ainda não respondeu à cotação.');
+        return;
+      }
+
+      const items = cotacao.itens.map((item, index) => {
+        const precoUnitario = resposta.precos[index] || 0;
+        const ipi = resposta.ipi[index] || 0;
+        const icms = resposta.icms[index] || 0;
+        const totalItem = precoUnitario * item.quantidade * (1 + ipi / 100) * (1 + icms / 100);
+        return {
+          codigo: item.codigo,
+          descricao: item.descricao,
+          quantidadeInterna: item.quantidadeInterna || item.quantidade,
+          unidadeInterna: item.unidadeInterna || item.unidade,
+          quantidadeCompra: item.quantidadeCompra || item.quantidade,
+          unidadeCompra: item.unidadeCompra || item.unidade,
+          valorUnitario: precoUnitario,
+          ipi: ipi,
+          icms: icms,
+          valorTotal: totalItem
+        };
+      });
+
+      const subtotal = items.reduce((sum, item) => sum + item.valorTotal, 0);
+      const freteValor = resposta.frete?.valor || 0;
+      const desconto = resposta.desconto || 0;
+      const valorTotal = subtotal + freteValor - (subtotal * desconto / 100);
+
+      try {
+        const numeroSequencial = await getNextOrderNumber();
+        const pedido = {
+          numero: numeroSequencial,
+          cotacaoId,
+          fornecedorId,
+          condicaoPagamento: resposta.condicaoPagamento || 'N/A',
+          itens: items,
+          frete: {
+            tipo: resposta.frete?.tipo || 'N/A',
+            valor: freteValor
+          },
+          desconto: desconto,
+          valorTotal,
+          status: 'ABERTO',
+          dataCriacao: Timestamp.now(),
+          criadoPor: currentUser.nome,
+          historico: [{ data: Timestamp.now(), acao: 'Criado a partir da cotação', usuario: currentUser.nome }]
+        };
+
+        await addDoc(collection(db, "pedidosCompra"), pedido);
+        await updateDoc(doc(db, "cotacoes", cotacaoId), {
+          status: 'FECHADA',
+          historico: cotacao.historico ? [...cotacao.historico, {
+            acao: `Pedido ${numeroSequencial} gerado`,
+            data: Timestamp.now(),
+            usuario: currentUser.nome
+          }] : [{
+            acao: `Pedido ${numeroSequencial} gerado`,
+            data: Timestamp.now(),
+            usuario: currentUser.nome
+          }]
+        });
+
+        alert('Pedido criado com sucesso!');
+        closeModal('quotationOrderModal');
+        await loadInitialData();
+        applyFilters();
+      } catch (error) {
+        console.error("Erro ao criar pedido:", error);
+        alert("Erro ao criar pedido.");
+      }
+    };
+
+    window.updateConvertedQty = function(select) {
+      const row = select.closest('tr');
+      const qtdInput = row.querySelector('.item-quantidade');
+      const qtdConvertidaInput = row.querySelector('.item-qtd-convertida');
+      const produtoId = qtdConvertidaInput.dataset.produtoId;
+      const produto = produtos.find(p => p.id === produtoId);
+
+      if (!produto || !qtdInput.value) return;
+
+      const qtd = parseFloat(qtdInput.value);
+      let qtdConvertida = qtd;
+
+      if (select.value === produto.unidadeSecundaria && produto.fatorConversao) {
+        qtdConvertida = qtd / produto.fatorConversao;
+      } else if (select.value === produto.unidade) {
+        qtdConvertida = qtd;
+      }
+
+      qtdConvertidaInput.value = qtdConvertida.toFixed(3);
+      calculateItemTotal(qtdInput);
+    };
+
+    // Suas novas funções
+    async function checkBudgetLimits() {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      // First filter by date
+      const q = query(
+        collection(db, "pedidosCompra"),
+        where("dataCriacao", ">=", Timestamp.fromDate(startOfMonth))
+      );
+
+      // Then filter by status in memory
+      const querySnapshot = await getDocs(q);
+      orcamentoUtilizado = querySnapshot.docs
+        .filter(doc => ["ABERTO", "APROVADO", "RECEBIDO"].includes(doc.data().status))
+        .reduce((total, doc) => total + (doc.data().valorTotal || 0), 0);
+
+      updateBudgetAlert();
+    }
+
+    function updateBudgetAlert() {
+      const alert = document.getElementById('budgetAlert');
+      if (orcamentoUtilizado > LIMITE_ORCAMENTO_MENSAL) {
+        alert.style.display = 'block';
+        alert.textContent = `Atenção: Orçamento mensal excedido! (${orcamentoUtilizado.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})})`;
+      } else {
+        alert.style.display = 'none';
+      }
+    }
+
+    async function checkSupplierLimits() {
+      const fornecedorId = document.getElementById('supplierSelect').value;
+      if (!fornecedorId) return;
+
+      const fornecedor = fornecedores.find(f => f.id === fornecedorId);
+      if (!fornecedor) return;
+
+      const q = query(
+        collection(db, "pedidosCompra"),
+        where("fornecedorId", "==", fornecedorId),
+        where("status", "in", ["ABERTO", "APROVADO"])
+      );
+
+      const querySnapshot = await getDocs(q);
+      const totalEmAberto = querySnapshot.docs.reduce((total, doc) => {
+        return total + (doc.data().valorTotal || 0);
+      }, 0);
+
+      if (totalEmAberto > (fornecedor.limiteCredito || 0)) {
+        alert(`Atenção: Este fornecedor já possui pedidos que excedem seu limite de crédito!\nTotal em aberto: ${totalEmAberto.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}`);
+      }
+    }
+
+    function totaltoFixed(num) {
+      return parseFloat(num).toFixed(2);
+    }
+  </script>
+</body>
+</html>

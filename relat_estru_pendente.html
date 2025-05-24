@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório de Estruturas Pendentes</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+    .container { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 24px; }
+    h1 { color: #0854a0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+    th, td { border: 1px solid #d4d4d4; padding: 7px 10px; text-align: left; }
+    th { background: #f0f3f6; }
+    .missing { background: #ffe0e0; color: #bb0000; font-weight: bold; }
+    .ok { background: #e0ffe0; color: #107e3e; }
+    button { background: #0854a0; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-size: 15px; cursor: pointer; margin-bottom: 18px; }
+    button:hover { background: #0a4d8c; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Relatório de Estruturas Pendentes</h1>
+    <button onclick="exportarCSV()">Exportar para CSV</button>
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Falta Operações</th>
+          <th>Falta Materiais</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+  <script type="module">
+    import { db } from '../firebase-config.js';
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    let linhas = [];
+    async function carregarEstruturas() {
+      const [produtosSnap, estruturasSnap] = await Promise.all([
+        getDocs(collection(db, 'produtos')),
+        getDocs(collection(db, 'estruturas'))
+      ]);
+      const produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const estruturas = estruturasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+      linhas = [];
+      for (const estrutura of estruturas) {
+        const produto = produtos.find(p => p.id === estrutura.produtoPaiId);
+        const faltaOperacoes = !estrutura.operacoes || estrutura.operacoes.length === 0;
+        const faltaMateriais = !estrutura.componentes || estrutura.componentes.length === 0;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${produto ? produto.codigo : estrutura.produtoPaiId}</td>
+          <td>${produto ? produto.descricao : '-'}</td>
+          <td class="${faltaOperacoes ? 'missing' : 'ok'}">${faltaOperacoes ? 'SIM' : 'NÃO'}</td>
+          <td class="${faltaMateriais ? 'missing' : 'ok'}">${faltaMateriais ? 'SIM' : 'NÃO'}</td>
+        `;
+        tbody.appendChild(tr);
+        linhas.push({
+          codigo: produto ? produto.codigo : estrutura.produtoPaiId,
+          descricao: produto ? produto.descricao : '-',
+          faltaOperacoes: faltaOperacoes ? 'SIM' : 'NÃO',
+          faltaMateriais: faltaMateriais ? 'SIM' : 'NÃO'
+        });
+      }
+    }
+    carregarEstruturas();
+    window.exportarCSV = function() {
+      let csv = 'Código,Descrição,Falta Operações,Falta Materiais\n';
+      for (const l of linhas) {
+        csv += `${l.codigo},${l.descricao},${l.faltaOperacoes},${l.faltaMateriais}\n`;
+      }
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'relatorio_estruturas_pendentes.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html> 

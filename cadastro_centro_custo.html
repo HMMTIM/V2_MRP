@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Centros de Custo</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --header-bg: #354a5f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 { font-size: 24px; font-weight: 500; }
+
+    .form-group { margin-bottom: 15px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
+    .form-col { flex: 1; }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-success { background-color: var(--success-color); color: white; }
+    .btn-success:hover { background-color: var(--success-hover); }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .btn-secondary:hover { background-color: #5a6268; }
+    .btn-danger { background-color: var(--danger-color); color: white; }
+    .btn-danger:hover { background-color: var(--danger-hover); }
+
+    .table-responsive {
+      overflow-x: auto;
+      margin-top: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    tr:hover { background-color: #f8f9fa; }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 4px;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      transition: opacity 0.3s ease;
+    }
+
+    .notification-success { background-color: var(--success-color); }
+    .notification-error { background-color: var(--danger-color); }
+    .notification-icon { font-weight: bold; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Cadastro de Centros de Custo</h1>
+      <button class="btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <form id="costCenterForm" onsubmit="registerCostCenter(event)">
+      <div class="form-row">
+        <div class="form-col">
+          <label for="costCenterCode">Código</label>
+          <input type="text" id="costCenterCode" required maxlength="10">
+        </div>
+        <div class="form-col">
+          <label for="costCenterName">Descrição</label>
+          <input type="text" id="costCenterName" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="costCenterDepartment">Departamento</label>
+        <input type="text" id="costCenterDepartment" placeholder="Ex: Produção, Manutenção">
+      </div>
+      <div class="form-group">
+        <label for="costCenterStatus">Status</label>
+        <select id="costCenterStatus" required>
+          <option value="Ativo">Ativo</option>
+          <option value="Inativo">Inativo</option>
+        </select>
+      </div>
+      <div class="form-group">
+          <label for="costCenterBudget">Orçamento Mensal (R$)</label>
+          <input type="number" id="costCenterBudget" min="0" step="0.01" required>
+      </div>
+      <div class="form-row">
+        <button type="button" class="btn-secondary" onclick="resetForm()">Limpar</button>
+        <button type="submit" class="btn-success">Cadastrar Centro de Custo</button>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Descrição</th>
+            <th>Departamento</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="costCentersTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let costCenters = [];
+    let editingId = null;
+
+    window.onload = async function() {
+      const userSession = localStorage.getItem('currentUser');
+      if (!userSession) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const currentUser = JSON.parse(userSession);
+      if (currentUser.nivel < 9) {
+        showNotification('Acesso restrito. Apenas administradores podem gerenciar centros de custo.', 'error');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      setupRealTimeListener();
+    };
+
+    function setupRealTimeListener() {
+      try {
+        onSnapshot(collection(db, "centrosCusto"), snap => {
+          costCenters = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          loadCostCenters();
+        });
+      } catch (error) {
+        console.error("Erro ao carregar centros de custo:", error);
+        showNotification("Erro ao carregar centros de custo.", "error");
+      }
+    }
+
+    function loadCostCenters() {
+      const tableBody = document.getElementById('costCentersTableBody');
+      tableBody.innerHTML = '';
+
+      costCenters
+        .sort((a, b) => a.codigo.localeCompare(b.codigo))
+        .forEach(cc => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${cc.codigo}</td>
+            <td>${cc.descricao}</td>
+            <td>${cc.departamento || '-'}</td>
+            <td><span class="status-badge status-${cc.status.toLowerCase()}">${cc.status}</span></td>
+            <td>
+              <button class="btn-primary" onclick="editCostCenter('${cc.id}')">Editar</button>
+              <button class="btn-danger" onclick="deleteCostCenter('${cc.id}')">Excluir</button>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+    }
+
+    window.editCostCenter = function(id) {
+      const cc = costCenters.find(c => c.id === id);
+      if (!cc) return;
+
+      editingId = id;
+      document.getElementById('costCenterCode').value = cc.codigo;
+      document.getElementById('costCenterName').value = cc.descricao;
+      document.getElementById('costCenterDepartment').value = cc.departamento || '';
+      document.getElementById('costCenterStatus').value = cc.status;
+      document.getElementById('costCenterBudget').value = cc.orcamento || ''; //Added for budget
+      document.getElementById('costCenterForm').querySelector('button[type="submit"]').textContent = 'Atualizar Centro de Custo';
+    };
+
+    window.deleteCostCenter = async function(id) {
+      if (!confirm('Tem certeza que deseja excluir este centro de custo?')) return;
+
+      try {
+        await deleteDoc(doc(db, "centrosCusto", id));
+        showNotification('Centro de custo excluído com sucesso!', 'success');
+      } catch (error) {
+        console.error("Erro ao excluir centro de custo:", error);
+        showNotification("Erro ao excluir centro de custo: " + error.message, "error");
+      }
+    };
+
+    window.resetForm = function() {
+      editingId = null;
+      document.getElementById('costCenterForm').reset();
+      document.getElementById('costCenterForm').querySelector('button[type="submit"]').textContent = 'Cadastrar Centro de Custo';
+    };
+
+    window.registerCostCenter = async function(event) {
+      event.preventDefault();
+
+      const codigo = document.getElementById('costCenterCode').value.toUpperCase();
+      const descricao = document.getElementById('costCenterName').value;
+      const departamento = document.getElementById('costCenterDepartment').value || null;
+      const status = document.getElementById('costCenterStatus').value;
+      const orcamento = parseFloat(document.getElementById('costCenterBudget').value) || 0; // Added for budget
+
+      // Validar código duplicado
+      const existingCostCenter = costCenters.find(c => c.codigo === codigo && c.id !== editingId);
+      if (existingCostCenter) {
+        showNotification('Já existe um centro de custo com este código.', 'error');
+        document.getElementById('costCenterCode').style.borderColor = 'var(--danger-color)';
+        return;
+      }
+
+      try {
+        const costCenter = {
+          codigo,
+          descricao,
+          departamento,
+          status,
+          orcamento // Added for budget
+        };
+
+        if (editingId) {
+          await updateDoc(doc(db, "centrosCusto", editingId), costCenter);
+          showNotification('Centro de custo atualizado com sucesso!', 'success');
+        } else {
+          await addDoc(collection(db, "centrosCusto"), costCenter);
+          showNotification('Centro de custo cadastrado com sucesso!', 'success');
+        }
+
+        resetForm();
+      } catch (error) {
+        console.error("Erro ao salvar centro de custo:", error);
+        showNotification("Erro ao salvar centro de custo: " + error.message, "error");
+      }
+    };
+
+    function showNotification(message, type = 'success', duration = 3000) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = '';
+      notification.classList.add('notification', `notification-${type}`);
+      notification.style.display = 'block';
+      
+      let icon = '';
+      if (type === 'success') {
+        icon = '✓';
+      } else if (type === 'error') {
+        icon = '✗';
+      }
+      
+      notification.innerHTML = `<span class="notification-icon">${icon}</span> ${message}`;
+      
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.style.display = 'none', 300);
+      }, duration);
+    }
+  </script>
+</body>
+</html>

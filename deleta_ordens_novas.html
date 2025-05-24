@@ -1,0 +1,203 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpar Ordens</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #c82333;
+        }
+        button:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .progress {
+            margin-top: 20px;
+            display: none;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Limpar Ordens</h1>
+
+        <div class="warning">
+            <strong>Atenção!</strong> Esta ação irá excluir todas as ordens a partir do número informado até a última ordem criada. Esta ação não pode ser desfeita.
+        </div>
+
+        <form id="deleteForm">
+            <div class="form-group">
+                <label for="startNumber">Número inicial da OP:</label>
+                <input type="text" id="startNumber" name="startNumber" required 
+                       pattern="OP\d{8}" 
+                       placeholder="Ex: OP23120001"
+                       title="Digite o número da OP no formato OP seguido de 8 dígitos">
+            </div>
+            <button type="submit" id="deleteButton">Excluir Ordens</button>
+        </form>
+
+        <div class="progress">
+            <p>Processando... <span id="currentOrder"></span></p>
+        </div>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { 
+            collection, 
+            query, 
+            where, 
+            getDocs, 
+            doc, 
+            deleteDoc,
+            orderBy,
+            updateDoc
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        document.getElementById('deleteForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const startNumber = document.getElementById('startNumber').value;
+            const deleteButton = document.getElementById('deleteButton');
+            const progress = document.querySelector('.progress');
+            const status = document.getElementById('status');
+            const currentOrder = document.getElementById('currentOrder');
+
+            if (!startNumber.match(/^OP\d{8}$/)) {
+                alert('Por favor, digite um número de OP válido no formato OP seguido de 8 dígitos');
+                return;
+            }
+
+            if (!confirm(`Tem certeza que deseja excluir todas as ordens a partir da OP ${startNumber}?`)) {
+                return;
+            }
+
+            deleteButton.disabled = true;
+            progress.style.display = 'block';
+            status.className = 'status';
+            status.textContent = '';
+
+            try {
+                // Buscar todas as ordens a partir do número informado
+                const ordersRef = collection(db, "ordensProducao");
+                const q = query(
+                    ordersRef,
+                    where("numero", ">=", startNumber),
+                    orderBy("numero", "asc")
+                );
+
+                const snapshot = await getDocs(q);
+                let deletedCount = 0;
+
+                for (const orderDoc of snapshot.docs) {
+                    const order = orderDoc.data();
+                    currentOrder.textContent = `Processando OP ${order.numero}...`;
+
+                    // Liberar empenhos de materiais se existirem
+                    if (order.materiaisNecessarios) {
+                        for (const material of order.materiaisNecessarios) {
+                            if (material.quantidadeReservada > 0) {
+                                const stockQuery = query(
+                                    collection(db, "estoques"),
+                                    where("produtoId", "==", material.produtoId),
+                                    where("armazemId", "==", order.armazemProducaoId)
+                                );
+                                
+                                const stockDocs = await getDocs(stockQuery);
+                                if (!stockDocs.empty) {
+                                    const stockDoc = stockDocs.docs[0];
+                                    const currentStock = stockDoc.data();
+                                    
+                                    await updateDoc(doc(db, "estoques", stockDoc.id), {
+                                        saldoReservado: Math.max(0, (currentStock.saldoReservado || 0) - material.quantidadeReservada)
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    // Excluir a ordem
+                    await deleteDoc(doc(db, "ordensProducao", orderDoc.id));
+                    deletedCount++;
+                }
+
+                status.className = 'status success';
+                status.textContent = `${deletedCount} ordem(ns) foram excluídas com sucesso!`;
+            } catch (error) {
+                console.error("Erro ao excluir ordens:", error);
+                status.className = 'status error';
+                status.textContent = 'Erro ao excluir ordens: ' + error.message;
+            } finally {
+                deleteButton.disabled = false;
+                progress.style.display = 'none';
+                currentOrder.textContent = '';
+            }
+        });
+    </script>
+</body>
+</html>

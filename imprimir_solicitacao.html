@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Impressão de Solicitação de Compra</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      font-size: 10px;
+      color: #000;
+    }
+    .container {
+      width: 210mm; /* Largura A4 */
+      height: 297mm; /* Altura A4 */
+      margin: 0 auto;
+      border: 2px solid #000;
+      padding: 10mm;
+      border-radius: 8px;
+      box-sizing: border-box;
+      position: relative;
+      page-break-after: always;
+    }
+    .box {
+      border: 1px solid #000;
+      border-radius: 8px;
+      padding: 3mm;
+      margin-bottom: 3mm;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #fff;
+    }
+    .header-left img {
+      height: 15mm;
+    }
+    .header-right {
+      text-align: right;
+    }
+    .header-right h1 {
+      font-size: 12px;
+      font-weight: bold;
+      margin: 0;
+    }
+    .header-right p {
+      margin: 0;
+      font-size: 10px;
+      line-height: 1;
+    }
+    .section p {
+      margin: 0;
+      line-height: 1;
+    }
+    .section strong {
+      font-weight: bold;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .table th, .table td {
+      border: 1px solid #000;
+      padding: 2mm;
+      text-align: left;
+      font-size: 10px;
+      line-height: 1;
+    }
+    .table th {
+      font-weight: bold;
+    }
+    .table td {
+      vertical-align: top;
+    }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      padding: 3mm;
+    }
+    .footer p {
+      margin: 0;
+      line-height: 1;
+    }
+    .error-message {
+      color: red;
+      font-size: 14px;
+      text-align: center;
+      margin: 20px;
+    }
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        width: 210mm;
+        height: 297mm;
+        border: 2px solid #000;
+        border-radius: 8px;
+        padding: 10mm;
+        box-sizing: border-box;
+        page-break-after: always;
+      }
+      .box {
+        border: 1px solid #000;
+        border-radius: 8px;
+      }
+      button {
+        display: none;
+      }
+      .error-message {
+        display: none;
+      }
+      @page {
+        size: A4;
+        margin: 0;
+      }
+    }
+    .header-right h1 {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.header-right .solicitacao-numero {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 5px 0;
+  color: #000;
+}
+  </style>
+</head>
+<body>
+  <div id="error-message" class="error-message"></div>
+  <div id="pages-container">
+    <!-- As páginas serão geradas dinamicamente aqui -->
+  </div>
+
+  <button onclick="window.print()">Imprimir</button>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    function showError(message) {
+      const errorDiv = document.getElementById('error-message');
+      errorDiv.textContent = message;
+      console.error(message);
+    }
+
+    function formatNumber(value) {
+      return value.toFixed(2).replace('.', ',');
+    }
+
+    function getSolicitacaoIdFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('solicitacaoId');
+    }
+
+    async function loadCompanyData() {
+      try {
+        const companyRef = doc(db, "empresa", "config");
+        const companySnap = await getDoc(companyRef);
+
+        if (!companySnap.exists()) {
+          showError("Dados da empresa não encontrados no Firestore (empresa/config). Usando valores padrão.");
+          return null;
+        }
+
+        return companySnap.data();
+      } catch (error) {
+        showError(`Erro ao carregar dados da empresa: ${error.message}. Usando valores padrão.`);
+        console.error("Detalhes do erro:", error);
+        return null;
+      }
+    }
+
+    async function loadSolicitacaoData(solicitacaoId) {
+      try {
+        if (!solicitacaoId) {
+          throw new Error("Nenhum solicitacaoId fornecido.");
+        }
+
+        const solicitacaoRef = doc(db, "solicitacoesCompra", solicitacaoId);
+        const solicitacaoSnap = await getDoc(solicitacaoRef);
+
+        if (!solicitacaoSnap.exists()) {
+          throw new Error(`Solicitação não encontrada no Firestore (solicitacoesCompra/${solicitacaoId}).`);
+        }
+
+        const solicitacao = solicitacaoSnap.data();
+
+        const fornecedorRef = doc(db, "fornecedores", solicitacao.fornecedorId);
+        const fornecedorSnap = await getDoc(fornecedorRef);
+
+        if (!fornecedorSnap.exists()) {
+          throw new Error(`Fornecedor não encontrado no Firestore (fornecedores/${solicitacao.fornecedorId}).`);
+        }
+
+        const fornecedor = fornecedorSnap.data();
+        return { solicitacao, fornecedor };
+      } catch (error) {
+        showError(`Erro ao carregar dados da solicitação: ${error.message}`);
+        console.error("Detalhes do erro:", error);
+        return null;
+      }
+    }
+
+    async function renderPages() {
+      const solicitacaoId = getSolicitacaoIdFromURL();
+      if (!solicitacaoId) {
+        showError("Nenhum ID de solicitação fornecido na URL. Use ?solicitacaoId=SEU_ID na URL (ex.: ?solicitacaoId=ID_DA_SOLICITACAO).");
+        return;
+      }
+
+      const company = await loadCompanyData();
+      const solicitacaoData = await loadSolicitacaoData(solicitacaoId);
+      if (!solicitacaoData) return;
+
+      const { solicitacao, fornecedor } = solicitacaoData;
+      const pagesContainer = document.getElementById('pages-container');
+
+      document.getElementById('error-message').textContent = '';
+
+      const companyData = company || {
+        razaoSocial: 'NALITECK BRASIL AUTOMAÇÃO IND EIRELI',
+        logoUrl: 'logo-naliteck.png',
+        endereco: 'RUA PASCHOA DE NADAI NALINI, 72 CEP:15406-232 Olimpia - SP',
+        telefone: '(17) 3042-1507',
+        cnpj: '12.811.393/0001-00',
+        inscricaoEstadual: '487.029.880.116'
+      };
+
+      const itemsPerPage = 20;
+      const items = solicitacao.itens || [];
+      const totalPages = Math.ceil(items.length / itemsPerPage);
+
+      let totalQuantidadeInterna = 0;
+      let totalQuantidadeCompra = 0;
+
+      items.forEach(item => {
+        totalQuantidadeInterna += item.quantidadeInterna || 0;
+        totalQuantidadeCompra += item.quantidadeCompra || 0;
+      });
+
+      for (let page = 0; page < totalPages; page++) {
+        const startIndex = page * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, items.length);
+        const pageItems = items.slice(startIndex, endIndex);
+
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'container';
+        pageDiv.innerHTML = `
+          <div class="box header">
+            <div class="header-left">
+              <img id="company-logo-${page}" src="${companyData.logoUrl}" alt="Logo da Empresa">
+            </div>
+            <!-- Substitua esta parte no header-right -->
+            <div class="header-right">
+            <h1 style="font-size: 14px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase;">SOLICITAÇÃO DE COMPRAS</h1>
+            <p style="font-size: 16px; font-weight: bold; margin: 5px 0; color: #000;">Nº Solicitação: ${solicitacao.numero}</p>
+            <p style="margin: 2px 0;">Data Solicitação: ${new Date(solicitacao.dataCriacao.seconds * 1000).toLocaleDateString()}</p>
+            <p style="margin: 2px 0;">Impresso em: ${new Date().toLocaleString()}</p>
+          </div>
+          </div>
+
+          <div class="box section">
+            <p><strong>Ender.:</strong> ${companyData.endereco}</p>
+            <p><strong>Telef.:</strong> ${companyData.telefone} <strong>Fax:</strong> (    ) - <strong>CNPJ:</strong> ${companyData.cnpj} <strong>IE:</strong> ${companyData.inscricaoEstadual}</p>
+          </div>
+
+          <div class="box section">
+            <p><strong>Fornecedor..:</strong> <strong>${fornecedor.razaoSocial}</strong> (${fornecedor.codigo || 'N/A'})</p>
+            <p><strong>Endereço.:</strong> ${fornecedor.endereco || 'N/A'}</p>
+            <p>${fornecedor.cidade || 'N/A'}</p>
+            <p><strong>Tel:</strong> ${fornecedor.telefone || 'N/A'} <strong>Cel:</strong> ${fornecedor.celular || 'N/A'} <strong>Cel 2:</strong> ${fornecedor.celular2 || ''} <strong>CNPJ:</strong> ${fornecedor.cnpj || 'N/A'} <strong>IE:</strong> ${fornecedor.ie || 'N/A'}</p>
+            <p><strong>Contato..:</strong> ${fornecedor.contato || 'N/A'}</p>
+          </div>
+
+          <div class="box section">
+            <p><strong>Solicitante.:</strong> ${solicitacao.solicitante}</p>
+            <p><strong>Departamento.:</strong> ${solicitacao.departamento}</p>
+            <p><strong>Prioridade.:</strong> ${solicitacao.prioridade}</p>
+            <p><strong>Justificativa.:</strong> ${solicitacao.justificativa}</p>
+          </div>
+
+          <div class="box">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ITE</th>
+                  <th>CÓDIGO</th>
+                  <th>DESCRIÇÃO</th>
+                  <th>QUANTIDADE INTERNA</th>
+                  <th>UN. INTERNA</th>
+                  <th>QUANTIDADE COMPRA</th>
+                  <th>UN. COMPRA</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pageItems.map((item, index) => {
+                  const globalIndex = startIndex + index;
+                  return `
+                    <tr>
+                      <td>${(globalIndex + 1).toString().padStart(3, '0')}</td>
+                      <td>${item.codigo}</td>
+                      <td>${item.descricao}</td>
+                      <td>${formatNumber(item.quantidadeInterna)}</td>
+                      <td>${item.unidadeInterna}</td>
+                      <td>${formatNumber(item.quantidadeCompra)}</td>
+                      <td>${item.unidadeCompra}</td>
+                    </tr>
+                  `;
+                }).join('')}
+                ${page === totalPages - 1 ? `
+                  <tr>
+                    <td colspan="3" style="text-align: left;"><strong>Totais:</strong></td>
+                    <td>${formatNumber(totalQuantidadeInterna)}</td>
+                    <td></td>
+                    <td>${formatNumber(totalQuantidadeCompra)}</td>
+                    <td></td>
+                  </tr>
+                ` : ''}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="box footer">
+            <div>
+              <p><strong>Status:</strong> ${solicitacao.status}</p>
+              <p><strong>Data Criação:</strong> ${new Date(solicitacao.dataCriacao.seconds * 1000).toLocaleString()}</p>
+            </div>
+            <div>
+              <p><strong>Impresso por:</strong> ${localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')).nome : 'N/A'}</p>
+            </div>
+          </div>
+        `;
+
+        pagesContainer.appendChild(pageDiv);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await renderPages();
+    });
+  </script>
+</body>
+</html>

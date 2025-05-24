@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inspeção de Qualidade</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --header-bg: #354a5f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 95%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 { font-size: 24px; font-weight: 500; }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .items-table th, .items-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .items-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .items-table tr:hover { background-color: #f8f9fa; }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary { background-color: var(--primary-color); color: white; }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-success { background-color: var(--success-color); color: white; }
+    .btn-success:hover { background-color: var(--success-hover); }
+    .btn-danger { background-color: var(--danger-color); color: white; }
+    .btn-danger:hover { background-color: var(--danger-hover); }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .btn-secondary:hover { background-color: #5a6268; }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 8px;
+    }
+
+    .close-button {
+      position: absolute;
+      right: 15px;
+      top: 15px;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    .close-button:hover { color: var(--danger-color); }
+
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; color: var(--text-secondary); font-weight: 500; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .spec-details { padding: 10px; background-color: var(--secondary-color); border-radius: 4px; }
+
+    .photo-upload {
+      margin: 15px 0;
+      padding: 10px;
+      border: 2px dashed var(--border-color);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .photo-preview {
+      max-width: 200px;
+      max-height: 200px;
+      margin: 8px auto;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Inspeção de Qualidade</h1>
+      <button class="btn-secondary" onclick="navigateBack()">Voltar</button>
+    </div>
+
+    <h2>Itens Pendentes de Inspeção</h2>
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>Nota Fiscal</th>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Quantidade</th>
+          <th>Unidade</th>
+          <th>Lote Fornecedor</th>
+          <th>Lote Interno</th>
+          <th>Data de Entrada</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="itemsTableBody"></tbody>
+    </table>
+  </div>
+
+  <div id="inspectionModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal()">×</span>
+      <h2>Inspeção de Item</h2>
+      <form id="inspectionForm" onsubmit="submitInspection(event)">
+        <div class="form-group">
+          <label>Nota Fiscal</label>
+          <input type="text" id="itemNF" readonly>
+        </div>
+        <div class="form-group">
+          <label>Código do Produto</label>
+          <input type="text" id="itemCodigo" readonly>
+        </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <input type="text" id="itemDescricao" readonly>
+        </div>
+        <div class="form-group">
+          <label>Quantidade Recebida</label>
+          <input type="text" id="itemQuantidade" readonly>
+        </div>
+        <div class="form-group">
+          <label>Lote Fornecedor</label>
+          <input type="text" id="itemLoteFornecedor" readonly>
+        </div>
+        <div class="form-group">
+          <label>Lote Interno</label>
+          <input type="text" id="itemLoteInterno" readonly>
+        </div>
+        <div class="form-group">
+          <label>Tipo de Inspeção</label>
+          <select id="inspectionType" onchange="toggleInspectionDetails()">
+            <option value="simple">Simples (Aprovar/Rejeitar)</option>
+            <option value="detailed">Detalhada (Critérios)</option>
+          </select>
+        </div>
+        <div id="detailedInspection" style="display: none;">
+          <div id="inspectionCriteria" class="form-group">
+            <label>Critérios de Inspeção</label>
+            <div id="specDetails" class="spec-details"></div>
+          </div>
+        </div>
+        <div class="photo-upload">
+          <h3>Fotos da Inspeção</h3>
+          <input type="file" id="photoInput" accept="image/*" multiple onchange="previewPhotos(event)">
+          <div id="photoPreview" class="photo-preview"></div>
+        </div>
+        <div class="form-group">
+          <label>Observações</label>
+          <textarea id="inspectionObservacoes" rows="3" required></textarea>
+        </div>
+        <input type="hidden" id="estoqueQualidadeId">
+        <div style="display: flex; gap: 10px;">
+          <button type="submit" class="btn-success" data-action="approve">Aprovar</button>
+          <button type="submit" class="btn-danger" data-action="reject">Rejeitar</button>
+          <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="returnModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeReturnModal()">×</span>
+      <h2>Devolução de Material Rejeitado</h2>
+      <form id="returnForm" onsubmit="submitReturn(event)">
+        <div class="form-group">
+          <label>Nota Fiscal</label>
+          <input type="text" id="returnNF" readonly>
+        </div>
+        <div class="form-group">
+          <label>Código do Produto</label>
+          <input type="text" id="returnCodigo" readonly>
+        </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <input type="text" id="returnDescricao" readonly>
+        </div>
+        <div class="form-group">
+          <label>Quantidade Rejeitada</label>
+          <input type="number" id="returnQuantidade" readonly>
+        </div>
+        <div class="form-group">
+          <label>Documento de Devolução (opcional)</label>
+          <input type="text" id="returnDocumento" placeholder="Ex.: Número da nota de saída">
+        </div>
+        <div class="form-group">
+          <label>Solicitar Troca?</label>
+          <select id="requestReplacement" required>
+            <option value="false">Não</option>
+            <option value="true">Sim</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Observações da Devolução</label>
+          <textarea id="returnObservacoes" rows="3" required></textarea>
+        </div>
+        <input type="hidden" id="returnEstoqueQualidadeId">
+        <div style="display: flex; gap: 10px;">
+          <button type="submit" class="btn-success">Confirmar Devolução</button>
+          <button type="button" class="btn-secondary" onclick="closeReturnModal()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db, storage } from './firebase-config.js';
+    import { 
+      collection, 
+      getDocs, 
+      addDoc, 
+      updateDoc, 
+      doc, 
+      Timestamp,
+      arrayUnion,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+    let estoqueQualidade = [];
+    let produtos = [];
+    let especificacoes = [];
+    let armazens = [];
+    let currentUser = JSON.parse(localStorage.getItem('currentUser')) || { nome: 'Usuário Atual' };
+    let photoFiles = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const configDoc = await getDoc(doc(db, "parametros", "sistema"));
+      const config = configDoc.data();
+
+      if (!config?.inspecaoRecebimento) {
+        alert("Módulo de inspeção desativado nas configurações do sistema.");
+        window.location.href = 'index.html';
+        return;
+      }
+
+      await loadData();
+      displayItems();
+    });
+
+    async function loadData() {
+      try {
+        const [estoqueSnap, produtosSnap, specsSnap, armazensSnap] = await Promise.all([
+          getDocs(collection(db, "estoqueQualidade")),
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "especificacoesInspecao")),
+          getDocs(collection(db, "armazens"))
+        ]);
+        estoqueQualidade = estoqueSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        especificacoes = specsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        armazens = armazensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados.");
+      }
+    }
+
+    function extractNF(origem) {
+      const match = origem.match(/NF\s+(\w+)/);
+      return match ? match[1] : origem;
+    }
+
+    function displayItems() {
+      const tableBody = document.getElementById('itemsTableBody');
+      tableBody.innerHTML = '';
+      estoqueQualidade.forEach(item => {
+        const armazem = armazens.find(a => a.id === item.armazemId)?.codigo || '-';
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.notaFiscal?.numero || extractNF(item.origem)}</td>
+          <td>${item.codigo}</td>
+          <td>${item.descricao}</td>
+          <td>${item.quantidadeNF ? `${item.quantidadeNF} ${item.unidadeNF} (${item.quantidade} ${item.unidade})` : item.quantidade}</td>
+          <td>${item.unidade}</td>
+          <td>${item.loteFornecedor || '-'}</td>
+          <td>${item.loteInterno || '-'}</td>
+          <td>${new Date(item.dataEntrada.toDate()).toLocaleString()}</td>
+          <td>${item.status} (${armazem})</td>
+          <td>
+            ${item.status === 'PENDENTE' ? `<button class="btn-primary" onclick="inspectItem('${item.id}')">Inspecionar</button>` : ''}
+            ${item.status === 'REJEITADO' ? `<button class="btn-danger" onclick="openReturnModal('${item.id}')">Devolver</button>` : ''}
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    window.inspectItem = function(estoqueQualidadeId) {
+      const item = estoqueQualidade.find(i => i.id === estoqueQualidadeId);
+      if (!item) return;
+
+      const produto = produtos.find(p => p.id === item.produtoId);
+      const specs = especificacoes.filter(s => s.produtoId === item.produtoId);
+
+      document.getElementById('itemNF').value = item.notaFiscal?.numero || extractNF(item.origem);
+      document.getElementById('itemCodigo').value = item.codigo;
+      document.getElementById('itemDescricao').value = item.descricao;
+      document.getElementById('itemQuantidade').value = item.quantidadeNF ? `${item.quantidadeNF} ${item.unidadeNF} (${item.quantidade} ${item.unidade})` : item.quantidade;
+      document.getElementById('itemLoteFornecedor').value = item.loteFornecedor || '-';
+      document.getElementById('itemLoteInterno').value = item.loteInterno || '-';
+      document.getElementById('estoqueQualidadeId').value = estoqueQualidadeId;
+      document.getElementById('photoPreview').innerHTML = '';
+      photoFiles = [];
+
+      const criteriaDiv = document.getElementById('specDetails');
+      criteriaDiv.innerHTML = '';
+      if (specs.length > 0) {
+        specs.forEach((spec, index) => {
+          criteriaDiv.innerHTML += `
+            <div class="form-group">
+              <label>${spec.criterio} (Esperado: ${spec.valorEsperado}, Tolerância: ${spec.tolerancia})</label>
+              <input type="text" id="resultado-${index}" placeholder="Informe o valor medido">
+            </div>
+          `;
+        });
+      } else {
+        criteriaDiv.innerHTML = '<p>Nenhuma especificação cadastrada para este produto.</p>';
+      }
+
+      document.getElementById('inspectionModal').style.display = 'block';
+    };
+
+    window.toggleInspectionDetails = function() {
+      const type = document.getElementById('inspectionType').value;
+      document.getElementById('detailedInspection').style.display = type === 'detailed' ? 'block' : 'none';
+    };
+
+    window.previewPhotos = function(event) {
+      const preview = document.getElementById('photoPreview');
+      preview.innerHTML = '';
+      photoFiles = Array.from(event.target.files);
+
+      photoFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'photo-preview';
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    };
+
+    window.submitInspection = async function(event) {
+      event.preventDefault();
+
+      const estoqueQualidadeId = document.getElementById('estoqueQualidadeId').value;
+      const action = event.submitter.dataset.action;
+      const inspectionType = document.getElementById('inspectionType').value;
+      const observacoes = document.getElementById('inspectionObservacoes').value;
+      const item = estoqueQualidade.find(i => i.id === estoqueQualidadeId);
+      const specs = especificacoes.filter(s => s.produtoId === item.produtoId);
+
+      const almoxarifadoId = armazens.find(a => a.codigo === 'ALM01')?.id;
+      const quarentenaId = armazens.find(a => a.codigo === 'QUAR01')?.id;
+
+      if (!almoxarifadoId || !quarentenaId) {
+        alert('Armazéns ALM01 ou QUAR01 não encontrados.');
+        return;
+      }
+
+      let resultados = [];
+      if (inspectionType === 'detailed' && specs.length > 0) {
+        specs.forEach((spec, index) => {
+          const valorMedido = document.getElementById(`resultado-${index}`).value;
+          if (valorMedido) {
+            resultados.push({
+              criterio: spec.criterio,
+              valorEsperado: spec.valorEsperado,
+              tolerancia: spec.tolerancia,
+              valorMedido
+            });
+          }
+        });
+      }
+
+      const status = action === 'approve' ? 'APROVADO' : 'REJEITADO';
+      try {
+        await updateDoc(doc(db, "estoqueQualidade", estoqueQualidadeId), {
+          status,
+          armazemId: status === 'APROVADO' ? almoxarifadoId : quarentenaId,
+          dataInspecao: Timestamp.now(),
+          inspecionadoPor: currentUser.nome,
+          fotosInspecao: photoFiles.length > 0
+        });
+
+        const inspectionId = `INS-${Date.now()}`;
+        if (photoFiles.length > 0) {
+          for (const file of photoFiles) {
+            const storageRef = ref(storage, `inspecoes/${inspectionId}/${file.name}`);
+            await uploadBytes(storageRef, file);
+          }
+        }
+
+        await addDoc(collection(db, "inspecoesQualidade"), {
+          estoqueQualidadeId,
+          produtoId: item.produtoId,
+          quantidade: item.quantidade,
+          status,
+          dataInspecao: Timestamp.now(),
+          inspecionadoPor: currentUser.nome,
+          observacoes,
+          notaFiscal: item.notaFiscal || { numero: extractNF(item.origem) },
+          loteFornecedor: item.loteFornecedor,
+          loteInterno: item.loteInterno,
+          resultados,
+          fotosInspecao: photoFiles.length > 0 ? `inspecoes/${inspectionId}` : null
+        });
+
+        if (status === 'APROVADO') {
+          const estoqueDoc = await addDoc(collection(db, "estoque"), {
+            produtoId: item.produtoId,
+            codigo: item.codigo,
+            descricao: item.descricao,
+            quantidade: item.quantidade,
+            unidade: item.unidade,
+            dataEntrada: Timestamp.now(),
+            origem: item.origem,
+            notaFiscal: item.notaFiscal,
+            loteFornecedor: item.loteFornecedor,
+            loteInterno: item.loteInterno,
+            armazemId: almoxarifadoId
+          });
+
+          await addDoc(collection(db, "movimentacoesEstoque"), {
+            produtoId: item.produtoId,
+            tipo: 'TRANSFERENCIA',
+            quantidade: item.quantidade,
+            unidade: item.unidade,
+            tipoDocumento: 'INSPECAO',
+            numeroDocumento: item.notaFiscal?.numero || extractNF(item.origem),
+            observacoes: `Transferência de QUAR01 para ALM01 após inspeção`,
+            dataHora: Timestamp.now(),
+            armazemOrigemId: quarentenaId,
+            armazemDestinoId: almoxarifadoId
+          });
+        } else {
+          await updateDoc(doc(db, "pedidosCompra", item.pedidoId), {
+            status: 'REVISAO',
+            historico: arrayUnion({
+              data: Timestamp.now(),
+              statusAnterior: 'RECEBIDO',
+              novoStatus: 'REVISAO',
+              motivo: `Item ${item.codigo} rejeitado na inspeção de qualidade`,
+              usuario: currentUser.nome
+            })
+          });
+        }
+
+        alert(`Item ${status === 'APROVADO' ? 'aprovado e movido para o estoque (ALM01)' : 'rejeitado'} com sucesso!`);
+        closeModal();
+        await loadData();
+        displayItems();
+      } catch (error) {
+        console.error("Erro ao registrar inspeção:", error);
+        alert("Erro ao registrar inspeção: " + error.message);
+      }
+    };
+
+    window.openReturnModal = function(estoqueQualidadeId) {
+      const item = estoqueQualidade.find(i => i.id === estoqueQualidadeId);
+      if (!item) return;
+
+      document.getElementById('returnNF').value = item.notaFiscal?.numero || extractNF(item.origem);
+      document.getElementById('returnCodigo').value = item.codigo;
+      document.getElementById('returnDescricao').value = item.descricao;
+      document.getElementById('returnQuantidade').value = item.quantidade;
+      document.getElementById('returnEstoqueQualidadeId').value = estoqueQualidadeId;
+
+      document.getElementById('returnModal').style.display = 'block';
+    };
+
+    window.submitReturn = async function(event) {
+      event.preventDefault();
+
+      const estoqueQualidadeId = document.getElementById('returnEstoqueQualidadeId').value;
+      const documento = document.getElementById('returnDocumento').value;
+      const requestReplacement = document.getElementById('requestReplacement').value === 'true';
+      const observacoes = document.getElementById('returnObservacoes').value;
+      const item = estoqueQualidade.find(i => i.id === estoqueQualidadeId);
+      const quarentenaId = armazens.find(a => a.codigo === 'QUAR01')?.id;
+
+      try {
+        await updateDoc(doc(db, "estoqueQualidade", estoqueQualidadeId), {
+          status: "DEVOLVIDO",
+          dataDevolucao: Timestamp.now(),
+          documentoDevolucao: documento || "Não informado"
+        });
+
+        await addDoc(collection(db, "inspecoesQualidade"), {
+          estoqueQualidadeId,
+          produtoId: item.produtoId,
+          quantidade: item.quantidade,
+          status: "DEVOLVIDO",
+          dataDevolucao: Timestamp.now(),
+          inspecionadoPor: currentUser.nome,
+          observacoes,
+          notaFiscal: item.notaFiscal || { numero: extractNF(item.origem) },
+          loteFornecedor: item.loteFornecedor,
+          loteInterno: item.loteInterno,
+          documentoDevolucao: documento || "Não informado"
+        });
+
+        await addDoc(collection(db, "movimentacoesEstoque"), {
+          produtoId: item.produtoId,
+          tipo: 'SAIDA',
+          quantidade: item.quantidade,
+          unidade: item.unidade,
+          tipoDocumento: 'DEVOLUCAO',
+          numeroDocumento: documento || item.notaFiscal?.numero || extractNF(item.origem),
+          observacoes: `Devolução de material rejeitado - ${observacoes}`,
+          dataHora: Timestamp.now(),
+          armazemOrigemId: quarentenaId
+        });
+
+        if (requestReplacement) {
+          await updateDoc(doc(db, "pedidosCompra", item.pedidoId), {
+            status: "TROCA SOLICITADA",
+            historico: arrayUnion({
+              data: Timestamp.now(),
+              statusAnterior: "REVISAO",
+              novoStatus: "TROCA SOLICITADA",
+              motivo: `Solicitação de troca para item ${item.codigo} rejeitado`,
+              usuario: currentUser.nome
+            })
+          });
+
+          const pedidoOriginalSnap = await getDoc(doc(db, "pedidosCompra", item.pedidoId));
+          const pedidoOriginalData = pedidoOriginalSnap.data();
+          const novoPedido = {
+            pedidoOriginalId: item.pedidoId,
+            fornecedorId: pedidoOriginalData.fornecedorId || "Desconhecido",
+            itens: [{
+              produtoId: item.produtoId,
+              codigo: item.codigo,
+              descricao: item.descricao,
+              quantidade: item.quantidade,
+              unidade: item.unidade
+            }],
+            status: "PENDENTE",
+            dataCriacao: Timestamp.now(),
+            criadoPor: currentUser.nome
+          };
+          const novoPedidoRef = await addDoc(collection(db, "pedidosCompra"), novoPedido);
+          console.log("Novo pedido criado:", novoPedidoRef.id);
+        }
+
+        alert("Devolução registrada com sucesso!" + (requestReplacement ? " Troca solicitada!" : ""));
+        closeReturnModal();
+        await loadData();
+        displayItems();
+      } catch (error) {
+        console.error("Erro ao registrar devolução:", error);
+        alert("Erro ao registrar devolução: " + error.message);
+      }
+    };
+
+    window.closeModal = function() {
+      document.getElementById('inspectionModal').style.display = 'none';
+      document.getElementById('inspectionForm').reset();
+      document.getElementById('photoPreview').innerHTML = '';
+      photoFiles = [];
+    };
+
+    window.closeReturnModal = function() {
+      document.getElementById('returnModal').style.display = 'none';
+      document.getElementById('returnForm').reset();
+    };
+
+    window.navigateBack = function() {
+      window.location.href = 'index.html';
+    };
+  </script>
+</body>
+</html>

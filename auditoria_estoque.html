@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoria de Estoque vs Apontamentos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0854a0;
+            --secondary-color: #f0f3f6;
+            --border-color: #d4d4d4;
+            --success-color: #107e3e;
+            --warning-color: #ffd43b;
+            --danger-color: #bb0000;
+            --header-bg: #354a5f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .filters {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-col {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        button {
+            padding: 8px 15px;
+            border: 1px solid var(--primary-color);
+            border-radius: 3px;
+            background-color: white;
+            color: var(--primary-color);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .back-button {
+            background-color: var(--header-bg);
+            color: white;
+            border-color: var(--header-bg);
+        }
+
+        .back-button:hover {
+            background-color: #2a3b4d;
+        }
+
+        .audit-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .audit-table th {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            font-weight: 600;
+            padding: 8px 5px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .audit-table td {
+            padding: 6px 5px;
+            border: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .audit-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .audit-table tr:hover {
+            background-color: #e6f2ff;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .status-ok { 
+            background-color: #e8f3e8; 
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .status-warning { 
+            background-color: #fff4cc; 
+            color: #8c6c00;
+            border: 1px solid var(--warning-color);
+        }
+
+        .status-error { 
+            background-color: #ffeaea; 
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        .summary-card {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-item {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        .summary-item h4 {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .summary-item .value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error-message {
+            background-color: #ffeaea;
+            color: var(--danger-color);
+            padding: 10px;
+            border-radius: 3px;
+            margin-bottom: 15px;
+            border: 1px solid var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Auditoria de Estoque vs Apontamentos</h1>
+            <button onclick="window.location.href='index.html'" class="back-button">Voltar</button>
+        </div>
+
+        <div class="filters">
+            <div class="form-row">
+                <div class="form-col">
+                    <label for="dataInicio">Data Início:</label>
+                    <input type="date" id="dataInicio">
+                </div>
+                <div class="form-col">
+                    <label for="dataFim">Data Fim:</label>
+                    <input type="date" id="dataFim">
+                </div>
+                <div class="form-col">
+                    <label for="armazemFilter">Armazém:</label>
+                    <select id="armazemFilter">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="form-col">
+                    <label for="produtoFilter">Produto:</label>
+                    <select id="produtoFilter">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="realizarAuditoria()">Realizar Auditoria</button>
+        </div>
+
+        <div class="summary-card">
+            <h3>Resumo da Auditoria</h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h4>Total de Apontamentos</h4>
+                    <div class="value" id="totalApontamentos">0</div>
+                </div>
+                <div class="summary-item">
+                    <h4>Total de Movimentações</h4>
+                    <div class="value" id="totalMovimentacoes">0</div>
+                </div>
+                <div class="summary-item">
+                    <h4>Discrepâncias Encontradas</h4>
+                    <div class="value" id="totalDiscrepancias">0</div>
+                </div>
+                <div class="summary-item">
+                    <h4>Status da Auditoria</h4>
+                    <div class="value" id="statusAuditoria">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <h3>Análise de Matérias-Primas</h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h4>Total de Materiais</h4>
+                    <div class="value" id="totalMateriais">0</div>
+                </div>
+                <div class="summary-item">
+                    <h4>Materiais com Discrepância</h4>
+                    <div class="value" id="totalMateriaisDiscrepantes">0</div>
+                </div>
+                <div class="summary-item">
+                    <h4>Consumo Total</h4>
+                    <div class="value" id="consumoTotal">0</div>
+                </div>
+                <div class="summary-item">
+                    <h4>Status dos Materiais</h4>
+                    <div class="value" id="statusMateriais">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="auditResults">
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Ordem</th>
+                        <th>Produto</th>
+                        <th>Quantidade Apontada</th>
+                        <th>Movimentações</th>
+                        <th>Saldo Atual</th>
+                        <th>Status</th>
+                        <th>Detalhes</th>
+                    </tr>
+                </thead>
+                <tbody id="auditTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="summary-card" style="margin-top: 20px;">
+            <h3>Detalhamento de Matérias-Primas</h3>
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Ordem</th>
+                        <th>Material</th>
+                        <th>Quantidade Necessária</th>
+                        <th>Quantidade Movimentada</th>
+                        <th>Diferença</th>
+                        <th>Status</th>
+                        <th>Tipo de Movimentação</th>
+                        <th>Detalhes</th>
+                        <th>Histórico</th>
+                    </tr>
+                </thead>
+                <tbody id="materiaisTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="summary-card" style="margin-top: 20px;">
+            <h3>CADEX - Extrato de Movimentações</h3>
+            <button onclick="exportarCadexCSV()" style="float:right;margin-bottom:10px;">Exportar CSV</button>
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Produto</th>
+                        <th>Armazém</th>
+                        <th>Tipo</th>
+                        <th>Quantidade</th>
+                        <th>Qtd. Original</th>
+                        <th>Saldo Acumulado</th>
+                        <th>Observações</th>
+                    </tr>
+                </thead>
+                <tbody id="cadexTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { collection, query, where, getDocs, Timestamp, addDoc, getDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let produtos = [];
+        let armazens = [];
+        let apontamentos = [];
+        let movimentacoes = [];
+        let estoques = [];
+
+        window.onload = async function() {
+            // Verificar se o usuário está logado
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Configurar datas padrão (últimos 30 dias)
+            const hoje = new Date();
+            const trintaDiasAtras = new Date(hoje);
+            trintaDiasAtras.setDate(hoje.getDate() - 30);
+
+            document.getElementById('dataInicio').value = trintaDiasAtras.toISOString().split('T')[0];
+            document.getElementById('dataFim').value = hoje.toISOString().split('T')[0];
+
+            await carregarDados();
+            await realizarAuditoria();
+        };
+
+        async function carregarDados() {
+            try {
+                // Carregar produtos
+                const produtosSnap = await getDocs(collection(db, "produtos"));
+                produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // Carregar armazéns
+                const armazensSnap = await getDocs(collection(db, "armazens"));
+                armazens = armazensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // Preencher select de armazéns
+                const armazemSelect = document.getElementById('armazemFilter');
+                armazens.forEach(armazem => {
+                    const option = document.createElement('option');
+                    option.value = armazem.id;
+                    option.textContent = `${armazem.codigo} - ${armazem.nome}`;
+                    armazemSelect.appendChild(option);
+                });
+
+                // Preencher select de produtos
+                const produtoSelect = document.getElementById('produtoFilter');
+                produtos.forEach(produto => {
+                    const option = document.createElement('option');
+                    option.value = produto.id;
+                    option.textContent = `${produto.codigo} - ${produto.descricao}`;
+                    produtoSelect.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+                alert("Erro ao carregar dados: " + error.message);
+            }
+        }
+
+        window.realizarAuditoria = async function() {
+            try {
+                const dataInicio = new Date(document.getElementById('dataInicio').value);
+                const dataFim = new Date(document.getElementById('dataFim').value);
+                const armazemId = document.getElementById('armazemFilter').value;
+                const produtoId = document.getElementById('produtoFilter').value;
+
+                // Ajustar data fim para incluir todo o dia
+                dataFim.setHours(23, 59, 59, 999);
+
+                // Carregar apontamentos
+                const apontamentosQuery = query(
+                    collection(db, "apontamentos"),
+                    where("dataHora", ">=", Timestamp.fromDate(dataInicio)),
+                    where("dataHora", "<=", Timestamp.fromDate(dataFim))
+                );
+                const apontamentosSnap = await getDocs(apontamentosQuery);
+                apontamentos = apontamentosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // Carregar movimentações
+                const movimentacoesQuery = query(
+                    collection(db, "movimentacoesEstoque"),
+                    where("dataHora", ">=", Timestamp.fromDate(dataInicio)),
+                    where("dataHora", "<=", Timestamp.fromDate(dataFim))
+                );
+                const movimentacoesSnap = await getDocs(movimentacoesQuery);
+                movimentacoes = movimentacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // Carregar estoques atuais
+                const estoquesSnap = await getDocs(collection(db, "estoques"));
+                estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // Filtrar por armazém e produto se especificado
+                if (armazemId) {
+                    apontamentos = apontamentos.filter(a => a.armazemId === armazemId);
+                    movimentacoes = movimentacoes.filter(m => m.armazemId === armazemId);
+                }
+                if (produtoId) {
+                    apontamentos = apontamentos.filter(a => a.produtoId === produtoId);
+                    movimentacoes = movimentacoes.filter(m => m.produtoId === produtoId);
+                }
+
+                // Atualizar resumo
+                document.getElementById('totalApontamentos').textContent = apontamentos.length;
+                document.getElementById('totalMovimentacoes').textContent = movimentacoes.length;
+
+                // Analisar discrepâncias
+                const discrepancias = analisarDiscrepancias();
+                document.getElementById('totalDiscrepancias').textContent = discrepancias.length;
+
+                // Analisar materiais-primas
+                const materiaisDiscrepantes = analisarMateriaisPrimas();
+
+                // Atualizar status da auditoria
+                const statusAuditoria = document.getElementById('statusAuditoria');
+                if (discrepancias.length === 0 && materiaisDiscrepantes.length === 0) {
+                    statusAuditoria.textContent = "OK";
+                    statusAuditoria.style.color = "var(--success-color)";
+                } else {
+                    statusAuditoria.textContent = "Discrepâncias";
+                    statusAuditoria.style.color = "var(--danger-color)";
+                }
+
+                // Atualizar tabelas
+                atualizarTabelaAuditoria(discrepancias);
+                atualizarTabelaMateriais(materiaisDiscrepantes);
+                atualizarTabelaCadex();
+
+            } catch (error) {
+                console.error("Erro ao realizar auditoria:", error);
+                alert("Erro ao realizar auditoria: " + error.message);
+            }
+        };
+
+        function analisarDiscrepancias() {
+            const discrepancias = [];
+
+            // Agrupar movimentações por produto e armazém
+            const movimentacoesPorProduto = {};
+            movimentacoes.forEach(mov => {
+                const key = `${mov.produtoId}_${mov.armazemId}`;
+                if (!movimentacoesPorProduto[key]) {
+                    movimentacoesPorProduto[key] = [];
+                }
+                movimentacoesPorProduto[key].push(mov);
+            });
+
+            // Analisar cada apontamento
+            apontamentos.forEach(apontamento => {
+                const key = `${apontamento.produtoId}_${apontamento.armazemId}`;
+                const movimentacoesRelacionadas = movimentacoesPorProduto[key] || [];
+
+                // LOG: Mostrar os IDs usados na comparação de forma mais clara
+                console.log('[AUDITORIA] Apontamento:',
+                    `produtoId: ${apontamento.produtoId}, armazemId: ${apontamento.armazemId}, quantidade: ${apontamento.quantidade}`
+                );
+                if (movimentacoesRelacionadas.length === 0) {
+                    console.log('[AUDITORIA] Nenhuma movimentação relacionada encontrada para este apontamento.');
+                } else {
+                    movimentacoesRelacionadas.forEach((m, idx) => {
+                        console.log(`[AUDITORIA] Movimentação Relacionada #${idx + 1}: produtoId: ${m.produtoId}, armazemId: ${m.armazemId}, quantidade: ${m.quantidade}, tipo: ${m.tipo}`);
+                    });
+                }
+
+                // Calcular total movimentado
+                const totalMovimentado = movimentacoesRelacionadas.reduce((total, mov) => {
+                    return total + (mov.tipo === 'entrada' ? mov.quantidade : -mov.quantidade);
+                }, 0);
+
+                // Verificar discrepância
+                if (Math.abs(totalMovimentado - apontamento.quantidade) > 0.001) {
+                    discrepancias.push({
+                        apontamento,
+                        movimentacoes: movimentacoesRelacionadas,
+                        totalMovimentado,
+                        diferenca: apontamento.quantidade - totalMovimentado
+                    });
+                }
+            });
+
+            return discrepancias;
+        }
+
+        function analisarMateriaisPrimas() {
+            const materiaisDiscrepantes = [];
+            let totalMateriais = 0;
+            let consumoTotal = 0;
+
+            // Agrupar movimentações por produto e armazém
+            const movimentacoesPorProduto = {};
+            movimentacoes.forEach(mov => {
+                const key = `${mov.produtoId}_${mov.armazemId}`;
+                if (!movimentacoesPorProduto[key]) {
+                    movimentacoesPorProduto[key] = [];
+                }
+                movimentacoesPorProduto[key].push(mov);
+            });
+
+            // Analisar cada apontamento
+            apontamentos.forEach(apontamento => {
+                if (apontamento.materiaisNecessarios) {
+                    apontamento.materiaisNecessarios.forEach(material => {
+                        totalMateriais++;
+                        const quantidadeNecessaria = (material.quantidade / apontamento.quantidade) * apontamento.quantidade;
+                        consumoTotal += quantidadeNecessaria;
+
+                        const key = `${material.produtoId}_${apontamento.armazemProducaoId}`;
+                        const movimentacoesRelacionadas = movimentacoesPorProduto[key] || [];
+
+                        // Calcular total movimentado
+                        const totalMovimentado = movimentacoesRelacionadas.reduce((total, mov) => {
+                            return total + (mov.tipo === 'entrada' ? mov.quantidade : -mov.quantidade);
+                        }, 0);
+
+                        // Verificar discrepância
+                        if (Math.abs(totalMovimentado - quantidadeNecessaria) > 0.001) {
+                            materiaisDiscrepantes.push({
+                                apontamento,
+                                material,
+                                quantidadeNecessaria,
+                                movimentacoes: movimentacoesRelacionadas,
+                                totalMovimentado,
+                                diferenca: quantidadeNecessaria - totalMovimentado
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Atualizar resumo de materiais
+            document.getElementById('totalMateriais').textContent = totalMateriais;
+            document.getElementById('totalMateriaisDiscrepantes').textContent = materiaisDiscrepantes.length;
+            document.getElementById('consumoTotal').textContent = consumoTotal.toFixed(3);
+
+            const statusMateriais = document.getElementById('statusMateriais');
+            if (materiaisDiscrepantes.length === 0) {
+                statusMateriais.textContent = "OK";
+                statusMateriais.style.color = "var(--success-color)";
+            } else {
+                statusMateriais.textContent = "Discrepâncias";
+                statusMateriais.style.color = "var(--danger-color)";
+            }
+
+            return materiaisDiscrepantes;
+        }
+
+        function atualizarTabelaAuditoria(discrepancias) {
+            const tbody = document.getElementById('auditTableBody');
+            tbody.innerHTML = '';
+
+            discrepancias.forEach(item => {
+                const row = document.createElement('tr');
+                const produto = produtos.find(p => p.id === item.apontamento.produtoId);
+                const armazem = armazens.find(a => a.id === item.apontamento.armazemId);
+                const estoque = estoques.find(e => e.produtoId === item.apontamento.produtoId && e.armazemId === item.apontamento.armazemId);
+
+                const dataHora = item.apontamento.dataHora.toDate().toLocaleString();
+                const status = Math.abs(item.diferenca) < 0.001 ? 'OK' : 'Discrepância';
+                const statusClass = status === 'OK' ? 'status-ok' : 'status-error';
+
+                row.innerHTML = `
+                    <td>${dataHora}</td>
+                    <td>${item.apontamento.numeroOrdem}</td>
+                    <td>${produto ? `${produto.codigo} - ${produto.descricao}` : 'N/A'}</td>
+                    <td>${item.apontamento.quantidade.toFixed(3)} ${produto?.unidade || ''}</td>
+                    <td>${item.totalMovimentado.toFixed(3)} ${produto?.unidade || ''}</td>
+                    <td>${estoque ? estoque.saldo.toFixed(3) : '0.000'} ${produto?.unidade || ''}</td>
+                    <td><span class="status-badge ${statusClass}">${status}</span></td>
+                    <td>
+                        <button onclick="mostrarDetalhes('${item.apontamento.id}')">Detalhes</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function atualizarTabelaMateriais(materiaisDiscrepantes) {
+            const tbody = document.getElementById('materiaisTableBody');
+            tbody.innerHTML = '';
+
+            materiaisDiscrepantes.forEach(item => {
+                const row = document.createElement('tr');
+                const produto = produtos.find(p => p.id === item.material.produtoId);
+                const dataHora = item.apontamento.dataHora.toDate().toLocaleString();
+                const status = Math.abs(item.diferenca) < 0.001 ? 'OK' : 'Discrepância';
+                const statusClass = status === 'OK' ? 'status-ok' : 'status-error';
+
+                // Determinar tipo de movimentação predominante
+                let tipoMov = '-';
+                if (item.movimentacoes.length > 0) {
+                    // Se houver transferência, destacar
+                    if (item.movimentacoes.some(m => m.tipoMovimentacao === 'transferencia')) {
+                        tipoMov = 'Transferência';
+                    } else {
+                        tipoMov = item.movimentacoes[0].tipoMovimentacao || item.movimentacoes[0].tipo || '-';
+                    }
+                }
+                const tipoMovClass = tipoMov === 'Transferência' ? 'status-warning' : '';
+
+                row.innerHTML = `
+                    <td>${dataHora}</td>
+                    <td>${item.apontamento.numeroOrdem}</td>
+                    <td>${produto ? `${produto.codigo} - ${produto.descricao}` : 'N/A'}</td>
+                    <td>${item.quantidadeNecessaria.toFixed(3)} ${produto?.unidade || ''}</td>
+                    <td>${item.totalMovimentado.toFixed(3)} ${produto?.unidade || ''}</td>
+                    <td>${item.diferenca.toFixed(3)} ${produto?.unidade || ''}</td>
+                    <td><span class="status-badge ${statusClass}">${status}</span></td>
+                    <td><span class="status-badge ${tipoMovClass}">${tipoMov}</span></td>
+                    <td>
+                        <button onclick="mostrarDetalhesMaterial('${item.apontamento.id}', '${item.material.produtoId}')">Detalhes</button>
+                    </td>
+                    <td>
+                        <button onclick="mostrarHistoricoMaterial('${item.material.produtoId}', '${item.apontamento.armazemProducaoId}')">Histórico</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function atualizarTabelaCadex() {
+            const tbody = document.getElementById('cadexTableBody');
+            tbody.innerHTML = '';
+            const armazemId = document.getElementById('armazemFilter').value;
+            const produtoId = document.getElementById('produtoFilter').value;
+            let cadexMovs = movimentacoes;
+            if (armazemId) cadexMovs = cadexMovs.filter(m => m.armazemId === armazemId);
+            if (produtoId) cadexMovs = cadexMovs.filter(m => m.produtoId === produtoId);
+            cadexMovs = cadexMovs.slice().sort((a, b) => a.dataHora.seconds - b.dataHora.seconds);
+            let saldo = 0;
+            cadexMovs.forEach(mov => {
+                const produto = produtos.find(p => p.id === mov.produtoId);
+                const armazem = armazens.find(a => a.id === mov.armazemId);
+                const tipo = mov.tipoMovimentacao || mov.tipo || '-';
+                const data = mov.dataHora.toDate().toLocaleString();
+                const quantidade = mov.quantidade;
+                saldo += quantidade;
+                const obs = mov.observacao || '';
+                const qtdOriginal = mov.quantidadeOriginal ? mov.quantidadeOriginal.toFixed(3) + ' ' + (mov.unidadeOriginal || '') : '-';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${data}</td>
+                    <td>${produto ? produto.codigo + ' - ' + produto.descricao : mov.produtoId}</td>
+                    <td>${armazem ? armazem.codigo + ' - ' + armazem.nome : mov.armazemId}</td>
+                    <td>${tipo}</td>
+                    <td>${quantidade.toFixed(3)} ${produto?.unidade || ''}</td>
+                    <td>${qtdOriginal}</td>
+                    <td>${saldo.toFixed(3)} ${produto?.unidade || ''}</td>
+                    <td>${obs}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        window.mostrarDetalhes = function(apontamentoId) {
+            const apontamento = apontamentos.find(a => a.id === apontamentoId);
+            if (!apontamento) return;
+
+            const movimentacoesRelacionadas = movimentacoes.filter(m => 
+                m.produtoId === apontamento.produtoId && 
+                m.armazemId === apontamento.armazemId
+            );
+
+            let detalhes = `Apontamento: ${apontamento.numeroOrdem}\n`;
+            detalhes += `Quantidade: ${apontamento.quantidade}\n\n`;
+            detalhes += `Movimentações Relacionadas:\n`;
+            movimentacoesRelacionadas.forEach(mov => {
+                detalhes += `- ${mov.dataHora.toDate().toLocaleString()}: ${mov.tipo === 'entrada' ? '+' : '-'}${mov.quantidade}\n`;
+            });
+
+            alert(detalhes);
+        };
+
+        window.mostrarDetalhesMaterial = function(apontamentoId, materialId) {
+            const apontamento = apontamentos.find(a => a.id === apontamentoId);
+            if (!apontamento) return;
+
+            const material = apontamento.materiaisNecessarios.find(m => m.produtoId === materialId);
+            if (!material) return;
+
+            const produto = produtos.find(p => p.id === materialId);
+            const movimentacoesRelacionadas = movimentacoes.filter(m => 
+                m.produtoId === materialId && 
+                m.armazemId === apontamento.armazemProducaoId
+            );
+
+            const quantidadeNecessaria = (material.quantidade / apontamento.quantidade) * apontamento.quantidade;
+
+            let detalhes = `Apontamento: ${apontamento.numeroOrdem}\n`;
+            detalhes += `Material: ${produto.codigo} - ${produto.descricao}\n`;
+            detalhes += `Quantidade Necessária: ${quantidadeNecessaria.toFixed(3)} ${produto.unidade}\n\n`;
+            detalhes += `Movimentações Relacionadas:\n`;
+            movimentacoesRelacionadas.forEach(mov => {
+                detalhes += `- ${mov.dataHora.toDate().toLocaleString()}: ${mov.tipo === 'entrada' ? '+' : '-'}${mov.quantidade} ${produto.unidade}\n`;
+            });
+
+            alert(detalhes);
+        };
+
+        window.mostrarHistoricoMaterial = function(materialId, armazemId) {
+            const produto = produtos.find(p => p.id === materialId);
+            const armazem = armazens.find(a => a.id === armazemId);
+            const historico = movimentacoes.filter(m => m.produtoId === materialId && m.armazemId === armazemId);
+            if (historico.length === 0) {
+                alert('Nenhuma movimentação encontrada para este material neste armazém.');
+                return;
+            }
+            let detalhes = `Histórico de ${produto.codigo} - ${produto.descricao} no armazém ${armazem?.codigo || armazemId}\n\n`;
+            historico.sort((a, b) => a.dataHora.seconds - b.dataHora.seconds);
+            historico.forEach(mov => {
+                const tipo = mov.tipoMovimentacao || mov.tipo || '-';
+                const data = mov.dataHora.toDate().toLocaleString();
+                detalhes += `${data}: ${tipo} (${mov.tipo === 'entrada' ? '+' : '-'}${mov.quantidade} ${produto.unidade})\n`;
+            });
+            alert(detalhes);
+        };
+
+        window.exportarCadexCSV = function() {
+            const armazemId = document.getElementById('armazemFilter').value;
+            const produtoId = document.getElementById('produtoFilter').value;
+            let cadexMovs = movimentacoes;
+            if (armazemId) cadexMovs = cadexMovs.filter(m => m.armazemId === armazemId);
+            if (produtoId) cadexMovs = cadexMovs.filter(m => m.produtoId === produtoId);
+            cadexMovs = cadexMovs.slice().sort((a, b) => a.dataHora.seconds - b.dataHora.seconds);
+            let saldo = 0;
+            let csv = 'Data/Hora,Produto,Armazém,Tipo,Quantidade,Qtd. Original,Saldo Acumulado,Observações\n';
+            cadexMovs.forEach(mov => {
+                const produto = produtos.find(p => p.id === mov.produtoId);
+                const armazem = armazens.find(a => a.id === mov.armazemId);
+                const tipo = mov.tipoMovimentacao || mov.tipo || '-';
+                const data = mov.dataHora.toDate().toLocaleString();
+                const quantidade = mov.quantidade;
+                saldo += quantidade;
+                const obs = mov.observacao || '';
+                const qtdOriginal = mov.quantidadeOriginal ? mov.quantidadeOriginal.toFixed(3) + ' ' + (mov.unidadeOriginal || '') : '-';
+                csv += `"${data}","${produto ? produto.codigo + ' - ' + produto.descricao : mov.produtoId}","${armazem ? armazem.codigo + ' - ' + armazem.nome : mov.armazemId}","${tipo}","${quantidade.toFixed(3)} ${produto?.unidade || ''}","${qtdOriginal}","${saldo.toFixed(3)} ${produto?.unidade || ''}","${obs}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cadex.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        // Configurações no sistema
+        StockPolicy.generalSettings.allowNegativeStock = false;
+        StockPolicy.movementRules.restrictions.preventZeroStock = true;
+
+        // Executar auditoria diária
+        async function auditoriaDiaria() {
+            const relatorio = await StockPolicy.generateAuditReport();
+
+            if (relatorio.totalInconsistencies > 0) {
+                NotificationService.registrarInconsistencia({
+                    tipo: 'AUDITORIA',
+                    nivel: 'AVISO',
+                    descricao: `Encontradas ${relatorio.totalInconsistencies} inconsistências`,
+                    detalhes: relatorio.details
+                });
+            }
+        }
+
+        // Adicionar no sistema de agendamento
+        async function configurarAuditoriaAutomatica() {
+            // Auditoria diária
+            setInterval(async () => {
+                try {
+                    const relatorio = await InventoryService.gerarRelatorioInconsistencias();
+
+                    if (relatorio.length > 0) {
+                        await NotificationService.createSystemAlert({
+                            tipo: 'INCONSISTENCIA_ESTOQUE',
+                            severidade: 'CRITICO',
+                            mensagem: `Encontradas ${relatorio.length} inconsistências de estoque`,
+                            modulo: 'ESTOQUE',
+                            acaoRequerida: true
+                        });
+                    }
+                } catch (error) {
+                    console.error('Erro na auditoria automática:', error);
+                }
+            }, 24 * 60 * 60 * 1000); // A cada 24 horas
+        }
+
+        // Exemplo de validação mais robusta
+        async function validarMovimentacaoEstoque(dadosMovimentacao) {
+            const erros = [];
+
+            // Validações básicas
+            if (!dadosMovimentacao.produtoId) {
+                erros.push('Produto não identificado');
+            }
+
+            // Verificar limites de movimentação
+            const historicoMovimentacoes = await buscarHistoricoMovimentacoes(dadosMovimentacao.produtoId);
+            const mediaMovimentacoes = calcularMediaMovimentacoes(historicoMovimentacoes);
+
+            // Regra: Movimentação não pode exceder 200% da média histórica
+            if (dadosMovimentacao.quantidade > mediaMovimentacoes * 2) {
+                erros.push('Quantidade de movimentação excede limites históricos');
+            }
+
+            // Verificar restrições de armazém
+            const restricoesArmazem = await buscarRestricoesArmazem(dadosMovimentacao.armazemId);
+            if (restricoesArmazem.bloqueado) {
+                erros.push('Armazém bloqueado para movimentações');
+            }
+
+            return erros;
+        }
+
+        async function registrarRastreabilidade(tipoEvento, dadosEvento) {
+            await addDoc(collection(db, "rastreabilidade"), {
+                tipoEvento,
+                dadosEvento,
+                usuarioId: currentUser.id,
+                dataHora: Timestamp.now(),
+                enderecoIP: obterEnderecoIP(), // Implementar função para capturar IP
+                dispositivoInfo: obterInformacoesDispositivo() // Capturar info do dispositivo
+            });
+        }
+
+        async function recuperarInconsistenciaEstoque(inconsistenciaId) {
+            const inconsistencia = await getDoc(doc(db, "notificacoesInconsistencia", inconsistenciaId));
+
+            if (inconsistencia.exists()) {
+                const dadosInconsistencia = inconsistencia.data();
+
+                // Tentar corrigir automaticamente
+                const correcaoAutomatica = await tentarCorrecaoAutomatica(dadosInconsistencia);
+
+                if (correcaoAutomatica.sucesso) {
+                    await updateDoc(doc(db, "notificacoesInconsistencia", inconsistenciaId), {
+                        status: 'CORRIGIDO_AUTOMATICAMENTE',
+                        detalhesCorrecao: correcaoAutomatica.detalhes
+                    });
+                } else {
+                    await NotificationService.createNotification({
+                        tipo: 'RECUPERACAO_ESTOQUE',
+                        titulo: 'Inconsistência Requer Atenção',
+                        mensagem: `Inconsistência ${inconsistenciaId} não pôde ser corrigida automaticamente`,
+                        severidade: 'CRITICO',
+                        acaoRequerida: true
+                    });
+                }
+            }
+        }
+
+        registrarRastreabilidade('TESTE_MOVIMENTACAO', {
+            descricao: 'Teste de registro de rastreabilidade',
+            origem: 'Teste Manual'
+        });
+
+        // Exemplo de validação de movimentação
+        const dadosMovimentacao = {
+            produtoId: 'ID_DO_PRODUTO',
+            quantidade: 100,
+            armazemId: 'ID_DO_ARMAZEM'
+        };
+
+        validarMovimentacaoEstoque(dadosMovimentacao).then(erros => {
+            if (erros.length > 0) {
+                console.log('Erros encontrados:', erros);
+            } else {
+                console.log('Movimentação válida');
+            }
+        });
+    </script>
+</body>
+</html> 

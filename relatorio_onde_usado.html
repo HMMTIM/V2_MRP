@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório Onde é Usado</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .search-container {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .search-group {
+      margin-bottom: 15px;
+    }
+
+    .search-label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    .search-results {
+      margin-top: 5px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      background-color: white;
+    }
+
+    .search-result-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .search-result-item:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: var(--text-secondary);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #555;
+    }
+
+    .usage-tree {
+      margin-top: 20px;
+    }
+
+    .usage-item {
+      margin: 10px 0;
+      padding: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background-color: var(--secondary-color);
+    }
+
+    .usage-details {
+      margin-left: 20px;
+      padding: 10px;
+      border-left: 3px solid var(--primary-color);
+    }
+
+    .usage-info {
+      margin: 5px 0;
+      color: var(--text-secondary);
+    }
+
+    .summary-box {
+      background-color: var(--secondary-color);
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    .summary-info {
+      display: flex;
+      gap: 20px;
+      margin-top: 15px;
+    }
+
+    .summary-item {
+      flex: 1;
+      text-align: center;
+      padding: 15px;
+      background-color: white;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .summary-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    .summary-label {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid var(--border-color);
+      border-top: 5px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background-color: white;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid var(--border-color);
+    }
+
+    th {
+      background-color: var(--secondary-color);
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    tr:hover {
+      background-color: var(--secondary-color);
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .no-print {
+        display: none;
+      }
+      .container {
+        width: 100%;
+        margin: 0;
+        padding: 15px;
+        box-shadow: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        width: 95%;
+        margin: 20px auto;
+        padding: 15px;
+      }
+
+      .summary-info {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .search-container {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Relatório Onde é Usado</h1>
+      <button class="btn btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
+    </div>
+
+    <div class="search-container">
+      <div class="search-group">
+        <label class="search-label">Digite o código ou descrição do produto</label>
+        <input 
+          type="text" 
+          id="searchInput" 
+          class="search-input" 
+          placeholder="Digite para buscar..."
+          autocomplete="off"
+        >
+        <div id="searchResults" class="search-results" style="display: none;"></div>
+      </div>
+    </div>
+
+    <div id="reportContent"></div>
+  </div>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let selectedProductId = null;
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    let searchTimeout = null;
+
+    // Verificar autenticação
+    const userSession = localStorage.getItem('currentUser');
+    if (!userSession) {
+      window.location.href = 'login.html';
+    }
+
+    // Função para mostrar/ocultar loading
+    function showLoading(show = true) {
+      loadingOverlay.style.display = show ? 'flex' : 'none';
+    }
+
+    // Busca otimizada de produtos
+    async function searchProducts(searchText) {
+      if (!searchText || searchText.length < 2) {
+        searchResults.style.display = 'none';
+        return;
+      }
+
+      try {
+        showLoading(true);
+        const searchLower = searchText.toLowerCase();
+        const produtosRef = collection(db, "produtos");
+
+        // Buscar todos os produtos MP e SP primeiro
+        const q = query(
+          produtosRef,
+          where("tipo", "in", ["MP", "SP"])
+        );
+
+        const snapshot = await getDocs(q);
+        const produtos = [];
+
+        // Filtrar no cliente para busca por código ou descrição
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.codigo?.toLowerCase().includes(searchLower) || 
+              data.descricao?.toLowerCase().includes(searchLower)) {
+            produtos.push({ id: doc.id, ...data });
+          }
+        });
+
+        // Limitar a 10 resultados após a filtragem
+        displaySearchResults(produtos.slice(0, 10));
+      } catch (error) {
+        console.error("Erro na busca:", error);
+        alert("Erro ao buscar produtos. Por favor, tente novamente.");
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Exibir resultados da busca
+    function displaySearchResults(produtos) {
+      searchResults.innerHTML = '';
+
+      if (produtos.length > 0) {
+        produtos.forEach(produto => {
+          const div = document.createElement('div');
+          div.className = 'search-result-item';
+          div.textContent = `${produto.codigo} - ${produto.descricao} (${produto.tipo})`;
+          div.onclick = () => selectProduct(produto);
+          searchResults.appendChild(div);
+        });
+        searchResults.style.display = 'block';
+      } else {
+        searchResults.style.display = 'none';
+      }
+    }
+
+    // Selecionar produto
+    function selectProduct(produto) {
+      selectedProductId = produto.id;
+      searchInput.value = `${produto.codigo} - ${produto.descricao}`;
+      searchResults.style.display = 'none';
+      generateReport();
+    }
+
+    // Gerar relatório otimizado
+    async function generateReport() {
+      if (!selectedProductId) {
+        document.getElementById('reportContent').innerHTML = 
+          '<div class="no-results">Selecione um produto para ver onde é usado.</div>';
+        return;
+      }
+
+      showLoading();
+      try {
+        const estruturasRef = collection(db, "estruturas");
+        const estruturasQuery = query(estruturasRef);
+        const estruturasSnap = await getDocs(estruturasQuery);
+
+        // Buscar o produto selecionado
+        const produtoRef = collection(db, "produtos");
+        const produtoQuery = query(produtoRef, where("__name__", "==", selectedProductId));
+        const produtoSnap = await getDocs(produtoQuery);
+
+        if (produtoSnap.empty) {
+          throw new Error("Produto não encontrado");
+        }
+
+        const produto = { id: produtoSnap.docs[0].id, ...produtoSnap.docs[0].data() };
+
+        // Filtrar estruturas que contêm o componente
+        const estruturas = estruturasSnap.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(estrutura => 
+            estrutura.componentes?.some(comp => comp.componentId === selectedProductId)
+          );
+
+        // Renderizar relatório
+        renderReport(produto, estruturas);
+      } catch (error) {
+        console.error("Erro ao gerar relatório:", error);
+        document.getElementById('reportContent').innerHTML = 
+          '<div class="error-message">Erro ao gerar relatório. Tente novamente.</div>';
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Renderizar relatório
+    async function renderReport(produto, estruturas) {
+      const reportContent = document.getElementById('reportContent');
+
+      let html = `
+        <div class="summary-box">
+          <h3>Resumo do Produto</h3>
+          <div class="usage-info">
+            <strong>Código:</strong> ${produto.codigo}<br>
+            <strong>Descrição:</strong> ${produto.descricao}<br>
+            <strong>Tipo:</strong> ${produto.tipo}<br>
+            <strong>Unidade:</strong> ${produto.unidade}
+          </div>
+          <div class="summary-info">
+            <div class="summary-item">
+              <div class="summary-value">${estruturas.length}</div>
+              <div class="summary-label">Total de Utilizações</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (estruturas.length === 0) {
+        html += '<div class="no-results">Este produto não é utilizado em nenhuma estrutura.</div>';
+      } else {
+        html += `
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Descrição</th>
+                  <th>Tipo</th>
+                  <th>Quantidade</th>
+                  <th>Unidade</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        // Carregar produtos pais
+        const produtosIds = estruturas.map(e => e.produtoPaiId);
+        const produtosSnap = await getDocs(
+          query(collection(db, "produtos"), where("id", "in", produtosIds))
+        );
+        const produtosMap = {};
+        produtosSnap.forEach(doc => {
+          produtosMap[doc.id] = { id: doc.id, ...doc.data() };
+        });
+
+        estruturas.forEach(estrutura => {
+          const produtoPai = produtosMap[estrutura.produtoPaiId];
+          if (produtoPai) {
+            const componente = estrutura.componentes.find(c => c.componentId === selectedProductId);
+            html += `
+              <tr>
+                <td>${produtoPai.codigo}</td>
+                <td>${produtoPai.descricao}</td>
+                <td>${produtoPai.tipo}</td>
+                <td style="text-align: right">${componente.quantidade.toFixed(2)}</td>
+                <td>${componente.unidade}</td>
+              </tr>
+            `;
+          }
+        });
+
+        html += `
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      reportContent.innerHTML = html;
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => searchProducts(e.target.value), 300);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!searchResults.contains(e.target) && e.target !== searchInput) {
+        searchResults.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

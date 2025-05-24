@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Permissões de Usuário</title>
+  <style>
+    /* Mantendo os estilos existentes */
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+    
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+    
+    .user-info {
+      background-color: var(--secondary-color);
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    .user-info h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+    }
+    
+    .user-info p {
+      margin: 5px 0;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .user-info strong {
+      color: var(--text-color);
+    }
+    
+    .permissions-container {
+      margin-top: 30px;
+    }
+    
+    .section-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 15px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .permission-group {
+      margin-bottom: 25px;
+      padding: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background-color: #fff;
+    }
+    
+    .group-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 15px;
+      color: var(--text-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .permission-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    
+    .permission-item:hover {
+      background-color: var(--secondary-color);
+    }
+    
+    .permission-item label {
+      margin-left: 10px;
+      cursor: pointer;
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .permission-item input[type="checkbox"] {
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+    }
+    
+    .permission-description {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-left: 28px;
+      margin-top: 2px;
+    }
+    
+    .admin-notice {
+      background-color: #fff3cd;
+      border-left: 4px solid var(--warning-color);
+      padding: 10px 15px;
+      margin-bottom: 20px;
+      color: #856404;
+      font-size: 14px;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+    
+    .toggle-all {
+      font-size: 13px;
+      color: var(--primary-color);
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .level-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      background-color: var(--secondary-color);
+      color: var(--text-secondary);
+      margin-left: 10px;
+    }
+
+    .disabled-permission {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .permission-level-info {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Permissões de Usuário</h1>
+      <div>
+        <button class="btn-secondary" onclick="window.location.href='cadastro_usuarios.html'">Voltar</button>
+      </div>
+    </div>
+    
+    <div id="userInfo" class="user-info">
+      <h2>Informações do Usuário</h2>
+      <p><strong>Nome de Usuário:</strong> <span id="userName">Carregando...</span></p>
+
+async function logPermissionChange(userId, action, details) {
+  try {
+    await addDoc(collection(db, "auditoria_permissoes"), {
+      userId,
+      action,
+      details,
+      timestamp: Timestamp.now(),
+      modifiedBy: currentUser.id,
+      modifiedByName: currentUser.nome
+    });
+  } catch (error) {
+    console.error("Erro ao registrar log:", error);
+  }
+}
+
+      <p><strong>Nome Completo:</strong> <span id="fullName">Carregando...</span></p>
+      <p><strong>Nível de Acesso:</strong> <span id="accessLevel">Carregando...</span></p>
+      <p><strong>Departamento:</strong> <span id="department">Carregando...</span></p>
+    </div>
+    
+    <div id="adminNotice" class="admin-notice" style="display: none;">
+      Este usuário é um administrador e já possui acesso completo a todas as funcionalidades do sistema. 
+      As permissões individuais não afetam usuários com nível de administrador.
+    </div>
+    
+    <div class="permissions-container">
+      <h3 class="section-title">Configurar Permissões</h3>
+      
+      <form id="permissionsForm">
+        <!-- Permissões Básicas (Nível 1) -->
+        <div class="permission-group">
+          <div class="group-title">
+            Permissões Básicas
+            <div>
+              <span class="level-badge">Nível 1+</span>
+              <span class="toggle-all" onclick="toggleGroupPermissions('basico', true)">Marcar todos</span> | 
+              <span class="toggle-all" onclick="toggleGroupPermissions('basico', false)">Desmarcar todos</span>
+            </div>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_visualizar_produtos" name="permissoes" value="visualizar_produtos">
+            <label for="perm_visualizar_produtos">Visualizar Produtos</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_visualizar_relatorios" name="permissoes" value="visualizar_relatorios">
+            <label for="perm_visualizar_relatorios">Visualizar Relatórios Básicos</label>
+          </div>
+        </div>
+
+        <!-- Permissões de Operador (Nível 2) -->
+        <div class="permission-group">
+          <div class="group-title">
+            Permissões de Operador
+            <div>
+              <span class="level-badge">Nível 2+</span>
+              <span class="toggle-all" onclick="toggleGroupPermissions('operador', true)">Marcar todos</span> | 
+              <span class="toggle-all" onclick="toggleGroupPermissions('operador', false)">Desmarcar todos</span>
+            </div>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_registrar_producao" name="permissoes" value="registrar_producao">
+            <label for="perm_registrar_producao">Registrar Produção</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_movimentar_estoque" name="permissoes" value="movimentar_estoque">
+            <label for="perm_movimentar_estoque">Movimentar Estoque</label>
+          </div>
+        </div>
+
+        <!-- Permissões de Supervisor (Nível 3) -->
+        <div class="permission-group">
+          <div class="group-title">
+            Permissões de Supervisor
+            <div>
+              <span class="level-badge">Nível 3+</span>
+              <span class="toggle-all" onclick="toggleGroupPermissions('supervisor', true)">Marcar todos</span> | 
+              <span class="toggle-all" onclick="toggleGroupPermissions('supervisor', false)">Desmarcar todos</span>
+            </div>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_aprovar_producao" name="permissoes" value="aprovar_producao">
+            <label for="perm_aprovar_producao">Aprovar Ordens de Produção</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_gerenciar_equipe" name="permissoes" value="gerenciar_equipe">
+            <label for="perm_gerenciar_equipe">Gerenciar Equipe</label>
+          </div>
+        </div>
+
+        <!-- Permissões de Analista (Nível 4) -->
+        <div class="permission-group">
+          <div class="group-title">
+            Permissões de Analista
+            <div>
+              <span class="level-badge">Nível 4+</span>
+              <span class="toggle-all" onclick="toggleGroupPermissions('analista', true)">Marcar todos</span> | 
+              <span class="toggle-all" onclick="toggleGroupPermissions('analista', false)">Desmarcar todos</span>
+            </div>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_relatorios_avancados" name="permissoes" value="relatorios_avancados">
+            <label for="perm_relatorios_avancados">Relatórios Avançados</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_analise_dados" name="permissoes" value="analise_dados">
+            <label for="perm_analise_dados">Análise de Dados</label>
+          </div>
+        </div>
+
+        <!-- Permissões de Coordenador (Nível 5) -->
+        <div class="permission-group">
+          <div class="group-title">
+            Permissões de Coordenador
+            <div>
+              <span class="level-badge">Nível 5+</span>
+              <span class="toggle-all" onclick="toggleGroupPermissions('coordenador', true)">Marcar todos</span> | 
+              <span class="toggle-all" onclick="toggleGroupPermissions('coordenador', false)">Desmarcar todos</span>
+            </div>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_gestao_departamental" name="permissoes" value="gestao_departamental">
+            <label for="perm_gestao_departamental">Gestão Departamental</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_metas_departamento" name="permissoes" value="metas_departamento">
+            <label for="perm_metas_departamento">Definir Metas do Departamento</label>
+          </div>
+        </div>
+
+        <!-- Permissões de Gerente (Nível 6) -->
+        <div class="permission-group">
+          <div class="group-title">
+            Permissões de Gerente
+            <div>
+              <span class="level-badge">Nível 6+</span>
+              <span class="toggle-all" onclick="toggleGroupPermissions('gerente', true)">Marcar todos</span> | 
+              <span class="toggle-all" onclick="toggleGroupPermissions('gerente', false)">Desmarcar todos</span>
+            </div>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_gestao_estrategica" name="permissoes" value="gestao_estrategica">
+            <label for="perm_gestao_estrategica">Gestão Estratégica</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_orcamento" name="permissoes" value="orcamento">
+            <label for="perm_orcamento">Gestão de Orçamento</label>
+          </div>
+        </div>
+
+        <!-- Permissões de Diretor (Nível 7) -->
+        <div class="permission-group">
+          <div class="group-title">
+            Permissões de Diretor
+            <div>
+              <span class="level-badge">Nível 7+</span>
+              <span class="toggle-all" onclick="toggleGroupPermissions('diretor', true)">Marcar todos</span> | 
+              <span class="toggle-all" onclick="toggleGroupPermissions('diretor', false)">Desmarcar todos</span>
+            </div>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_decisoes_executivas" name="permissoes" value="decisoes_executivas">
+            <label for="perm_decisoes_executivas">Decisões Executivas</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_politicas_empresa" name="permissoes" value="politicas_empresa">
+            <label for="perm_politicas_empresa">Definir Políticas da Empresa</label>
+          </div>
+        </div>
+
+        <!-- Permissões de Presidente (Nível 8) -->
+        <div class="permission-group">
+          <div class="group-title">
+            Permissões de Presidente
+            <div>
+              <span class="level-badge">Nível 8+</span>
+              <span class="toggle-all" onclick="toggleGroupPermissions('presidente', true)">Marcar todos</span> | 
+              <span class="toggle-all" onclick="toggleGroupPermissions('presidente', false)">Desmarcar todos</span>
+            </div>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_gestao_corporativa" name="permissoes" value="gestao_corporativa">
+            <label for="perm_gestao_corporativa">Gestão Corporativa</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm_estrategia_global" name="permissoes" value="estrategia_global">
+            <label for="perm_estrategia_global">Definir Estratégia Global</label>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="window.location.href='cadastro_usuarios.html'">Cancelar</button>
+          <button type="submit" class="btn-success">Salvar Permissões</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      doc, 
+      getDoc,
+      setDoc,
+      updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let userId = null;
+    let userData = null;
+    let currentUser = null;
+    let userLevel = 1;
+
+    // Grupos de permissões para facilitar a marcação/desmarcação em grupo
+    const permissionGroups = {
+      basico: ['visualizar_produtos', 'visualizar_relatorios'],
+      operador: ['registrar_producao', 'movimentar_estoque'],
+      supervisor: ['aprovar_producao', 'gerenciar_equipe'],
+      analista: ['relatorios_avancados', 'analise_dados'],
+      coordenador: ['gestao_departamental', 'metas_departamento'],
+      gerente: ['gestao_estrategica', 'orcamento'],
+      diretor: ['decisoes_executivas', 'politicas_empresa'],
+      presidente: ['gestao_corporativa', 'estrategia_global']
+    };
+
+    const permissionLevels = {
+      visualizar_produtos: 1,
+      visualizar_relatorios: 1,
+      registrar_producao: 2,
+      movimentar_estoque: 2,
+      aprovar_producao: 3,
+      gerenciar_equipe: 3,
+      relatorios_avancados: 4,
+      analise_dados: 4,
+      gestao_departamental: 5,
+      metas_departamento: 5,
+      gestao_estrategica: 6,
+      orcamento: 6,
+      decisoes_executivas: 7,
+      politicas_empresa: 7,
+      gestao_corporativa: 8,
+      estrategia_global: 8
+    };
+
+    window.onload = async function() {
+      // Verificar se o usuário atual é administrador
+      const userSession = localStorage.getItem('currentUser');
+      if (!userSession) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      currentUser = JSON.parse(userSession);
+      if (currentUser.nivel < 9) {
+        alert('Acesso restrito. Apenas administradores podem acessar esta página.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Obter o ID do usuário da URL
+      const urlParams = new URLSearchParams(window.location.search);
+      userId = urlParams.get('id');
+      
+      if (!userId) {
+        alert('Usuário não especificado.');
+        window.location.href = 'cadastro_usuarios.html';
+        return;
+      }
+
+      await loadUserData();
+      await loadUserPermissions();
+      setupPermissionsByLevel();
+    };
+
+    async function loadUserData() {
+      try {
+        const userDoc = await getDoc(doc(db, "usuarios", userId));
+        
+        if (!userDoc.exists()) {
+          alert('Usuário não encontrado.');
+          window.location.href = 'cadastro_usuarios.html';
+          return;
+        }
+        
+        userData = userDoc.data();
+        userLevel = parseInt(userData.nivel);
+        
+        // Preencher informações do usuário
+        document.getElementById('userName').textContent = userData.nome;
+        document.getElementById('fullName').textContent = userData.nomeCompleto || '-';
+        document.getElementById('accessLevel').textContent = getNivelDescricao(userData.nivel);
+        document.getElementById('department').textContent = userData.departamento || '-';
+        
+        // Mostrar aviso se for administrador
+        if (userData.nivel === 9) {
+          document.getElementById('adminNotice').style.display = 'block';
+          document.getElementById('permissionsForm').style.display = 'none';
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados do usuário:", error);
+        alert("Erro ao carregar dados do usuário. Por favor, tente novamente.");
+      }
+    }
+
+    async function loadUserPermissions() {
+      try {
+        // Verificar se já existem permissões para este usuário
+        const permissionsDoc = await getDoc(doc(db, "permissoes", userId));
+        
+        if (permissionsDoc.exists()) {
+          const permissoes = permissionsDoc.data().permissoes || [];
+          
+          // Marcar as permissões que o usuário já possui
+          permissoes.forEach(perm => {
+            const checkbox = document.getElementById(`perm_${perm}`);
+            if (checkbox) {
+              checkbox.checked = true;
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao carregar permissões:", error);
+        alert("Erro ao carregar permissões. Por favor, tente novamente.");
+      }
+    }
+
+    function setupPermissionsByLevel() {
+      // Desabilitar permissões que estão acima do nível do usuário
+      Object.entries(permissionLevels).forEach(([perm, level]) => {
+        const checkbox = document.getElementById(`perm_${perm}`);
+        if (checkbox && level > userLevel) {
+          checkbox.disabled = true;
+          checkbox.parentElement.classList.add('disabled-permission');
+        }
+      });
+    }
+
+    function getNivelDescricao(nivel) {
+      switch (parseInt(nivel)) {
+        case 1: return "1 - Básico (Visualização)";
+        case 2: return "2 - Operador";
+        case 3: return "3 - Supervisor";
+        case 4: return "4 - Analista";
+        case 5: return "5 - Coordenador";
+        case 6: return "6 - Gerente";
+        case 7: return "7 - Diretor";
+        case 8: return "8 - Presidente";
+        case 9: return "9 - Administrador (Acesso Total)";
+        default: return nivel;
+      }
+    }
+
+    window.toggleGroupPermissions = function(groupName, state) {
+      const permissions = permissionGroups[groupName];
+      if (permissions) {
+        permissions.forEach(perm => {
+          const checkbox = document.getElementById(`perm_${perm}`);
+          if (checkbox && !checkbox.disabled) {
+            checkbox.checked = state;
+          }
+        });
+      }
+    };
+
+    document.getElementById('permissionsForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      
+      // Coletar todas as permissões marcadas
+      const checkboxes = document.querySelectorAll('input[name="permissoes"]:checked:not(:disabled)');
+      const permissoes = Array.from(checkboxes).map(cb => cb.value);
+      
+      try {
+        // Salvar permissões no Firestore
+        await setDoc(doc(db, "permissoes", userId), {
+          permissoes: permissoes,
+          ultimaAtualizacao: new Date()
+        });
+        
+        alert('Permissões salvas com sucesso!');
+        window.location.href = 'cadastro_usuarios.html';
+      } catch (error) {
+        console.error("Erro ao salvar permissões:", error);
+        alert("Erro ao salvar permissões. Por favor, tente novamente.");
+      }
+    });
+  </script>
+</body>
+</html>

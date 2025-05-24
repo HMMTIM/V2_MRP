@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homologação de Fornecedores</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --header-bg: #354a5f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 { font-size: 24px; font-weight: 500; }
+
+ .form-container, .table-container {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .form-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-success { background-color: var(--success-color); color: white; }
+    .btn-success:hover { background-color: var(--success-hover); }
+    .btn-danger { background-color: var(--danger-color); color: white; }
+    .btn-danger:hover { background-color: var(--danger-hover); }
+    .btn-primary { background-color: var(--primary-color); color: white; }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .btn-secondary:hover { background-color: #5a6268; }
+
+    .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
+    .form-col { flex: 1; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+    .suppliers-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .suppliers-table th, .suppliers-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .suppliers-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .suppliers-table tr:hover { background-color: #f8f9fa; }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow-y: auto;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    .close-button {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .history-section {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: var(--secondary-color);
+      border-radius: 4px;
+    }
+
+    .history-item {
+      padding: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .history-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Homologação de Fornecedores</h1>
+      <div>
+        <button class="btn-secondary" onclick="navigateBack()">Voltar</button>
+      </div>
+    </div>
+
+    <div class="form-container">
+      <h2 class="form-title">Avaliar Fornecedor</h2>
+      <form id="avaliacaoForm">
+        <div class="form-row">
+          <div class="form-col">
+            <label>Fornecedor</label>
+            <select id="fornecedorId" required>
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-col">
+            <label>Qualidade (0-100)</label>
+            <input type="number" id="qualidade" min="0" max="100" required>
+          </div>
+          <div class="form-col">
+            <label>Prazo de Entrega (0-100)</label>
+            <input type="number" id="prazoEntrega" min="0" max="100" required>
+          </div>
+          <div class="form-col">
+            <label>Custo (0-100)</label>
+            <input type="number" id="custo" min="0" max="100" required>
+          </div>
+        </div>
+        <label>Observações</label>
+        <textarea id="observacoes" rows="3"></textarea>
+        <input type="hidden" id="avaliacaoId">
+        <div class="form-actions">
+          <button type="submit" class="btn-success" id="submitButton">Salvar Avaliação</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-container">
+      <h2 class="form-title">Fornecedores Avaliados</h2>
+      <table class="suppliers-table">
+        <thead>
+          <tr>
+            <th>Razão Social</th>
+            <th>IDF</th>
+            <th>Status</th>
+            <th>Última Avaliação</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="avaliacoesTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal('detailsModal')">×</span>
+      <h2 id="modalTitle">Detalhes da Homologação</h2>
+      <div id="detailsContent">
+        <p><strong>Fornecedor:</strong> <span id="detalheRazaoSocial"></span></p>
+        <p><strong>IDF Atual:</strong> <span id="detalheIDF"></span></p>
+        <p><strong>Status:</strong> <span id="detalheStatus"></span></p>
+        <div class="history-section">
+          <h3>Histórico de Avaliações</h3>
+          <div id="historyContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db, getDoc } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs, 
+      updateDoc, 
+      deleteDoc, 
+      doc, 
+      writeBatch, 
+      onSnapshot 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let fornecedores = [];
+    let avaliacoes = [];
+
+    const idfConfig = {
+      criteria: [
+        { field: 'qualidade', weight: 0.4, label: 'Qualidade' },
+        { field: 'prazoEntrega', weight: 0.4, label: 'Prazo de Entrega' },
+        { field: 'custo', weight: 0.2, label: 'Custo' }
+      ],
+      threshold: 70,
+      scale: 100
+    };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const configDoc = await getDoc(doc(db, "parametros", "sistema"));
+        const config = configDoc.data();
+
+        if (!config?.homologacaoFornecedor) {
+          alert("Módulo de homologação de fornecedores desativado nas configurações do sistema.");
+          window.location.href = 'index.html';
+          return;
+        }
+
+        await loadInitialData();
+        setupRealtimeListeners();
+        displayAvaliacoes();
+        populateFornecedoresSelect();
+        setupFornecedorChangeListener();
+      } catch (error) {
+        handleError("Erro ao inicializar o sistema", error);
+      }
+    });
+
+    async function loadInitialData() {
+      try {
+        const [fornecedoresSnap, avaliacoesSnap] = await Promise.all([
+          getDocs(collection(db, "fornecedores")),
+          getDocs(collection(db, "avaliacoesFornecedores"))
+        ]);
+        fornecedores = fornecedoresSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          idf: typeof doc.data().idf === 'number' ? doc.data().idf : null
+        }));
+        avaliacoes = avaliacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        throw new Error("Erro ao carregar dados iniciais: " + error.message);
+      }
+    }
+
+    function setupRealtimeListeners() {
+      onSnapshot(collection(db, "fornecedores"), (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          const data = { id: change.doc.id, ...change.doc.data(), idf: typeof change.doc.data().idf === 'number' ? change.doc.data().idf : null };
+          if (change.type === "added" || change.type === "modified") {
+            const index = fornecedores.findIndex(f => f.id === data.id);
+            if (index >= 0) fornecedores[index] = data;
+            else fornecedores.push(data);
+          } else if (change.type === "removed") {
+            fornecedores = fornecedores.filter(f => f.id !== data.id);
+          }
+        });
+        displayAvaliacoes();
+        populateFornecedoresSelect();
+      });
+
+      onSnapshot(collection(db, "avaliacoesFornecedores"), (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          const data = { id: change.doc.id, ...change.doc.data() };
+          if (change.type === "added" || change.type === "modified") {
+            const index = avaliacoes.findIndex(a => a.id === data.id);
+            if (index >= 0) avaliacoes[index] = data;
+            else avaliacoes.push(data);
+          } else if (change.type === "removed") {
+            avaliacoes = avaliacoes.filter(a => a.id !== data.id);
+          }
+        });
+        displayAvaliacoes();
+      });
+    }
+
+    function populateFornecedoresSelect() {
+      const select = document.getElementById('fornecedorId');
+      if (!select) {
+        console.error("Elemento 'fornecedorId' não encontrado!");
+        return;
+      }
+      select.innerHTML = '<option value="">Selecione...</option>';
+      fornecedores.forEach(f => {
+        const option = document.createElement('option');
+        option.value = f.id;
+        option.textContent = f.razaoSocial;
+        select.appendChild(option);
+      });
+    }
+
+    function setupFornecedorChangeListener() {
+      const select = document.getElementById('fornecedorId');
+      select.addEventListener('change', () => {
+        const fornecedorId = select.value;
+        if (!fornecedorId) {
+          resetForm();
+          return;
+        }
+
+        const fornecedorAvaliacoes = avaliacoes
+          .filter(a => a.fornecedorId === fornecedorId)
+          .sort((a, b) => new Date(b.dataAvaliacao) - new Date(a.dataAvaliacao));
+
+        const ultimaAvaliacao = fornecedorAvaliacoes[0];
+        if (ultimaAvaliacao) {
+          document.getElementById('avaliacaoId').value = ultimaAvaliacao.id;
+          document.getElementById('qualidade').value = ultimaAvaliacao.qualidade;
+          document.getElementById('prazoEntrega').value = ultimaAvaliacao.prazoEntrega;
+          document.getElementById('custo').value = ultimaAvaliacao.custo;
+          document.getElementById('observacoes').value = ultimaAvaliacao.observacoes || '';
+          document.getElementById('submitButton').textContent = 'Atualizar Avaliação';
+        } else {
+          resetForm();
+          document.getElementById('fornecedorId').value = fornecedorId;
+        }
+      });
+    }
+
+    function calculateIDF(avaliacao) {
+      let idf = 0;
+      for (const criterion of idfConfig.criteria) {
+        const value = Number(avaliacao[criterion.field]) || 0;
+        const normalizedValue = Math.min(Math.max(value, 0), idfConfig.scale);
+        idf += normalizedValue * criterion.weight;
+      }
+      return parseFloat(idf.toFixed(2));
+    }
+
+    function updateLocalFornecedor(fornecedorId, updates) {
+      const index = fornecedores.findIndex(f => f.id === fornecedorId);
+      if (index >= 0) {
+        fornecedores[index] = { ...fornecedores[index], ...updates };
+      }
+      displayAvaliacoes();
+      populateFornecedoresSelect();
+    }
+
+    function updateLocalAvaliacao(avaliacaoId, avaliacaoData) {
+      const index = avaliacoes.findIndex(a => a.id === avaliacaoId);
+      if (index >= 0) {
+        avaliacoes[index] = { id: avaliacaoId, ...avaliacaoData };
+      } else {
+        avaliacoes.push({ id: avaliacaoId, ...avaliacaoData });
+      }
+      displayAvaliacoes();
+    }
+
+    document.getElementById('avaliacaoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitButton = document.getElementById('submitButton');
+      const avaliacaoId = document.getElementById('avaliacaoId').value;
+      const fornecedorId = document.getElementById('fornecedorId').value;
+      const qualidade = parseInt(document.getElementById('qualidade').value, 10);
+      const prazoEntrega = parseInt(document.getElementById('prazoEntrega').value, 10);
+      const custo = parseInt(document.getElementById('custo').value, 10);
+      const observacoes = document.getElementById('observacoes').value;
+
+      const values = { qualidade, prazoEntrega, custo };
+      for (const [key, value] of Object.entries(values)) {
+        if (isNaN(value) || value < 0 || value > idfConfig.scale) {
+          alert(`O valor de ${key} deve ser um número entre 0 e ${idfConfig.scale}.`);
+          return;
+        }
+      }
+
+      const avaliacaoData = {
+        fornecedorId,
+        dataAvaliacao: new Date().toISOString(),
+        qualidade,
+        prazoEntrega,
+        custo,
+        observacoes,
+        avaliador: 'Usuário Atual'
+      };
+
+      const idf = calculateIDF(avaliacaoData);
+      const statusHomologacao = idf >= idfConfig.threshold ? 'Homologado' : 'Pendente';
+
+      try {
+        submitButton.disabled = true;
+        submitButton.textContent = avaliacaoId ? 'Salvando...' : 'Adicionando...';
+
+        const batch = writeBatch(db);
+        const fornecedorRef = doc(db, "fornecedores", fornecedorId);
+
+        if (avaliacaoId) {
+          const avaliacaoRef = doc(db, "avaliacoesFornecedores", avaliacaoId);
+          batch.update(avaliacaoRef, avaliacaoData);
+          updateLocalAvaliacao(avaliacaoId, avaliacaoData);
+        } else {
+          const avaliacaoRef = doc(collection(db, "avaliacoesFornecedores"));
+          batch.set(avaliacaoRef, avaliacaoData);
+          updateLocalAvaliacao(avaliacaoRef.id, avaliacaoData);
+        }
+
+        batch.update(fornecedorRef, {
+          idf,
+          statusHomologacao,
+          dataUltimaAvaliacao: new Date().toISOString()
+        });
+        updateLocalFornecedor(fornecedorId, {
+          idf,
+          statusHomologacao,
+          dataUltimaAvaliacao: new Date().toISOString()
+        });
+
+        await batch.commit();
+        alert(avaliacaoId ? 'Avaliação atualizada com sucesso!' : 'Avaliação salva com sucesso!');
+        resetForm();
+      } catch (error) {
+        handleError("Erro ao salvar avaliação", error);
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Salvar Avaliação';
+      }
+    });
+
+    function displayAvaliacoes() {
+      const tableBody = document.getElementById('avaliacoesTableBody');
+      if (!tableBody) return;
+
+      tableBody.innerHTML = '';
+      fornecedores.forEach(f => {
+        const row = document.createElement('tr');
+        const idfValue = typeof f.idf === 'number' ? f.idf.toFixed(2) : '-';
+        row.innerHTML = `
+          <td>${f.razaoSocial}</td>
+          <td>${idfValue}</td>
+          <td>${f.statusHomologacao || 'Pendente'}</td>
+          <td>${f.dataUltimaAvaliacao ? new Date(f.dataUltimaAvaliacao).toLocaleDateString() : '-'}</td>
+          <td>
+            <button class="btn-primary" onclick="viewDetails('${f.id}')">Detalhes</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    window.viewDetails = (fornecedorId) => {
+      const fornecedor = fornecedores.find(f => f.id === fornecedorId);
+      if (!fornecedor) return;
+
+      document.getElementById('detalheRazaoSocial').textContent = fornecedor.razaoSocial;
+      document.getElementById('detalheIDF').textContent = typeof fornecedor.idf === 'number' ? fornecedor.idf.toFixed(2) : '-';
+      document.getElementById('detalheStatus').textContent = fornecedor.statusHomologacao || 'Pendente';
+
+      const fornecedorAvaliacoes = avaliacoes.filter(a => a.fornecedorId === fornecedorId);
+      const historyContent = document.getElementById('historyContent');
+      historyContent.innerHTML = fornecedorAvaliacoes.length > 0
+        ? fornecedorAvaliacoes.map(a => `
+            <div class="history-item">
+              <p><strong>Data:</strong> ${new Date(a.dataAvaliacao).toLocaleString()}</p>
+              <p><strong>Qualidade:</strong> ${a.qualidade}</p>
+              <p><strong>Prazo de Entrega:</strong> ${a.prazoEntrega}</p>
+              <p><strong>Custo:</strong> ${a.custo}</p>
+              <p><strong>IDF Calculado:</strong> ${calculateIDF(a).toFixed(2)}</p>
+              <p><strong>Observações:</strong> ${a.observacoes || '-'}</p>
+              <p><strong>Avaliador:</strong> ${a.avaliador}</p>
+              <p>
+                <button class="btn-primary" onclick="editAvaliacao('${a.id}')">Editar</button>
+                <button class="btn-danger" onclick="deleteAvaliacao('${a.id}', '${fornecedorId}')">Excluir</button>
+              </p>
+            </div>
+          `).join('')
+        : '<p>Nenhuma avaliação registrada.</p>';
+
+      document.getElementById('detailsModal').style.display = 'block';
+    };
+
+    window.editAvaliacao = (avaliacaoId) => {
+      const avaliacao = avaliacoes.find(a => a.id === avaliacaoId);
+      if (!avaliacao) return;
+
+      document.getElementById('fornecedorId').value = avaliacao.fornecedorId;
+      document.getElementById('qualidade').value = avaliacao.qualidade;
+      document.getElementById('prazoEntrega').value = avaliacao.prazoEntrega;
+      document.getElementById('custo').value = avaliacao.custo;
+      document.getElementById('observacoes').value = avaliacao.observacoes || '';
+      document.getElementById('avaliacaoId').value = avaliacaoId;
+      document.getElementById('submitButton').textContent = 'Atualizar Avaliação';
+      closeModal('detailsModal');
+    };
+
+    window.deleteAvaliacao = async (avaliacaoId, fornecedorId) => {
+      if (!confirm('Tem certeza que deseja excluir esta avaliação?')) return;
+
+      try {
+        const batch = writeBatch(db);
+        batch.delete(doc(db, "avaliacoesFornecedores", avaliacaoId));
+        avaliacoes = avaliacoes.filter(a => a.id !== avaliacaoId);
+
+        const fornecedorAvaliacoes = avaliacoes.filter(a => a.fornecedorId === fornecedorId);
+        const ultimaAvaliacao = fornecedorAvaliacoes.length > 0 
+          ? fornecedorAvaliacoes.sort((a, b) => new Date(b.dataAvaliacao) - new Date(a.dataAvaliacao))[0]
+          : null;
+
+        const fornecedorRef = doc(db, "fornecedores", fornecedorId);
+        if (ultimaAvaliacao) {
+          const idf = calculateIDF(ultimaAvaliacao);
+          const statusHomologacao = idf >= idfConfig.threshold ? 'Homologado' : 'Pendente';
+          batch.update(fornecedorRef, {
+            idf,
+            statusHomologacao,
+            dataUltimaAvaliacao: ultimaAvaliacao.dataAvaliacao
+          });
+          updateLocalFornecedor(fornecedorId, {
+            idf,
+            statusHomologacao,
+            dataUltimaAvaliacao: ultimaAvaliacao.dataAvaliacao
+          });
+        } else {
+          batch.update(fornecedorRef, {
+            idf: null,
+            statusHomologacao: 'Pendente',
+            dataUltimaAvaliacao: null
+          });
+          updateLocalFornecedor(fornecedorId, {
+            idf: null,
+            statusHomologacao: 'Pendente',
+            dataUltimaAvaliacao: null
+          });
+        }
+
+        await batch.commit();
+        alert('Avaliação excluída com sucesso!');
+        viewDetails(fornecedorId);
+      } catch (error) {
+        handleError("Erro ao excluir avaliação", error);
+      }
+    };
+
+    window.closeModal = (modalId) => {
+      document.getElementById(modalId).style.display = 'none';
+    };
+
+    window.navigateBack = () => {
+      try {
+        window.location.href = 'index.html';
+      } catch (error) {
+        console.warn("Navegação não suportada neste ambiente:", error);
+        alert("Funcionalidade de voltar não disponível no StackBlitz.");
+      }
+    };
+
+    function resetForm() {
+      const form = document.getElementById('avaliacaoForm');
+      form.reset();
+      document.getElementById('avaliacaoId').value = '';
+      document.getElementById('submitButton').textContent = 'Salvar Avaliação';
+    }
+
+    function handleError(message, error) {
+      console.error(`${message}:`, error);
+      alert(`${message}: ${error.message}`);
+    }
+  </script>
+</body>
+</html>

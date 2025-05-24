@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recebimento de Materiais</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --header-bg: #354a5f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 95%;
+      max-width: 1200px;
+      margin: 48px auto;
+      padding: 18px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 12px 18px;
+      border-radius: 8px 8px 0 0;
+      margin: -18px -18px 18px -18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 { font-size: 24px; font-weight: 500; }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 18px;
+      color: var(--primary-color);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-group { margin-bottom: 12px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 7px 9px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    .form-col { flex: 1; }
+
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+    }
+
+    .items-table th, .items-table td {
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .items-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .items-table tr:hover { background-color: #f8f9fa; }
+
+    button {
+      padding: 7px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-success { background-color: var(--success-color); color: white; }
+    .btn-success:hover { background-color: var(--success-hover); }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .btn-secondary:hover { background-color: #5a6268; }
+    .btn-primary { background-color: var(--primary-color); color: white; }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+
+    .qr-scanner {
+      width: 100%;
+      max-width: 500px;
+      margin: 18px auto;
+      padding: 18px;
+      background-color: var(--secondary-color);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    #reader {
+      width: 100%;
+      height: 300px;
+      background-color: #000;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .photo-upload {
+      margin: 18px 0;
+      padding: 12px;
+      border: 2px dashed var(--border-color);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .photo-preview {
+      max-width: 200px;
+      max-height: 200px;
+      margin: 8px auto;
+      border-radius: 4px;
+    }
+
+    .checklist {
+      margin: 18px 0;
+      padding: 12px;
+      background-color: var(--secondary-color);
+      border-radius: 8px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 8px;
+      background-color: white;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .checklist-item input[type="checkbox"] {
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Recebimento de Materiais</h1>
+      <button class="btn-secondary" id="backButton">Voltar</button>
+    </div>
+
+    <div class="qr-scanner">
+      <h2>Escanear Nota Fiscal</h2>
+      <div id="reader"></div>
+      <button onclick="startScanner()" class="btn-primary">Iniciar Scanner</button>
+    </div>
+
+    <div class="form-group">
+      <label>Selecionar Pedido de Compra</label>
+      <select id="orderSelect" onchange="loadOrderDetails()">
+        <option value="">Selecione o pedido...</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-col">
+        <div class="form-group">
+          <label>Armazém de Recebimento</label>
+          <select id="warehouseSelect" required>
+            <option value="">Selecione o armazém...</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-col">
+        <div class="form-group">
+          <label>Centro de Custo</label>
+          <select id="costCenterSelect" required>
+            <option value="">Selecione o centro de custo...</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <form id="receiveForm" onsubmit="receiveMaterials(event)" style="display: none;">
+      <h2>Registro de Recebimento</h2>
+
+      <div class="checklist">
+        <h3>Checklist de Recebimento</h3>
+        <div class="checklist-item">
+          <input type="checkbox" id="check_nf" required>
+          <label for="check_nf">Nota fiscal confere com pedido</label>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="check_quantidade" required>
+          <label for="check_quantidade">Quantidades conferem</label>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="check_embalagem" required>
+          <label for="check_embalagem">Embalagens íntegras</label>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="check_prazo" required>
+          <label for="check_prazo">Prazo de entrega conforme pedido</label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col">
+          <label>Número da Nota Fiscal</label>
+          <input type="text" id="nfNumero" required>
+        </div>
+        <div class="form-col">
+          <label>Chave de Acesso (44 dígitos)</label>
+          <input type="text" id="nfChave" maxlength="44" required>
+        </div>
+      </div>
+
+      <div class="photo-upload">
+        <h3>Fotos do Recebimento</h3>
+        <input type="file" id="photoInput" accept="image/*" multiple onchange="previewPhotos(event)">
+        <div id="photoPreview" class="photo-preview"></div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col">
+          <label>Data da Nota Fiscal</label>
+          <input type="date" id="nfData" required>
+        </div>
+        <div class="form-col">
+          <label>Valor Total da NF</label>
+          <input type="number" id="nfValor" min="0" step="0.01" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Histórico de Recebimentos</label>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>NF</th>
+              <th>Chave</th>
+              <th>Valor</th>
+              <th>Itens</th>
+              <th>Armazém</th>
+              <th>Centro de Custo</th>
+            </tr>
+          </thead>
+          <tbody id="receiveHistoryBody"></tbody>
+        </table>
+      </div>
+
+      <div class="form-group">
+        <label>Itens Recebidos</label>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Descrição</th>
+              <th>Qtd. Pedida</th>
+              <th>Qtd. Recebida Anterior</th>
+              <th>Unidade da NF</th>
+              <th>Fator de Conversão</th>
+              <th>Qtd. na NF</th>
+              <th>Qtd. em Peças (PC)</th>
+              <th>Lote Fornecedor</th>
+              <th>Unidade Principal</th>
+            </tr>
+          </thead>
+          <tbody id="itemsTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="form-group">
+        <label>Observações</label>
+        <textarea id="receiveObservacoes" rows="3"></textarea>
+      </div>
+
+      <button type="submit" class="btn-success">Registrar Recebimento</button>
+    </form>
+  </div>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script type="module">
+    import { db, storage } from './firebase-config.js';
+    import { 
+      collection, 
+      addDoc, 
+      getDocs,
+      doc,
+      getDoc,
+      updateDoc,
+      Timestamp,
+      query,
+      where,
+      orderBy,
+      limit
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+    let html5QrcodeScanner = null;
+    let pedidosCompra = [];
+    let fornecedores = [];
+    let produtos = [];
+    let armazens = [];
+    let centrosCusto = [];
+    let currentUser = JSON.parse(localStorage.getItem('currentUser')) || { nome: 'Usuário Atual' };
+    let currentOrder = null;
+    let photoFiles = [];
+
+    // Attach event listener for the back button
+    document.getElementById('backButton').addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    window.onload = async () => {
+      try {
+        const configDoc = await getDoc(doc(db, "parametros", "sistema"));
+        const config = configDoc.exists() ? configDoc.data() : {};
+
+        const requiresInspection = config?.inspecaoRecebimento || false;
+        const usesQualityWarehouse = config?.armazemQualidade || false;
+        const requiresHomologation = config?.homologacaoFornecedor || false;
+
+        await loadInitialData();
+        populateOrderSelect();
+        populateWarehouseSelect();
+        populateCostCenterSelect();
+      } catch (error) {
+        console.error("Erro ao inicializar a página:", error);
+        alert("Erro ao carregar a página. Verifique a conexão com o Firebase.");
+      }
+    };
+
+    async function loadInitialData() {
+      try {
+        const [pedidosSnap, fornecedoresSnap, produtosSnap, armazensSnap, centrosCustoSnap] = await Promise.all([
+          getDocs(collection(db, "pedidosCompra")),
+          getDocs(collection(db, "fornecedores")),
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "armazens")),
+          getDocs(collection(db, "centrosCusto"))
+        ]);
+        pedidosCompra = pedidosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        fornecedores = fornecedoresSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        armazens = armazensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        centrosCusto = centrosCustoSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados iniciais. Verifique a conexão com o Firestore.");
+      }
+    }
+
+    function populateOrderSelect() {
+      const select = document.getElementById('orderSelect');
+      select.innerHTML = '<option value="">Selecione o pedido...</option>';
+      pedidosCompra
+        .filter(p => p.status === 'APROVADO' || p.status === 'RECEBIDO')
+        .forEach(pedido => {
+          const fornecedor = fornecedores.find(f => f.id === pedido.fornecedorId);
+          select.innerHTML += `
+            <option value="${pedido.id}">
+              ${pedido.numero} - ${fornecedor ? fornecedor.razaoSocial : 'N/A'}
+            </option>`;
+        });
+    }
+
+    function populateWarehouseSelect() {
+      const select = document.getElementById('warehouseSelect');
+      select.innerHTML = '<option value="">Selecione o armazém...</option>';
+      armazens.forEach(armazem => {
+        select.innerHTML += `
+          <option value="${armazem.codigo}">
+            ${armazem.codigo} - ${armazem.descricao}
+          </option>`;
+      });
+    }
+
+    function populateCostCenterSelect() {
+      const select = document.getElementById('costCenterSelect');
+      select.innerHTML = '<option value="">Selecione o centro de custo...</option>';
+      centrosCusto.forEach(centro => {
+        select.innerHTML += `
+          <option value="${centro.codigo}">
+            ${centro.codigo} - ${centro.descricao}
+          </option>`;
+      });
+    }
+
+    window.startScanner = function() {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear();
+      }
+
+      html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader",
+        { fps: 10, qrbox: {width: 250, height: 250} },
+        false
+      );
+
+      html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    };
+
+    function onScanSuccess(decodedText, decodedResult) {
+      try {
+        document.getElementById('nfChave').value = decodedText;
+        html5QrcodeScanner.clear();
+        alert('QR Code lido com sucesso!');
+      } catch (error) {
+        console.error("Erro ao processar QR Code:", error);
+        alert("Erro ao processar QR Code: " + error.message);
+      }
+    }
+
+    function onScanFailure(error) {
+      console.warn(`Erro na leitura do QR Code: ${error}`);
+    }
+
+    window.previewPhotos = function(event) {
+      const preview = document.getElementById('photoPreview');
+      preview.innerHTML = '';
+      photoFiles = Array.from(event.target.files);
+
+      photoFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'photo-preview';
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    };
+
+    window.loadOrderDetails = async function() {
+      const orderId = document.getElementById('orderSelect').value;
+      if (!orderId) {
+        document.getElementById('receiveForm').style.display = 'none';
+        return;
+      }
+
+      currentOrder = pedidosCompra.find(p => p.id === orderId);
+      const tableBody = document.getElementById('itemsTableBody');
+      const historyBody = document.getElementById('receiveHistoryBody');
+      tableBody.innerHTML = '';
+      historyBody.innerHTML = '';
+
+      currentOrder.itens.forEach((item, index) => {
+        const qtdRecebidaAnterior = (currentOrder.recebimentos || []).reduce((sum, rec) => 
+          sum + (rec.itens[index]?.quantidadeConvertida || 0), 0);
+        const qtdRestante = item.quantidade - qtdRecebidaAnterior;
+        const produto = produtos.find(p => p.codigo === item.codigo);
+
+        tableBody.innerHTML += `
+          <tr>
+            <td>${item.codigo}</td>
+            <td>${item.descricao}</td>
+            <td>${item.quantidade}</td>
+            <td>${qtdRecebidaAnterior.toFixed(3)}</td>
+            <td>
+              <select class="unidade-recebimento" data-index="${index}" onchange="updateConvertedQty(${index})">
+                <option value="${item.unidade}">${item.unidade}</option>
+                ${produto.unidadeSecundaria ? `<option value="${produto.unidadeSecundaria}">${produto.unidadeSecundaria}</option>` : ''}
+              </select>
+            </td>
+            <td>${produto.fatorConversao || '1'}</td>
+            <td><input type="number" class="qtd-recebida-nf item-recebida" data-index="${index}" oninput="updateConvertedQty(${index})" step="0.001" min="0" max="${qtdRestante}" required></td>
+            <td><input type="number" class="qtd-convertida-pc item-converted" data-index="${index}" readonly></td>
+            <td><input type="text" class="lote-fornecedor" data-index="${index}" placeholder="Lote Fornecedor" required></td>
+            <td>${produto.unidade}</td>
+          </tr>
+        `;
+      });
+
+      (currentOrder.recebimentos || []).forEach(rec => {
+        historyBody.innerHTML += `
+          <tr>
+            <td>${new Date(rec.dataRecebimento.toDate()).toLocaleString()}</td>
+            <td>${rec.nfNumero}</td>
+            <td>${rec.nfChave || 'N/A'}</td>
+            <td>R$ ${rec.nfValor.toFixed(2)}</td>
+            <td>${rec.itens.length} itens</td>
+            <td>${rec.armazem || '-'}</td>
+            <td>${rec.centroCusto || '-'}</td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('receiveForm').style.display = 'block';
+    };
+
+    window.updateConvertedQty = function(index) {
+      const unidadeNF = document.querySelector(`.unidade-recebimento[data-index="${index}"]`).value;
+      const qtdNFInput = document.querySelector(`.qtd-recebida-nf[data-index="${index}"]`);
+      const qtdNF = parseFloat(qtdNFInput.value) || 0;
+      const qtdConvertidaInput = document.querySelector(`.qtd-convertida-pc[data-index="${index}"]`);
+      const produto = produtos.find(p => p.codigo === currentOrder.itens[index].codigo);
+
+      if (qtdNF < 0) {
+        alert('A quantidade na NF não pode ser negativa.');
+        qtdNFInput.value = 0;
+        qtdConvertidaInput.value = 0;
+        return;
+      }
+
+      const qtdRestante = currentOrder.itens[index].quantidade - 
+        (currentOrder.recebimentos || []).reduce((sum, rec) => 
+          sum + (rec.itens[index]?.quantidadeConvertida || 0), 0);
+      if (qtdNF > qtdRestante) {
+        alert(`A quantidade na NF excede o restante a receber (${qtdRestante.toFixed(3)}).`);
+        qtdNFInput.value = qtdRestante;
+        return;
+      }
+
+      let qtdPC = qtdNF;
+      if (unidadeNF === produto.unidadeSecundaria && produto.fatorConversao) {
+        qtdPC = qtdNF / produto.fatorConversao;
+      } else if (unidadeNF === produto.unidade) {
+        qtdPC = qtdNF;
+      }
+      qtdConvertidaInput.value = qtdPC.toFixed(3);
+    };
+
+    window.receiveMaterials = async function(event) {
+      event.preventDefault();
+
+      if (!currentOrder) {
+        alert('Selecione um pedido antes de registrar o recebimento.');
+        return;
+      }
+
+      const warehouse = document.getElementById('warehouseSelect').value;
+      const costCenter = document.getElementById('costCenterSelect').value;
+      if (!warehouse || !costCenter) {
+        alert('Selecione o armazém e o centro de custo.');
+        return;
+      }
+
+      const checklistItems = ['check_nf', 'check_quantidade', 'check_embalagem', 'check_prazo'];
+      for (const item of checklistItems) {
+        if (!document.getElementById(item).checked) {
+          alert('Por favor, complete todos os itens do checklist.');
+          return;
+        }
+      }
+
+      const nfNumero = document.getElementById('nfNumero').value;
+      const nfChave = document.getElementById('nfChave').value;
+      const nfData = new Date(document.getElementById('nfData').value);
+      const nfValor = parseFloat(document.getElementById('nfValor').value);
+      const observacoes = document.getElementById('receiveObservacoes').value;
+      const dataEmissao = document.getElementById('nfData').value;
+
+      if (nfChave.length !== 44) {
+        alert('A chave de acesso deve ter exatamente 44 dígitos.');
+        return;
+      }
+
+      if (isNaN(nfValor) || nfValor <= 0) {
+        alert('O valor total da NF deve ser maior que zero.');
+        return;
+      }
+
+      const itensRecebidos = [];
+      let hasValidItem = false;
+      document.querySelectorAll('.qtd-recebida-nf').forEach((input, index) => {
+        const qtdRecebidaNF = parseFloat(input.value) || 0;
+        const unidadeNF = document.querySelector(`.unidade-recebimento[data-index="${index}"]`).value;
+        const qtdConvertidaPC = parseFloat(document.querySelector(`.qtd-convertida-pc[data-index="${index}"]`).value) || 0;
+        const loteFornecedor = document.querySelector(`.lote-fornecedor[data-index="${index}"]`).value.trim();
+
+        if (qtdRecebidaNF > 0) {
+          if (!loteFornecedor) {
+            alert(`Informe o lote do fornecedor para o item ${currentOrder.itens[index].descricao}.`);
+            throw new Error("Lote do fornecedor não informado.");
+          }
+          hasValidItem = true;
+          const loteInterno = generateLoteInterno();
+          itensRecebidos.push({
+            ...currentOrder.itens[index],
+            quantidadeRecebida: qtdRecebidaNF,
+            unidadeRecebida: unidadeNF,
+            quantidadeConvertida: qtdConvertidaPC,
+            loteFornecedor,
+            loteInterno
+          });
+        }
+      });
+
+      if (!hasValidItem) {
+        alert('Informe a quantidade recebida para pelo menos um item.');
+        return;
+      }
+
+      const recebimentoData = {
+        nfNumero,
+        nfChave,
+        nfData: Timestamp.fromDate(nfData),
+        nfValor,
+        itens: itensRecebidos,
+        dataRecebimento: Timestamp.now(),
+        recebidoPor: currentUser.nome,
+        observacoes,
+        checklist: {
+          nfConfere: document.getElementById('check_nf').checked,
+          quantidadesConferem: document.getElementById('check_quantidade').checked,
+          embalagensIntegras: document.getElementById('check_embalagem').checked,
+          prazoConforme: document.getElementById('check_prazo').checked
+        },
+        fotos: photoFiles.length > 0,
+        armazem: warehouse,
+        centroCusto: costCenter
+      };
+
+      try {
+        const pedidoRef = doc(db, "pedidosCompra", currentOrder.id);
+        const pedidoSnap = await getDoc(pedidoRef);
+        const pedidoData = pedidoSnap.data();
+        const recebimentos = pedidoData.recebimentos || [];
+        recebimentos.push(recebimentoData);
+
+        const todosRecebidos = currentOrder.itens.every((item, index) => {
+          const totalRecebido = recebimentos.reduce((sum, rec) => 
+            sum + (rec.itens[index]?.quantidadeConvertida || 0), 0);
+          return totalRecebido >= item.quantidade;
+        });
+
+        await updateDoc(pedidoRef, {
+          recebimentos,
+          status: todosRecebidos ? 'RECEBIDO' : 'APROVADO',
+          notaFiscal: {
+            numero: nfNumero,
+            chaveAcesso: nfChave,
+            dataEmissao: Timestamp.fromDate(nfData),
+            valorTotal: nfValor
+          },
+          historico: [
+            ...(pedidoData.historico || []),
+            {
+              data: Timestamp.now(),
+              acao: `Recebimento registrado (NF ${nfNumero}) - ${todosRecebidos ? 'Total' : 'Parcial'} no armazém ${warehouse}, centro de custo ${costCenter}`,
+              usuario: currentUser.nome
+            }
+          ]
+        });
+
+        const recebimentoId = `REC-${Date.now()}`;
+        for (const file of photoFiles) {
+          const storageRef = ref(storage, `recebimentos/${recebimentoId}/${file.name}`);
+          await uploadBytes(storageRef, file);
+        }
+
+        for (const item of itensRecebidos) {
+          const produto = produtos.find(p => p.codigo === item.codigo);
+          if (!produto) continue;
+
+          await addDoc(collection(db, "estoqueQualidade"), {
+            pedidoId: currentOrder.id,
+            recebimentoId: recebimentoId,
+            produtoId: produto.id,
+            codigo: item.codigo,
+            descricao: item.descricao,
+            quantidade: item.quantidadeConvertida,
+            unidade: produto.unidade,
+            quantidadeNF: item.quantidadeRecebida,
+            unidadeNF: item.unidadeRecebida,
+            status: 'PENDENTE',
+            dataEntrada: Timestamp.now(),
+            origem: `Pedido de Compra ${currentOrder.numero} - NF ${nfNumero}`,
+            notaFiscal: { numero: nfNumero, chaveAcesso: nfChave },
+            loteFornecedor: item.loteFornecedor,
+            loteInterno: item.loteInterno,
+            armazem: 'QUA01',
+            centroCusto: costCenter,
+            fotoRecebimento: photoFiles.length > 0
+          });
+        }
+
+        // Gerar conta a pagar
+        const contaPagar = {
+          fornecedorId: currentOrder.fornecedorId,
+          tipoDocumento: 'NF',
+          numeroDocumento: nfNumero,
+          dataEmissao: Timestamp.fromDate(new Date(dataEmissao)),
+          valorTotal: nfValor,
+          condicaoPagamentoId: currentOrder.condicaoPagamentoId,
+          centroCusto: costCenter,
+          contaContabil: 'FORNECEDORES',
+          observacoes: `Referente NF ${nfNumero} - Pedido ${currentOrder.numero}`,
+          dataCadastro: Timestamp.now(),
+          status: 'PENDENTE'
+        };
+
+        await addDoc(collection(db, "contasAPagar"), contaPagar);
+
+        alert('Recebimento registrado com sucesso! Itens enviados para inspeção e conta a pagar gerada.');
+        document.getElementById('receiveForm').reset();
+        document.getElementById('receiveForm').style.display = 'none';
+        document.getElementById('orderSelect').value = '';
+        document.getElementById('warehouseSelect').value = '';
+        document.getElementById('costCenterSelect').value = '';
+        document.getElementById('photoPreview').innerHTML = '';
+        photoFiles = [];
+        await loadInitialData();
+        populateOrderSelect();
+      } catch (error) {
+        console.error("Erro ao registrar recebimento:", error);
+        alert("Erro ao registrar recebimento: " + error.message);
+      }
+    };
+
+    function generateLoteInterno() {
+      return `LOT-${Date.now()}`;
+    }
+  </script>
+</body>
+</html>

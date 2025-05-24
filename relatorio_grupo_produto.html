@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Produtos por Grupo e Família</title>
+  <style>
+    :root {
+      --primary-color: #0854a0;
+      --primary-hover: #0a4d8c;
+      --secondary-color: #f0f3f6;
+      --border-color: #d4d4d4;
+      --text-color: #333;
+      --text-secondary: #666;
+      --success-color: #107e3e;
+      --success-hover: #0d6e36;
+      --danger-color: #bb0000;
+      --danger-hover: #a30000;
+      --warning-color: #e9730c;
+      --header-bg: #354a5f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      color: var(--text-color);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    .toolbar {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+      max-width: 300px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    select, input[type="date"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+      color: var(--text-color);
+      background-color: #fff;
+      transition: border-color 0.2s;
+    }
+
+    select[multiple] {
+      height: 100px;
+    }
+
+    select:focus, input[type="date"]:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(8, 84, 160, 0.1);
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: #fff;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .form-section {
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .section-header {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      margin-bottom: 20px;
+    }
+
+    .products-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .products-table th,
+    .products-table td {
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      text-align: left;
+    }
+
+    .products-table th {
+      background-color: var(--secondary-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .products-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-ativo {
+      background-color: #e5f2e5;
+      color: var(--success-color);
+    }
+
+    .status-inativo {
+      background-color: #ffeaea;
+      color: var(--danger-color);
+    }
+
+    .status-bloqueado {
+      background-color: #fff3e5;
+      color: var(--warning-color);
+    }
+
+    .group-section {
+      margin-bottom: 30px;
+    }
+
+    .familia-section {
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      font-size: 18px;
+      margin: 20px 0 10px;
+      color: var(--primary-color);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 5px;
+    }
+
+    h4 {
+      font-size: 16px;
+      margin: 15px 0 10px;
+      color: var(--text-secondary);
+    }
+
+    .summary {
+      background-color: var(--secondary-color);
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .summary-item {
+      margin-bottom: 5px;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 4px;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: opacity 0.3s ease;
+    }
+
+    .notification-success {
+      background-color: var(--success-color);
+    }
+
+    .notification-error {
+      background-color: var(--danger-color);
+    }
+
+    .notification-icon {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    @media (max-width: 768px) {
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .form-group {
+        max-width: none;
+        width: 100%;
+      }
+    }
+
+    @media print {
+      .toolbar,
+      .print-btn {
+        display: none;
+      }
+
+      .container {
+        margin: 0;
+        box-shadow: none;
+        border: none;
+      }
+
+      .form-section {
+        border: none;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Relatório de Produtos por Grupo e Família</h1>
+      <button class="btn-secondary" onclick="window.location.href='cadastro_produto.html'">Voltar</button>
+    </div>
+
+    <div id="notification" class="notification" style="display: none;"></div>
+
+    <div class="toolbar">
+      <div class="form-group">
+        <label>Filtrar por Grupo</label>
+        <select id="filterGrupo" onchange="generateReport()">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Excluir Grupos (Ctrl para múltiplos)</label>
+        <select id="excludeGrupos" multiple onchange="generateReport()">
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Data Cadastro (De)</label>
+        <input type="date" id="filterDataInicio" onchange="generateReport()">
+      </div>
+      <div class="form-group">
+        <label>Data Cadastro (Até)</label>
+        <input type="date" id="filterDataFim" onchange="generateReport()">
+      </div>
+      <button class="btn-primary print-btn" onclick="window.print()">Imprimir Relatório</button>
+      <button class="btn-success" onclick="exportToExcel()">Exportar para Excel</button>
+    </div>
+
+    <div class="summary" id="summary">
+      <div class="summary-item"><strong>Total de Grupos:</strong> <span id="totalGrupos">0</span></div>
+      <div class="summary-item"><strong>Total de Produtos:</strong> <span id="totalProdutos">0</span></div>
+      <div class="summary-item"><strong>Data de Geração:</strong> <span id="dataGeracao"></span></div>
+    </div>
+
+    <div id="reportContent"></div>
+  </div>
+
+  <!-- Biblioteca SheetJS para manipulação de Excel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+      collection, 
+      getDocs 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let produtos = [];
+    let grupos = [];
+    let familias = [];
+    let estoques = [];
+
+    window.onload = async function() {
+      const userSession = localStorage.getItem('currentUser');
+      if (!userSession) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      await loadData();
+      updateFilterSelect();
+      updateExcludeSelect();
+      generateReport();
+    };
+
+    async function loadData() {
+      try {
+        const [produtosSnap, gruposSnap, familiasSnap, estoquesSnap] = await Promise.all([
+          getDocs(collection(db, "produtos")),
+          getDocs(collection(db, "grupos")),
+          getDocs(collection(db, "familias")),
+          getDocs(collection(db, "estoques"))
+        ]);
+
+        produtos = produtosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        grupos = gruposSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        familias = familiasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        estoques = estoquesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        console.log("Dados carregados:", { produtos, grupos, familias, estoques });
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        showNotification("Erro ao carregar dados. Por favor, recarregue a página.", "error");
+      }
+    }
+
+    function updateFilterSelect() {
+      const filterGrupoSelect = document.getElementById('filterGrupo');
+      filterGrupoSelect.innerHTML = '<option value="">Todos</option>';
+      grupos
+        .sort((a, b) => a.codigoGrupo.localeCompare(b.codigoGrupo))
+        .forEach(grupo => {
+          filterGrupoSelect.innerHTML += `
+            <option value="${grupo.codigoGrupo}">
+              ${grupo.codigoGrupo} - ${grupo.nomeGrupo}
+            </option>`;
+        });
+    }
+
+    function updateExcludeSelect() {
+      const excludeGruposSelect = document.getElementById('excludeGrupos');
+      excludeGruposSelect.innerHTML = '';
+      grupos
+        .sort((a, b) => a.codigoGrupo.localeCompare(b.codigoGrupo))
+        .forEach(grupo => {
+          excludeGruposSelect.innerHTML += `
+            <option value="${grupo.codigoGrupo}">
+              ${grupo.codigoGrupo} - ${grupo.nomeGrupo}
+            </option>`;
+        });
+    }
+
+    function getEstoque(produtoId) {
+      const estoque = estoques.find(e => e.produtoId === produtoId);
+      return estoque ? estoque.saldo : 0;
+    }
+
+    function getTipoDescricao(tipo) {
+      const tipos = {
+        'PA': 'Produto Acabado',
+        'SP': 'Sub-Produto',
+        'MP': 'Matéria Prima',
+        'HR': 'Hora Máquina',
+        'SV': 'Serviço',
+        'TA': 'Taxas'
+      };
+      return tipos[tipo] || tipo;
+    }
+
+    function getStatusDescricao(status) {
+      const statusDesc = {
+        'ativo': 'Ativo',
+        'inativo': 'Inativo',
+        'bloqueado': 'Bloqueado'
+      };
+      return statusDesc[status] || status;
+    }
+
+    window.generateReport = async function() {
+      try {
+        const filterGrupo = document.getElementById('filterGrupo').value;
+        const excludeGrupos = Array.from(document.getElementById('excludeGrupos').selectedOptions).map(option => option.value);
+        const filterDataInicio = document.getElementById('filterDataInicio').value;
+        const filterDataFim = document.getElementById('filterDataFim').value;
+        const groupedProducts = {};
+        let totalProdutos = 0;
+
+        // Filtrar produtos por grupo, grupos excluídos e período de cadastro
+        const filteredProdutos = produtos.filter(product => {
+          const matchesGrupo = !filterGrupo || product.grupo === filterGrupo;
+          const notExcluded = !excludeGrupos.includes(product.grupo);
+          let matchesData = true;
+
+          if (filterDataInicio || filterDataFim) {
+            const dataCadastro = product.dataCadastro 
+              ? new Date(product.dataCadastro.seconds * 1000) 
+              : null;
+
+            if (filterDataInicio && dataCadastro && dataCadastro < new Date(filterDataInicio)) {
+              matchesData = false;
+            }
+            if (filterDataFim && dataCadastro && dataCadastro > new Date(filterDataFim + 'T23:59:59')) {
+              matchesData = false;
+            }
+          }
+
+          return matchesGrupo && notExcluded && matchesData;
+        });
+
+        // Agrupar produtos filtrados
+        filteredProdutos.forEach(product => {
+          const grupo = grupos.find(g => g.codigoGrupo === product.grupo);
+          const familia = familias.find(f => f.codigoFamilia === product.familia);
+
+          const grupoKey = grupo ? `${grupo.codigoGrupo} - ${grupo.nomeGrupo}` : 'Sem Grupo';
+          const familiaKey = familia ? `${familia.codigoFamilia} - ${familia.nomeFamilia}` : 'Sem Família';
+
+          if (!groupedProducts[grupoKey]) {
+            groupedProducts[grupoKey] = {};
+          }
+
+          if (!groupedProducts[grupoKey][familiaKey]) {
+            groupedProducts[grupoKey][familiaKey] = [];
+          }
+
+          groupedProducts[grupoKey][familiaKey].push(product);
+          totalProdutos++;
+        });
+
+        const sortedGroups = Object.keys(groupedProducts).sort();
+        let reportContent = `
+          <div class="report-container">
+            <div class="form-section">
+              <div class="section-header">Relatório de Produtos por Grupo e Família</div>
+        `;
+
+        if (sortedGroups.length === 0) {
+          reportContent += `<p style="color: var(--text-secondary); text-align: center;">Nenhum produto encontrado para o filtro selecionado.</p>`;
+        } else {
+          sortedGroups.forEach(grupo => {
+            reportContent += `
+              <div class="group-section">
+                <h3>Grupo: ${grupo}</h3>
+            `;
+
+            const sortedFamilias = Object.keys(groupedProducts[grupo]).sort();
+            sortedFamilias.forEach(familia => {
+              reportContent += `
+                <div class="familia-section">
+                  <h4>Família: ${familia}</h4>
+                  <div class="table-responsive">
+                    <table class="products-table">
+                      <thead>
+                        <tr>
+                          <th>Código</th>
+                          <th>Descrição</th>
+                          <th>Tipo</th>
+                          <th>Unidade</th>
+                          <th>Estoque</th>
+                          <th>Status</th>
+                          <th>Data Cadastro</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+              `;
+
+              groupedProducts[grupo][familia]
+                .sort((a, b) => a.codigo.localeCompare(b.codigo))
+                .forEach(product => {
+                  const estoque = getEstoque(product.id) || 0;
+                  const dataCadastro = product.dataCadastro 
+                    ? new Date(product.dataCadastro.seconds * 1000).toLocaleDateString('pt-BR') 
+                    : '-';
+                  reportContent += `
+                    <tr>
+                      <td>${product.codigo || '-'}</td>
+                      <td>${product.descricao || '-'}</td>
+                      <td>${getTipoDescricao(product.tipo)}</td>
+                      <td>${product.unidade || '-'}</td>
+                      <td>${estoque} ${product.unidade || ''}</td>
+                      <td><span class="status-badge status-${product.status || 'ativo'}">${getStatusDescricao(product.status || 'ativo')}</span></td>
+                      <td>${dataCadastro}</td>
+                    </tr>
+                  `;
+                });
+
+              reportContent += `
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              `;
+            });
+
+            reportContent += `</div>`;
+          });
+        }
+
+        reportContent += `</div></div>`;
+
+        document.getElementById('reportContent').innerHTML = reportContent;
+
+        // Atualizar resumo
+        document.getElementById('totalGrupos').textContent = sortedGroups.length;
+        document.getElementById('totalProdutos').textContent = totalProdutos;
+        document.getElementById('dataGeracao').textContent = new Date().toLocaleString('pt-BR');
+
+      } catch (error) {
+        console.error("Erro ao gerar relatório:", error);
+        showNotification("Erro ao gerar relatório por grupo/família.", "error");
+      }
+    };
+
+    window.exportToExcel = function() {
+      try {
+        const filterGrupo = document.getElementById('filterGrupo').value;
+        const excludeGrupos = Array.from(document.getElementById('excludeGrupos').selectedOptions).map(option => option.value);
+        const filterDataInicio = document.getElementById('filterDataInicio').value;
+        const filterDataFim = document.getElementById('filterDataFim').value;
+        const exportData = [];
+
+        // Filtrar produtos para exportação
+        const filteredProdutos = produtos.filter(product => {
+          const matchesGrupo = !filterGrupo || product.grupo === filterGrupo;
+          const notExcluded = !excludeGrupos.includes(product.grupo);
+          let matchesData = true;
+
+          if (filterDataInicio || filterDataFim) {
+            const dataCadastro = product.dataCadastro 
+              ? new Date(product.dataCadastro.seconds * 1000) 
+              : null;
+
+            if (filterDataInicio && dataCadastro && dataCadastro < new Date(filterDataInicio)) {
+              matchesData = false;
+            }
+            if (filterDataFim && dataCadastro && dataCadastro > new Date(filterDataFim + 'T23:59:59')) {
+              matchesData = false;
+            }
+          }
+
+          return matchesGrupo && notExcluded && matchesData;
+        });
+
+        filteredProdutos.forEach(product => {
+          const grupo = grupos.find(g => g.codigoGrupo === product.grupo);
+          const familia = familias.find(f => f.codigoFamilia === product.familia);
+          const estoque = getEstoque(product.id) || 0;
+          const dataCadastro = product.dataCadastro 
+            ? new Date(product.dataCadastro.seconds * 1000).toLocaleDateString('pt-BR') 
+            : '-';
+
+          exportData.push({
+            'Grupo': grupo ? `${grupo.codigoGrupo} - ${grupo.nomeGrupo}` : 'Sem Grupo',
+            'Família': familia ? `${familia.codigoFamilia} - ${familia.nomeFamilia}` : 'Sem Família',
+            'Código': product.codigo || '-',
+            'Descrição': product.descricao || '-',
+            'Tipo': getTipoDescricao(product.tipo),
+            'Unidade': product.unidade || '-',
+            'Estoque': `${estoque} ${product.unidade || ''}`,
+            'Status': getStatusDescricao(product.status || 'ativo'),
+            'Data Cadastro': dataCadastro
+          });
+        });
+
+        if (exportData.length === 0) {
+          showNotification("Nenhum dado para exportar.", "warning");
+          return;
+        }
+
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const colWidths = Object.keys(exportData[0]).map((key, i) => ({
+          wch: Math.max(key.length, ...(exportData.map(row => String(row[key]).length)))
+        }));
+        ws['!cols'] = colWidths;
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Relatório Grupo x Família');
+
+        const fileName = `Relatorio_Grupo_Familia_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+
+        showNotification('Exportação concluída com sucesso!', 'success');
+      } catch (error) {
+        console.error('Erro ao exportar para Excel:', error);
+        showNotification('Erro ao exportar para Excel.', 'error');
+      }
+    };
+
+    function showNotification(message, type = 'success', duration = 3000) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = '';
+      notification.classList.add('notification', `notification-${type}`);
+      notification.style.display = 'block';
+
+      let icon = '';
+      if (type === 'success') {
+        icon = '✓';
+      } else if (type === 'error') {
+        icon = '✗';
+      } else if (type === 'warning') {
+        icon = '⚠';
+      }
+
+      notification.innerHTML = `<span class="notification-icon">${icon}</span> ${message}`;
+
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.style.display = 'none', 300);
+      }, duration);
+    }
+  </script>
+</body>
+</html>
